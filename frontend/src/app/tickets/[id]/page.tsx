@@ -102,16 +102,16 @@ export default function TicketChatPage() {
   return (
     <section className="max-w-4xl mx-auto px-4 py-8">
       {/* Header */}
-      <div className="bg-dark-light border border-white/10 rounded-xl p-5 mb-4">
-        <div className="flex items-center justify-between mb-2">
-          <div className="flex items-center gap-3">
+      <div className="bg-dark-light border border-white/10 rounded-xl p-4 sm:p-5 mb-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
+          <div className="flex items-center gap-3 min-w-0">
             <button
               onClick={() => router.push("/tickets")}
-              className="text-gray-custom hover:text-white transition-colors"
+              className="text-gray-custom hover:text-white transition-colors shrink-0"
             >
               &larr; بازگشت
             </button>
-            <h1 className="text-xl font-bold text-white">{ticket.subject}</h1>
+            <h1 className="text-lg sm:text-xl font-bold text-white truncate">{ticket.subject}</h1>
           </div>
           <span className="px-3 py-1 rounded-full text-xs font-medium bg-white/10 text-gray-custom">
             {statusLabels[ticket.status]}
@@ -120,7 +120,7 @@ export default function TicketChatPage() {
       </div>
 
       {/* Messages */}
-      <div className="bg-dark-light border border-white/10 rounded-xl p-5 mb-4 max-h-[60vh] overflow-y-auto">
+      <div className="bg-dark-light border border-white/10 rounded-xl p-3 sm:p-5 mb-4 max-h-[60vh] overflow-y-auto">
         <div className="space-y-4">
           {ticket.messages.map((msg) => (
             <div
@@ -128,7 +128,7 @@ export default function TicketChatPage() {
               className={`flex ${msg.senderRole === "user" ? "justify-start" : "justify-end"}`}
             >
               <div
-                className={`max-w-[75%] rounded-2xl px-4 py-3 ${
+                className={`max-w-[90%] sm:max-w-[75%] rounded-2xl px-4 py-3 ${
                   msg.senderRole === "user"
                     ? "bg-white/5 border border-white/10"
                     : "bg-primary/20 border border-primary/30"
@@ -156,18 +156,18 @@ export default function TicketChatPage() {
       {ticket.status !== "closed" ? (
         <form
           onSubmit={sendMessage}
-          className="bg-dark-light border border-white/10 rounded-xl p-4 flex gap-3"
+          className="bg-dark-light border border-white/10 rounded-xl p-3 sm:p-4 flex gap-2 sm:gap-3"
         >
           <input
             value={message}
             onChange={(e) => setMessage(e.target.value)}
             placeholder="پیام خود را بنویسید..."
-            className="flex-1 px-4 py-3 bg-dark border border-white/10 rounded-lg text-white focus:border-primary/50 outline-none transition"
+            className="flex-1 min-w-0 px-3 sm:px-4 py-3 bg-dark border border-white/10 rounded-lg text-white focus:border-primary/50 outline-none transition"
           />
           <button
             type="submit"
             disabled={sending || !message.trim()}
-            className="px-6 py-3 gradient-primary text-white rounded-lg font-medium hover:opacity-90 transition-opacity disabled:opacity-50"
+            className="px-4 sm:px-6 py-3 gradient-primary text-white rounded-lg font-medium hover:opacity-90 transition-opacity disabled:opacity-50 shrink-0"
           >
             {sending ? "ارسال..." : "ارسال"}
           </button>

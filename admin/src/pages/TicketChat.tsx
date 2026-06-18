@@ -80,7 +80,7 @@ export default function TicketChat() {
   return (
     <div className="flex flex-col h-[calc(100vh-5rem)]">
       {/* Header */}
-      <div className="bg-white rounded-xl shadow-sm p-4 mb-4 flex items-center justify-between">
+      <div className="bg-white rounded-xl shadow-sm p-4 mb-4 space-y-3 sm:space-y-0 sm:flex sm:items-center sm:justify-between">
         <div className="flex items-center gap-4">
           <button
             onClick={() => navigate('/tickets')}
@@ -88,14 +88,14 @@ export default function TicketChat() {
           >
             &larr; بازگشت
           </button>
-          <div>
-            <h2 className="font-bold text-gray-800">{ticket.subject}</h2>
-            <p className="text-sm text-gray-500">
+          <div className="min-w-0">
+            <h2 className="font-bold text-gray-800 truncate">{ticket.subject}</h2>
+            <p className="text-sm text-gray-500 truncate">
               {ticket.userName} - {ticket.userEmail}
             </p>
           </div>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 shrink-0">
           {(['open', 'pending', 'closed'] as const).map((s) => (
             <button
               key={s}
@@ -121,7 +121,7 @@ export default function TicketChat() {
               className={`flex ${msg.senderRole === 'admin' ? 'justify-start' : 'justify-end'}`}
             >
               <div
-                className={`max-w-[70%] rounded-2xl px-4 py-3 ${
+                className={`max-w-[85%] sm:max-w-[70%] rounded-2xl px-4 py-3 ${
                   msg.senderRole === 'admin'
                     ? 'bg-indigo-50 text-gray-800'
                     : 'bg-gray-100 text-gray-800'
@@ -145,17 +145,17 @@ export default function TicketChat() {
 
       {/* Input */}
       {ticket.status !== 'closed' && (
-        <form onSubmit={sendMessage} className="bg-white rounded-xl shadow-sm p-4 flex gap-3">
+        <form onSubmit={sendMessage} className="bg-white rounded-xl shadow-sm p-3 sm:p-4 flex gap-2 sm:gap-3">
           <input
             value={message}
             onChange={(e) => setMessage(e.target.value)}
             placeholder="پیام خود را بنویسید..."
-            className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none"
+            className="flex-1 min-w-0 px-3 sm:px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none"
           />
           <button
             type="submit"
             disabled={sending || !message.trim()}
-            className="px-6 py-3 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 transition disabled:opacity-50 cursor-pointer"
+            className="px-4 sm:px-6 py-3 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 transition disabled:opacity-50 cursor-pointer shrink-0"
           >
             {sending ? 'ارسال...' : 'ارسال'}
           </button>

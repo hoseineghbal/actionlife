@@ -18,7 +18,7 @@ export default async function CinemaArticlePage({ params }: Props) {
 
   return (
     <article className="max-w-4xl mx-auto px-4 py-12">
-      <nav className="flex items-center gap-2 text-sm text-gray-custom mb-8">
+      <nav className="flex flex-wrap items-center gap-2 text-sm text-gray-custom mb-8">
         <Link href="/" className="hover:text-white transition-colors">خانه</Link>
         <span>/</span>
         <Link href="/action-cinema" className="hover:text-white transition-colors">اکشن نما</Link>
@@ -33,7 +33,7 @@ export default async function CinemaArticlePage({ params }: Props) {
         <h1 className="text-3xl md:text-4xl font-black text-white mb-4 leading-tight">
           {slug.replace(/-/g, " ")}
         </h1>
-        <div className="flex items-center gap-4 text-sm text-gray-custom">
+        <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-sm text-gray-custom">
           <span>تیم اکشن لایف</span>
           <span>•</span>
           <span>{new Date().toLocaleDateString("fa-IR")}</span>

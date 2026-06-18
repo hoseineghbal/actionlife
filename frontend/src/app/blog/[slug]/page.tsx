@@ -19,7 +19,7 @@ export default async function BlogPostPage({ params }: Props) {
   return (
     <article className="max-w-4xl mx-auto px-4 py-12">
       {/* بردکرامب */}
-      <nav className="flex items-center gap-2 text-sm text-gray-custom mb-8">
+      <nav className="flex flex-wrap items-center gap-2 text-sm text-gray-custom mb-8">
         <Link href="/" className="hover:text-white transition-colors">خانه</Link>
         <span>/</span>
         <Link href="/blog" className="hover:text-white transition-colors">وبلاگ</Link>
@@ -35,7 +35,7 @@ export default async function BlogPostPage({ params }: Props) {
         <h1 className="text-3xl md:text-4xl font-black text-white mb-4 leading-tight">
           {slug.replace(/-/g, " ")}
         </h1>
-        <div className="flex items-center gap-4 text-sm text-gray-custom">
+        <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-sm text-gray-custom">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 bg-white/10 rounded-full flex items-center justify-center">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

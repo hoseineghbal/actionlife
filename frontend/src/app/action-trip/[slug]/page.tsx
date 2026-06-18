@@ -18,7 +18,7 @@ export default async function TripArticlePage({ params }: Props) {
 
   return (
     <article className="max-w-4xl mx-auto px-4 py-12">
-      <nav className="flex items-center gap-2 text-sm text-gray-custom mb-8">
+      <nav className="flex flex-wrap items-center gap-2 text-sm text-gray-custom mb-8">
         <Link href="/" className="hover:text-white transition-colors">خانه</Link>
         <span>/</span>
         <Link href="/action-trip" className="hover:text-white transition-colors">اکشن تریپ</Link>
@@ -33,7 +33,7 @@ export default async function TripArticlePage({ params }: Props) {
         <h1 className="text-3xl md:text-4xl font-black text-white mb-4 leading-tight">
           {slug.replace(/-/g, " ")}
         </h1>
-        <div className="flex items-center gap-4 text-sm text-gray-custom">
+        <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-sm text-gray-custom">
           <span>تیم اکشن لایف</span>
           <span>•</span>
           <span>{new Date().toLocaleDateString("fa-IR")}</span>
@@ -52,7 +52,7 @@ export default async function TripArticlePage({ params }: Props) {
         {/* اطلاعات سفر/آموزش */}
         <div className="bg-dark-light border border-white/10 rounded-xl p-6 my-8">
           <h3 className="text-lg font-bold text-white mb-4">اطلاعات</h3>
-          <div className="grid grid-cols-2 gap-4 text-sm">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
             <div><span className="text-gray-custom">نوع:</span> <span className="text-white">آموزش بقا</span></div>
             <div><span className="text-gray-custom">سطح:</span> <span className="text-white">مبتدی تا متوسط</span></div>
             <div><span className="text-gray-custom">منطقه:</span> <span className="text-white">ایران</span></div>

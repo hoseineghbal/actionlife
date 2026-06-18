@@ -15,7 +15,7 @@ function UserDetailModal({ user, onClose }: { user: User; onClose: () => void })
   return (
     <>
       <div className="fixed inset-0 bg-black/40 z-40" onClick={onClose} />
-      <div className="fixed inset-y-0 left-0 w-full max-w-lg bg-white z-50 shadow-2xl overflow-y-auto">
+      <div className="fixed inset-y-0 left-0 w-full sm:max-w-lg bg-white z-50 shadow-2xl overflow-y-auto">
         {/* هدر */}
         <div className="sticky top-0 bg-white border-b px-6 py-4 flex items-center justify-between z-10">
           <h2 className="text-lg font-bold text-gray-800">جزئیات کاربر</h2>

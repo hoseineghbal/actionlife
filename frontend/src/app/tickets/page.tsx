@@ -96,9 +96,9 @@ export default function TicketsPage() {
     <>
       <section className="bg-dark-light border-b border-white/10">
         <div className="max-w-7xl mx-auto px-4 py-12">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
-              <h1 className="text-3xl md:text-4xl font-black text-white mb-4">
+              <h1 className="text-3xl md:text-4xl font-black text-white mb-2 sm:mb-4">
                 تیکت‌های <span className="text-primary">پشتیبانی</span>
               </h1>
               <p className="text-gray-custom max-w-2xl leading-7">
@@ -108,7 +108,7 @@ export default function TicketsPage() {
             </div>
             <button
               onClick={() => setShowForm(!showForm)}
-              className="px-6 py-3 gradient-primary text-white rounded-lg font-medium hover:opacity-90 transition-opacity"
+              className="px-6 py-3 gradient-primary text-white rounded-lg font-medium hover:opacity-90 transition-opacity shrink-0 self-start sm:self-auto"
             >
               {showForm ? "بستن فرم" : "تیکت جدید"}
             </button>
@@ -186,15 +186,15 @@ export default function TicketsPage() {
                 href={`/tickets/${ticket._id}`}
                 className="block bg-dark-light border border-white/10 rounded-xl p-5 hover:border-primary/30 transition-colors"
               >
-                <div className="flex items-center justify-between mb-2">
-                  <h3 className="font-bold text-white">{ticket.subject}</h3>
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
+                  <h3 className="font-bold text-white truncate">{ticket.subject}</h3>
                   <span
                     className={`px-3 py-1 rounded-full text-xs font-medium ${statusColors[ticket.status]}`}
                   >
                     {statusLabels[ticket.status]}
                   </span>
                 </div>
-                <div className="flex items-center gap-4 text-sm text-gray-custom">
+                <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-sm text-gray-custom">
                   <span>اولویت: {priorityLabels[ticket.priority]}</span>
                   <span>{ticket.messages.length} پیام</span>
                   <span>

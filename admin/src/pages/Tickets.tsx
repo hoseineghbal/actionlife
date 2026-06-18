@@ -49,7 +49,7 @@ export default function Tickets() {
       </div>
 
       {/* Filters */}
-      <div className="flex gap-2 mb-6">
+      <div className="flex flex-wrap gap-2 mb-6">
         {(['all', 'open', 'pending', 'closed'] as const).map((f) => (
           <button
             key={f}
@@ -77,9 +77,9 @@ export default function Tickets() {
               to={`/tickets/${ticket._id}`}
               className="block bg-white rounded-xl shadow-sm p-5 hover:shadow-md transition"
             >
-              <div className="flex items-center justify-between mb-2">
-                <h3 className="font-semibold text-gray-800">{ticket.subject}</h3>
-                <div className="flex gap-2">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
+                <h3 className="font-semibold text-gray-800 truncate">{ticket.subject}</h3>
+                <div className="flex gap-2 shrink-0">
                   <span className={`px-2 py-1 rounded-full text-xs font-medium ${priorityColors[ticket.priority]}`}>
                     {priorityLabels[ticket.priority]}
                   </span>
@@ -88,7 +88,7 @@ export default function Tickets() {
                   </span>
                 </div>
               </div>
-              <div className="flex items-center gap-4 text-sm text-gray-500">
+              <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-sm text-gray-500">
                 <span>{ticket.userName}</span>
                 <span>{ticket.userEmail}</span>
                 <span>{new Date(ticket.createdAt).toLocaleDateString('fa-IR')}</span>

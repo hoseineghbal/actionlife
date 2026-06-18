@@ -86,7 +86,7 @@ export default function Contacts() {
                   </span>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4 mb-6 text-sm">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6 text-sm">
                   <div>
                     <span className="text-gray-500">نام:</span>
                     <span className="mr-2 font-medium text-gray-800">{selected.name}</span>

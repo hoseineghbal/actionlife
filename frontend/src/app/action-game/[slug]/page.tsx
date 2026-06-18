@@ -18,7 +18,7 @@ export default async function GameArticlePage({ params }: Props) {
 
   return (
     <article className="max-w-4xl mx-auto px-4 py-12">
-      <nav className="flex items-center gap-2 text-sm text-gray-custom mb-8">
+      <nav className="flex flex-wrap items-center gap-2 text-sm text-gray-custom mb-8">
         <Link href="/" className="hover:text-white transition-colors">خانه</Link>
         <span>/</span>
         <Link href="/action-game" className="hover:text-white transition-colors">اکشن گیم</Link>
@@ -33,7 +33,7 @@ export default async function GameArticlePage({ params }: Props) {
         <h1 className="text-3xl md:text-4xl font-black text-white mb-4 leading-tight">
           {slug.replace(/-/g, " ")}
         </h1>
-        <div className="flex items-center gap-4 text-sm text-gray-custom">
+        <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-sm text-gray-custom">
           <span>تیم اکشن لایف</span>
           <span>•</span>
           <span>{new Date().toLocaleDateString("fa-IR")}</span>
@@ -52,7 +52,7 @@ export default async function GameArticlePage({ params }: Props) {
         {/* اطلاعات بازی */}
         <div className="bg-dark-light border border-white/10 rounded-xl p-6 my-8">
           <h3 className="text-lg font-bold text-white mb-4">اطلاعات بازی</h3>
-          <div className="grid grid-cols-2 gap-4 text-sm">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
             <div><span className="text-gray-custom">پلتفرم:</span> <span className="text-white">PC, PS5, Xbox</span></div>
             <div><span className="text-gray-custom">ژانر:</span> <span className="text-white">Action, Adventure</span></div>
             <div><span className="text-gray-custom">سازنده:</span> <span className="text-white">---</span></div>
