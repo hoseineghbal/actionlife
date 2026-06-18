@@ -6,6 +6,18 @@ export interface User {
   role: string;
   avatar?: string;
   bio?: string;
+  birthDate?: string;
+  gender?: string;
+  education?: string;
+  fieldOfStudy?: string;
+  expertise?: string;
+  interests?: string[];
+  country?: string;
+  city?: string;
+  website?: string;
+  instagram?: string;
+  linkedin?: string;
+  twitter?: string;
   points: number;
   isActive: boolean;
   createdAt: string;

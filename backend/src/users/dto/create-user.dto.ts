@@ -1,4 +1,4 @@
-import { IsEmail, IsEnum, IsOptional, IsString, MinLength } from 'class-validator';
+import { IsArray, IsEmail, IsEnum, IsOptional, IsString, MinLength } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { UserRole } from '../schemas/user.schema';
 
@@ -47,4 +47,65 @@ export class UpdateUserDto {
   @IsOptional()
   @IsString()
   bio?: string;
+
+  @ApiPropertyOptional({ description: 'تاریخ تولد' })
+  @IsOptional()
+  @IsString()
+  birthDate?: string;
+
+  @ApiPropertyOptional({ description: 'جنسیت' })
+  @IsOptional()
+  @IsString()
+  gender?: string;
+
+  @ApiPropertyOptional({ description: 'مقطع تحصیلی' })
+  @IsOptional()
+  @IsString()
+  education?: string;
+
+  @ApiPropertyOptional({ description: 'رشته تحصیلی' })
+  @IsOptional()
+  @IsString()
+  fieldOfStudy?: string;
+
+  @ApiPropertyOptional({ description: 'تخصص' })
+  @IsOptional()
+  @IsString()
+  expertise?: string;
+
+  @ApiPropertyOptional({ description: 'علایق', type: [String] })
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  interests?: string[];
+
+  @ApiPropertyOptional({ description: 'کشور' })
+  @IsOptional()
+  @IsString()
+  country?: string;
+
+  @ApiPropertyOptional({ description: 'شهر' })
+  @IsOptional()
+  @IsString()
+  city?: string;
+
+  @ApiPropertyOptional({ description: 'وبسایت' })
+  @IsOptional()
+  @IsString()
+  website?: string;
+
+  @ApiPropertyOptional({ description: 'اینستاگرام' })
+  @IsOptional()
+  @IsString()
+  instagram?: string;
+
+  @ApiPropertyOptional({ description: 'لینکدین' })
+  @IsOptional()
+  @IsString()
+  linkedin?: string;
+
+  @ApiPropertyOptional({ description: 'توییتر' })
+  @IsOptional()
+  @IsString()
+  twitter?: string;
 }

@@ -71,3 +71,21 @@ export async function register(fullName: string, email: string, password: string
     body: JSON.stringify({ fullName, email, password }),
   });
 }
+
+export async function getProfile(token: string) {
+  return fetchAPI<import('@/types').User>('/users/profile', {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+}
+
+export async function updateProfile(token: string, data: Partial<import('@/types').User>) {
+  return fetchAPI<import('@/types').User>('/users/profile', {
+    method: 'PUT',
+    body: JSON.stringify(data),
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+}

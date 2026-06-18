@@ -49,6 +49,22 @@ export interface User {
   fullName: string;
   email: string;
   role: string;
+  mobile?: string;
+  avatar?: string;
+  bio?: string;
+  birthDate?: string;
+  gender?: string;
+  education?: string;
+  fieldOfStudy?: string;
+  expertise?: string;
+  interests?: string[];
+  country?: string;
+  city?: string;
+  website?: string;
+  instagram?: string;
+  linkedin?: string;
+  twitter?: string;
+  points?: number;
 }
 
 export interface AuthResponse {

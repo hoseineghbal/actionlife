@@ -35,6 +35,42 @@ export class User {
   @Prop()
   bio: string;
 
+  @Prop()
+  birthDate: string;
+
+  @Prop()
+  gender: string;
+
+  @Prop()
+  education: string;
+
+  @Prop()
+  fieldOfStudy: string;
+
+  @Prop()
+  expertise: string;
+
+  @Prop({ type: [String], default: [] })
+  interests: string[];
+
+  @Prop()
+  country: string;
+
+  @Prop()
+  city: string;
+
+  @Prop()
+  website: string;
+
+  @Prop()
+  instagram: string;
+
+  @Prop()
+  linkedin: string;
+
+  @Prop()
+  twitter: string;
+
   @Prop({ default: 0 })
   points: number;
 
