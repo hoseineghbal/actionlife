@@ -68,3 +68,25 @@ export interface PaginatedArticles {
   articles: Article[];
   total: number;
 }
+
+export interface TicketMessage {
+  _id: string;
+  senderId: string;
+  senderRole: 'user' | 'admin';
+  senderName: string;
+  message: string;
+  createdAt: string;
+}
+
+export interface Ticket {
+  _id: string;
+  userId: string;
+  userName: string;
+  userEmail: string;
+  subject: string;
+  status: 'open' | 'pending' | 'closed';
+  priority: 'low' | 'medium' | 'high';
+  messages: TicketMessage[];
+  createdAt: string;
+  updatedAt: string;
+}

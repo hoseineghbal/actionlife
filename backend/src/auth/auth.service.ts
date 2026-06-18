@@ -17,7 +17,7 @@ export class AuthService {
       email: registerDto.email,
       password: registerDto.password,
     });
-    const payload = { sub: user._id, email: user.email, role: user.role };
+    const payload = { sub: user._id, email: user.email, role: user.role, fullName: user.fullName };
     return {
       access_token: this.jwtService.sign(payload),
       user: {
@@ -38,7 +38,7 @@ export class AuthService {
     if (!isPasswordValid) {
       throw new UnauthorizedException('ایمیل یا رمز عبور اشتباه است');
     }
-    const payload = { sub: user._id, email: user.email, role: user.role };
+    const payload = { sub: user._id, email: user.email, role: user.role, fullName: user.fullName };
     return {
       access_token: this.jwtService.sign(payload),
       user: {
