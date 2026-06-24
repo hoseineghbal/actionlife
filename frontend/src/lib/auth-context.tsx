@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useState, useCallback, type ReactNode } from "react";
+import { createContext, useContext, useState, useCallback, useEffect, type ReactNode } from "react";
 import type { User } from "@/types";
 
 interface AuthContextType {
@@ -25,7 +25,12 @@ function getStoredUser(): User | null {
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(getStoredUser);
+  const [user, setUser] = useState<User | null>(null);
+
+  useEffect(() => {
+    // eslint-disable-next-line -- setState in useEffect برای همگام‌سازی localStorage در کلاینت بعد از hydration
+    setUser(getStoredUser());
+  }, []);
 
   const handleLogin = useCallback((token: string, userData: User) => {
     localStorage.setItem("access_token", token);
