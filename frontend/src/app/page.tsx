@@ -1,6 +1,8 @@
 import Link from "next/link";
 import SectionCard from "@/components/shared/SectionCard";
 import ArticleCard from "@/components/shared/ArticleCard";
+import { getLatestArticles } from "@/lib/api";
+import type { Article } from "@/types";
 
 const sections = [
   {
@@ -47,58 +49,15 @@ const sections = [
   },
 ];
 
-const demoArticles = [
-  {
-    title: "راهنمای کامل بقا در طبیعت: از مبتدی تا حرفه‌ای",
-    slug: "survival-guide-beginner-to-pro",
-    excerpt: "همه چیزهایی که باید برای زنده ماندن در طبیعت بدانید، از پایه تا تکنیک‌های پیشرفته",
-    section: "action-trip",
-    author: { fullName: "تیم اکشن لایف" },
-    createdAt: "2026-06-15T10:00:00Z",
-  },
-  {
-    title: "بهترین بازی‌های اکشن ۲۰۲۶ که نباید از دست بدهید",
-    slug: "best-action-games-2026",
-    excerpt: "معرفی و بررسی برترین بازی‌های اکشن سال ۲۰۲۶ برای تمام پلتفرم‌ها",
-    section: "action-game",
-    author: { fullName: "تیم اکشن لایف" },
-    createdAt: "2026-06-12T10:00:00Z",
-  },
-  {
-    title: "نقد فیلم: جدیدترین آثار اکشن هالیوود در تابستان ۲۰۲۶",
-    slug: "hollywood-action-summer-2026",
-    excerpt: "بررسی و نقد فیلم‌های اکشن پرفروش تابستان امسال هالیوود",
-    section: "action-cinema",
-    author: { fullName: "تیم اکشن لایف" },
-    createdAt: "2026-06-10T10:00:00Z",
-  },
-  {
-    title: "برنامه تمرینی ۳۰ روزه برای آمادگی جسمانی اکشن",
-    slug: "30-day-action-fitness-plan",
-    excerpt: "یک برنامه کامل تمرینی برای رسیدن به آمادگی جسمانی مناسب فعالیت‌های اکشن",
-    section: "blog",
-    author: { fullName: "تیم اکشن لایف" },
-    createdAt: "2026-06-08T10:00:00Z",
-  },
-  {
-    title: "۱۰ مقصد برتر طبیعت‌گردی ایران در تابستان",
-    slug: "top-10-nature-destinations-iran-summer",
-    excerpt: "معرفی بهترین مقاصد طبیعت‌گردی ایران برای سفر تابستانی",
-    section: "action-trip",
-    author: { fullName: "تیم اکشن لایف" },
-    createdAt: "2026-06-05T10:00:00Z",
-  },
-  {
-    title: "تکنیک‌های بوشکرفت: آتش‌افروزی بدون فندک",
-    slug: "bushcraft-fire-without-lighter",
-    excerpt: "آموزش روش‌های مختلف روشن کردن آتش در طبیعت بدون استفاده از فندک",
-    section: "action-trip",
-    author: { fullName: "تیم اکشن لایف" },
-    createdAt: "2026-06-01T10:00:00Z",
-  },
-];
+export default async function HomePage() {
+  let latestArticles: Article[] = [];
+  try {
+    const articles = await getLatestArticles(6);
+    latestArticles = articles;
+  } catch {
+    // API not available, show nothing
+  }
 
-export default function HomePage() {
   return (
     <>
       {/* هیرو بنر */}
@@ -185,9 +144,15 @@ export default function HomePage() {
           </Link>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {demoArticles.map((article) => (
-            <ArticleCard key={article.slug} {...article} />
-          ))}
+          {latestArticles.length > 0 ? (
+            latestArticles.map((article) => (
+              <ArticleCard key={article._id || article.slug} {...article} />
+            ))
+          ) : (
+            <p className="text-gray-custom col-span-full text-center py-12">
+              هنوز مطلبی منتشر نشده است.
+            </p>
+          )}
         </div>
       </section>
 

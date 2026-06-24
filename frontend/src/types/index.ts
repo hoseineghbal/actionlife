@@ -1,3 +1,27 @@
+export interface GalleryImage {
+  url: string;
+  alt?: string;
+  caption?: string;
+  order?: number;
+}
+
+export interface VideoEmbed {
+  url: string;
+  title?: string;
+  thumbnail?: string;
+  duration?: string;
+  source?: 'upload' | 'youtube' | 'aparat';
+  videoId?: string;
+  order?: number;
+}
+
+export interface ArticleAttachment {
+  url: string;
+  filename: string;
+  mimeType?: string;
+  size?: number;
+}
+
 export interface Article {
   _id: string;
   title: string;
@@ -5,6 +29,9 @@ export interface Article {
   excerpt: string;
   content: string;
   featuredImage?: string;
+  gallery?: GalleryImage[];
+  videos?: VideoEmbed[];
+  attachments?: ArticleAttachment[];
   section: ArticleSection;
   categories: Category[];
   tags: string[];

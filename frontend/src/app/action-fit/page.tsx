@@ -4,16 +4,16 @@ import { getArticles } from "@/lib/api";
 import type { Article } from "@/types";
 
 export const metadata: Metadata = {
-  title: "اکشن نما | نقد و بررسی فیلم‌ها و سریال‌های اکشن",
+  title: "اکشن فیت | تناسب اندام و ورزش",
   description:
-    "نقد تخصصی فیلم‌ها و سریال‌های اکشن، معرفی آثار جدید، تریلرها و دسته‌بندی فیلم‌های اکشن هالیوود، کره‌ای، ژاپنی و چینی",
-  keywords: ["فیلم اکشن", "نقد فیلم", "سریال اکشن", "سینمای اکشن", "اکشن نما"],
+    "برنامه‌های تمرینی، تغذیه ورزشی، حرکات ورزشی و سلامت جسم و روان برای سبک زندگی فعال",
+  keywords: ["تناسب اندام", "ورزش", "تمرین", "تغذیه", "سلامت", "اکشن فیت"],
 };
 
-export default async function ActionCinemaPage() {
+export default async function ActionFitPage() {
   let articles: Article[] = [];
   try {
-    const res = await getArticles({ section: 'action-cinema', limit: 12 });
+    const res = await getArticles({ section: 'action-fit', limit: 12 });
     articles = res.articles;
   } catch {
     articles = [];
@@ -21,22 +21,20 @@ export default async function ActionCinemaPage() {
 
   return (
     <>
-      {/* هدر */}
       <section className="bg-dark-light border-b border-white/10">
         <div className="max-w-7xl mx-auto px-4 py-12">
           <div className="flex items-center gap-3 mb-4">
-            <span className="text-4xl">🎬</span>
+            <span className="text-4xl">💪</span>
             <h1 className="text-3xl md:text-4xl font-black text-white">
-              اکشن <span className="text-primary">نما</span>
+              اکشن <span className="text-primary">فیت</span>
             </h1>
           </div>
           <p className="text-gray-custom max-w-2xl leading-7">
-            نقد و بررسی تخصصی فیلم‌ها و سریال‌های اکشن - معرفی آثار جدید، تریلرها و دسته‌بندی فیلم‌ها
+            برنامه‌های تمرینی، تغذیه ورزشی و سلامت جسم و روان
           </p>
         </div>
       </section>
 
-      {/* مقالات */}
       <section className="max-w-7xl mx-auto px-4 py-8">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {articles.length > 0 ? (

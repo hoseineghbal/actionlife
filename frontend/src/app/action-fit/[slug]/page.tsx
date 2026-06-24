@@ -15,7 +15,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const { slug } = await params;
     const article = await getArticleBySlug(slug);
     return {
-      title: article.metaTitle || `${article.title} | اکشن گیم`,
+      title: article.metaTitle || `${article.title} | اکشن فیت`,
       description: article.metaDescription || article.excerpt,
       openGraph: {
         title: article.metaTitle || article.title,
@@ -24,7 +24,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       },
     };
   } catch {
-    return { title: "مقاله | اکشن گیم", description: "نقد و بررسی بازی‌های اکشن" };
+    return { title: "مقاله | اکشن فیت", description: "تناسب اندام و ورزش" };
   }
 }
 
@@ -34,13 +34,13 @@ function readingTime(content: string): number {
   return Math.max(1, Math.ceil(words / 250));
 }
 
-export default async function GameArticlePage({ params }: Props) {
+export default async function FitArticlePage({ params }: Props) {
   const { slug } = await params;
 
   let article;
   try {
     article = await getArticleBySlug(slug);
-    if (article.section !== 'action-game') notFound();
+    if (article.section !== 'action-fit') notFound();
   } catch {
     notFound();
   }
@@ -52,14 +52,14 @@ export default async function GameArticlePage({ params }: Props) {
       <nav className="flex flex-wrap items-center gap-2 text-sm text-gray-custom mb-8">
         <Link href="/" className="hover:text-white transition-colors">خانه</Link>
         <span>/</span>
-        <Link href="/action-game" className="hover:text-white transition-colors">اکشن گیم</Link>
+        <Link href="/action-fit" className="hover:text-white transition-colors">اکشن فیت</Link>
         <span>/</span>
         <span className="text-white truncate max-w-[200px]">{article.title}</span>
       </nav>
 
       <header className="mb-8">
         <div className="flex flex-wrap items-center gap-2 mb-4">
-          <span className="inline-block px-3 py-1 text-xs gradient-primary text-white rounded-md">اکشن گیم 🎮</span>
+          <span className="inline-block px-3 py-1 text-xs gradient-primary text-white rounded-md">اکشن فیت 💪</span>
           {article.isFeatured && (
             <span className="inline-block px-3 py-1 text-xs bg-yellow-600/20 text-yellow-400 rounded-md">ویژه</span>
           )}
@@ -91,7 +91,7 @@ export default async function GameArticlePage({ params }: Props) {
         </div>
       ) : (
         <div className="aspect-video bg-dark-light border border-white/10 rounded-xl mb-8 flex items-center justify-center">
-          <span className="text-6xl">🎮</span>
+          <span className="text-6xl">💪</span>
         </div>
       )}
 

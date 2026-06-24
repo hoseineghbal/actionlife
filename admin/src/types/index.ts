@@ -87,3 +87,63 @@ export interface AuthResponse {
     role: string;
   };
 }
+
+export interface Category {
+  _id: string;
+  name: string;
+  slug: string;
+  description?: string;
+  image?: string;
+  parent?: string | { _id: string; name: string; slug: string };
+  order: number;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface GalleryImage {
+  url: string;
+  alt?: string;
+  caption?: string;
+  order?: number;
+}
+
+export interface VideoEmbed {
+  url: string;
+  title?: string;
+  thumbnail?: string;
+  duration?: string;
+  source?: 'upload' | 'youtube' | 'aparat';
+  videoId?: string;
+  order?: number;
+}
+
+export interface ArticleAttachment {
+  url: string;
+  filename: string;
+  mimeType?: string;
+  size?: number;
+}
+
+export interface Article {
+  _id: string;
+  title: string;
+  slug: string;
+  excerpt: string;
+  content: string;
+  featuredImage?: string;
+  gallery?: GalleryImage[];
+  videos?: VideoEmbed[];
+  attachments?: ArticleAttachment[];
+  section: string;
+  categories: { _id: string; name: string; slug: string }[];
+  tags: string[];
+  author: { _id: string; fullName: string; avatar?: string };
+  status: 'draft' | 'published' | 'archived';
+  views: number;
+  metaTitle?: string;
+  metaDescription?: string;
+  isFeatured: boolean;
+  createdAt: string;
+  updatedAt: string;
+}

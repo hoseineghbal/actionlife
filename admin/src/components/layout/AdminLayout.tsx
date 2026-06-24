@@ -4,6 +4,8 @@ import { useAuth } from '../../lib/auth-context';
 
 const navItems = [
   { to: '/', label: 'داشبورد', icon: '📊' },
+  { to: '/articles', label: 'مقالات', icon: '📝' },
+  { to: '/categories', label: 'دسته‌بندی‌ها', icon: '📂' },
   { to: '/users', label: 'کاربران', icon: '👥' },
   { to: '/tickets', label: 'تیکت‌ها', icon: '🎫' },
   { to: '/contacts', label: 'تماس با ما', icon: '📩' },

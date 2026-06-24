@@ -7,6 +7,9 @@ import Users from './pages/Users';
 import Tickets from './pages/Tickets';
 import TicketChat from './pages/TicketChat';
 import Contacts from './pages/Contacts';
+import Categories from './pages/Categories';
+import Articles from './pages/Articles';
+import ArticleForm from './pages/ArticleForm';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, isLoading } = useAuth();
@@ -49,6 +52,10 @@ function AppRoutes() {
         <Route path="/tickets" element={<Tickets />} />
         <Route path="/tickets/:id" element={<TicketChat />} />
         <Route path="/contacts" element={<Contacts />} />
+        <Route path="/categories" element={<Categories />} />
+        <Route path="/articles" element={<Articles />} />
+        <Route path="/articles/new" element={<ArticleForm />} />
+        <Route path="/articles/:id" element={<ArticleForm />} />
       </Route>
     </Routes>
   );

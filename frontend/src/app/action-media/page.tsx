@@ -1,0 +1,24 @@
+import type { Metadata } from "next";
+import Link from "next/link";
+
+export const metadata: Metadata = {
+  title: "اکشن مدیا | ویدیوها و پادکست‌ها",
+  description: "ویدیوها، پادکست‌ها، مصاحبه‌ها و مستندهای سبک زندگی اکشن",
+};
+
+export default function ActionMediaPage() {
+  return (
+    <section className="max-w-7xl mx-auto px-4 py-12">
+      <div className="flex items-center gap-3 mb-4">
+        <span className="text-4xl">📹</span>
+        <h1 className="text-3xl md:text-4xl font-black text-white">
+          اکشن <span className="text-primary">مدیا</span>
+        </h1>
+      </div>
+      <p className="text-gray-custom max-w-2xl leading-7 mb-8">
+        به زودی ویدیوها، پادکست‌ها و مستندهای اختصاصی اکشن لایف در این بخش منتشر خواهد شد.
+      </p>
+      <Link href="/" className="text-primary hover:underline text-sm">بازگشت به خانه ←</Link>
+    </section>
+  );
+}

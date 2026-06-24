@@ -18,6 +18,57 @@ export enum ArticleStatus {
   ARCHIVED = 'archived',
 }
 
+export class GalleryImage {
+  @Prop({ required: true })
+  url: string;
+
+  @Prop()
+  alt: string;
+
+  @Prop()
+  caption: string;
+
+  @Prop({ default: 0 })
+  order: number;
+}
+
+export class VideoEmbed {
+  @Prop({ required: true })
+  url: string;
+
+  @Prop()
+  title: string;
+
+  @Prop()
+  thumbnail: string;
+
+  @Prop()
+  duration: string;
+
+  @Prop({ default: 'upload' })
+  source: 'upload' | 'youtube' | 'aparat';
+
+  @Prop()
+  videoId: string;
+
+  @Prop({ default: 0 })
+  order: number;
+}
+
+export class ArticleAttachment {
+  @Prop({ required: true })
+  url: string;
+
+  @Prop({ required: true })
+  filename: string;
+
+  @Prop()
+  mimeType: string;
+
+  @Prop()
+  size: number;
+}
+
 @Schema({ timestamps: true })
 export class Article {
   @Prop({ required: true })
@@ -34,6 +85,15 @@ export class Article {
 
   @Prop()
   featuredImage: string;
+
+  @Prop({ type: [GalleryImage], default: [] })
+  gallery: GalleryImage[];
+
+  @Prop({ type: [VideoEmbed], default: [] })
+  videos: VideoEmbed[];
+
+  @Prop({ type: [ArticleAttachment], default: [] })
+  attachments: ArticleAttachment[];
 
   @Prop({ type: String, enum: ArticleSection, required: true })
   section: ArticleSection;

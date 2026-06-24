@@ -8,6 +8,7 @@ import { CategoriesModule } from './categories/categories.module';
 import { ContactModule } from './contact/contact.module';
 import { TicketsModule } from './tickets/tickets.module';
 import { AnalyticsModule } from './analytics/analytics.module';
+import { UploadModule } from './upload/upload.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { AnalyticsModule } from './analytics/analytics.module';
     ContactModule,
     TicketsModule,
     AnalyticsModule,
+    UploadModule,
   ],
 })
 export class AppModule {}

@@ -25,7 +25,8 @@ export class ArticlesService {
     limit?: number;
     featured?: boolean;
   }): Promise<{ articles: ArticleDocument[]; total: number }> {
-    const { section, status = ArticleStatus.PUBLISHED, page = 1, limit = 10, featured } = query;
+    const { section, status: rawStatus, page = 1, limit = 10, featured } = query;
+    const status = rawStatus || ArticleStatus.PUBLISHED;
     const filter: Record<string, unknown> = { status };
     if (section) filter.section = section;
     if (featured !== undefined) filter.isFeatured = featured;

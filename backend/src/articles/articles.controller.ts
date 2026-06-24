@@ -58,6 +58,11 @@ export class ArticlesController {
     return this.articlesService.getPopular(limit ? parseInt(limit) : 6);
   }
 
+  @Get('by-id/:id')
+  findById(@Param('id') id: string) {
+    return this.articlesService.findById(id);
+  }
+
   @Get(':slug')
   findBySlug(@Param('slug') slug: string) {
     return this.articlesService.findBySlug(slug);

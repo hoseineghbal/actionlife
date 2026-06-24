@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import ArticleCard from "@/components/shared/ArticleCard";
 import Link from "next/link";
+import { getArticles } from "@/lib/api";
+import type { Article } from "@/types";
 
 export const metadata: Metadata = {
   title: "وبلاگ",
@@ -20,58 +22,15 @@ const blogCategories = [
   { label: "ورزش", slug: "sport" },
 ];
 
-const demoArticles = [
-  {
-    title: "سبک زندگی اکشن چیست و چگونه آن را شروع کنیم؟",
-    slug: "what-is-action-lifestyle",
-    excerpt: "آشنایی با مفهوم سبک زندگی اکشن و راه‌های عملی برای شروع این مسیر هیجان‌انگیز",
-    section: "blog" as const,
-    author: { fullName: "تیم اکشن لایف" },
-    createdAt: "2026-06-17T10:00:00Z",
-  },
-  {
-    title: "۱۰ عادت روزانه افراد ماجراجو",
-    slug: "10-daily-habits-adventurers",
-    excerpt: "عادت‌هایی که افراد ماجراجو هر روز تمرین می‌کنند و شما هم می‌توانید",
-    section: "blog" as const,
-    author: { fullName: "تیم اکشن لایف" },
-    createdAt: "2026-06-15T10:00:00Z",
-  },
-  {
-    title: "تجهیزات ضروری طبیعت‌گردی برای مبتدیان",
-    slug: "essential-hiking-gear-beginners",
-    excerpt: "لیست کامل تجهیزاتی که برای اولین سفر طبیعت‌گردی خود نیاز دارید",
-    section: "blog" as const,
-    author: { fullName: "تیم اکشن لایف" },
-    createdAt: "2026-06-12T10:00:00Z",
-  },
-  {
-    title: "مقایسه PS5 Pro و Xbox Series X: کدام برای گیمرهای اکشن بهتر است؟",
-    slug: "ps5-pro-vs-xbox-series-x-action-gamers",
-    excerpt: "بررسی تخصصی دو کنسول برتر بازار برای بازی‌های اکشن",
-    section: "blog" as const,
-    author: { fullName: "تیم اکشن لایف" },
-    createdAt: "2026-06-10T10:00:00Z",
-  },
-  {
-    title: "چگونه در خانه تمرین بوشکرفت انجام دهیم؟",
-    slug: "bushcraft-practice-at-home",
-    excerpt: "تکنیک‌ها و تمرین‌های بوشکرفت که می‌توانید بدون رفتن به طبیعت انجام دهید",
-    section: "blog" as const,
-    author: { fullName: "تیم اکشن لایف" },
-    createdAt: "2026-06-08T10:00:00Z",
-  },
-  {
-    title: "برترین فیلم‌های اکشن سال ۲۰۲۶",
-    slug: "top-action-movies-2026",
-    excerpt: "معرفی و رتبه‌بندی بهترین فیلم‌های اکشن امسال که حتماً باید ببینید",
-    section: "blog" as const,
-    author: { fullName: "تیم اکشن لایف" },
-    createdAt: "2026-06-05T10:00:00Z",
-  },
-];
+export default async function BlogPage() {
+  let articles: Article[] = [];
+  try {
+    const res = await getArticles({ limit: 12 });
+    articles = res.articles;
+  } catch {
+    articles = [];
+  }
 
-export default function BlogPage() {
   return (
     <>
       {/* هدر صفحه */}
@@ -108,9 +67,15 @@ export default function BlogPage() {
       {/* مقالات */}
       <section className="max-w-7xl mx-auto px-4 py-8">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {demoArticles.map((article) => (
-            <ArticleCard key={article.slug} {...article} />
-          ))}
+          {articles.length > 0 ? (
+            articles.map((article) => (
+              <ArticleCard key={article._id} {...article} />
+            ))
+          ) : (
+            <p className="text-gray-custom col-span-full text-center py-12">
+              هنوز مقاله‌ای منتشر نشده است.
+            </p>
+          )}
         </div>
 
         {/* صفحه‌بندی */}

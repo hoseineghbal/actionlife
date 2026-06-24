@@ -4,9 +4,89 @@ import {
   IsOptional,
   IsString,
   IsBoolean,
+  IsNumber,
+  ValidateNested,
 } from 'class-validator';
+import { Type } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { ArticleSection, ArticleStatus } from '../schemas/article.schema';
+
+export class GalleryImageDto {
+  @ApiProperty()
+  @IsString()
+  url: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  alt?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  caption?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsNumber()
+  order?: number;
+}
+
+export class VideoEmbedDto {
+  @ApiProperty()
+  @IsString()
+  url: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  title?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  thumbnail?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  duration?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  source?: 'upload' | 'youtube' | 'aparat';
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  videoId?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsNumber()
+  order?: number;
+}
+
+export class ArticleAttachmentDto {
+  @ApiProperty()
+  @IsString()
+  url: string;
+
+  @ApiProperty()
+  @IsString()
+  filename: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  mimeType?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsNumber()
+  size?: number;
+}
 
 export class CreateArticleDto {
   @ApiProperty()
@@ -29,6 +109,27 @@ export class CreateArticleDto {
   @IsOptional()
   @IsString()
   featuredImage?: string;
+
+  @ApiPropertyOptional({ type: [GalleryImageDto] })
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => GalleryImageDto)
+  gallery?: GalleryImageDto[];
+
+  @ApiPropertyOptional({ type: [VideoEmbedDto] })
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => VideoEmbedDto)
+  videos?: VideoEmbedDto[];
+
+  @ApiPropertyOptional({ type: [ArticleAttachmentDto] })
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => ArticleAttachmentDto)
+  attachments?: ArticleAttachmentDto[];
 
   @ApiProperty({ enum: ArticleSection })
   @IsEnum(ArticleSection)
