@@ -38,7 +38,10 @@ export async function runSeed(app: any) {
   }
 
   if (admin) {
-    console.log('✅ ادمین از قبل وجود دارد:', admin.mobile || 'admin@actionlife.ir');
+    console.log(
+      '✅ ادمین از قبل وجود دارد:',
+      admin.mobile || 'admin@actionlife.ir',
+    );
   } else {
     admin = await usersService.create({
       fullName: 'مدیر سایت',
@@ -362,22 +365,22 @@ export async function runSeed(app: any) {
       tags: ['سبک زندگی', 'اکشن', 'ماجراجویی', 'سلامت', 'ورزش'],
       isFeatured: true,
       featuredImage:
-        'https://images.unsplash.com/photo-1551632811-561732d1e306?w=1200',
+        'https://dummyimage.com/1200x630/2d4059/ffffff&text=Action+Life',
       gallery: [
         {
-          url: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=800',
+          url: 'https://dummyimage.com/800x600/ea5455/ffffff&text=Nature+Adventure',
           alt: 'ماجراجویی در طبیعت',
           caption: 'یک روز ماجراجویانه در دل طبیعت',
           order: 0,
         },
         {
-          url: 'https://images.unsplash.com/photo-1522163182402-834f871fd851?w=800',
+          url: 'https://dummyimage.com/800x600/ffa822/ffffff&text=Mountaineering',
           alt: 'کوهنوردی',
           caption: 'کوهنوردی یکی از بهترین فعالیت‌های اکشن',
           order: 1,
         },
         {
-          url: 'https://images.unsplash.com/photo-1530541930197-ff16ac917b0e?w=800',
+          url: 'https://dummyimage.com/800x600/0f3460/ffffff&text=Cycling',
           alt: 'دوچرخه‌سواری',
           caption: 'دوچرخه‌سواری در مسیرهای طبیعی',
           order: 2,
@@ -385,13 +388,12 @@ export async function runSeed(app: any) {
       ],
       videos: [
         {
-          url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+          url: 'https://www.aparat.com/v/zwp0wv7',
           title: 'معرفی سبک زندگی اکشن',
-          source: 'youtube',
+          source: 'aparat',
           order: 0,
         },
       ],
-      attachments: [],
     },
     {
       title: '۱۰ عادت روزانه افراد ماجراجو',
@@ -415,7 +417,7 @@ export async function runSeed(app: any) {
       tags: ['عادت', 'ماجراجویی', 'توسعه فردی', 'روتین'],
       isFeatured: false,
       featuredImage:
-        'https://images.unsplash.com/photo-1551632811-561732d1e306?w=1200',
+        'https://dummyimage.com/1200x630/2d4059/ffffff&text=Action+Life',
       gallery: [],
       videos: [],
       attachments: [],
@@ -441,16 +443,16 @@ export async function runSeed(app: any) {
       tags: ['طبیعت‌گردی', 'تجهیزات', 'کمپینگ', 'مبتدی'],
       isFeatured: true,
       featuredImage:
-        'https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?w=1200',
+        'https://dummyimage.com/1200x630/1a1a2e/ffffff&text=Hiking+Gear',
       gallery: [
         {
-          url: 'https://images.unsplash.com/photo-1559521783-1d1599583485?w=800',
+          url: 'https://dummyimage.com/800x600/16213e/ffffff&text=Backpack',
           alt: 'کوله‌پشتی کوهنوردی',
           caption: 'کوله‌پشتی مناسب برای طبیعت‌گردی',
           order: 0,
         },
         {
-          url: 'https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=800',
+          url: 'https://dummyimage.com/800x600/533483/ffffff&text=Hiking+Shoes',
           alt: 'کفش کوهنوردی',
           caption: 'کفش مناسب طبیعت‌گردی',
           order: 1,
@@ -458,9 +460,9 @@ export async function runSeed(app: any) {
       ],
       videos: [
         {
-          url: 'https://youtu.be/dQw4w9WgXcQ',
+          url: 'https://www.aparat.com/v/qyb625c',
           title: 'راهنمای خرید تجهیزات طبیعت‌گردی',
-          source: 'youtube',
+          source: 'aparat',
           order: 0,
         },
       ],
@@ -500,7 +502,7 @@ export async function runSeed(app: any) {
       tags: ['فیلم', 'اکشن', 'سینما', '۲۰۲۶', 'برترین'],
       isFeatured: true,
       featuredImage:
-        'https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=1200',
+        'https://dummyimage.com/1200x630/e94560/ffffff&text=Action+Movies',
       gallery: [],
       videos: [],
       attachments: [],
@@ -523,7 +525,7 @@ export async function runSeed(app: any) {
       tags: ['PS5', 'Xbox', 'کنسول', 'گیمینگ', 'مقایسه'],
       isFeatured: false,
       featuredImage:
-        'https://images.unsplash.com/photo-1605901309584-818e25960a8f?w=1200',
+        'https://dummyimage.com/1200x630/2d4059/ffffff&text=PS5+vs+Xbox',
       gallery: [],
       videos: [],
       attachments: [],
@@ -571,7 +573,7 @@ export async function runSeed(app: any) {
       tags: ['John Wick', 'فیلم', 'اکشن', 'کیانو ریوز', 'نقد'],
       isFeatured: true,
       featuredImage:
-        'https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=1200',
+        'https://dummyimage.com/1200x630/e94560/ffffff&text=Action+Movies',
       gallery: [],
       videos: [],
       attachments: [],
@@ -594,7 +596,7 @@ export async function runSeed(app: any) {
       tags: ['تام کروز', 'بیوگرافی', 'سینما', 'بدلکاری'],
       isFeatured: false,
       featuredImage:
-        'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=1200',
+        'https://dummyimage.com/1200x630/ea5455/ffffff&text=Tom+Cruise',
       gallery: [],
       videos: [],
       attachments: [],
@@ -618,7 +620,7 @@ export async function runSeed(app: any) {
       tags: ['GTA 6', 'بازی', 'راکستار', 'معرفی'],
       isFeatured: true,
       featuredImage:
-        'https://images.unsplash.com/photo-1493711662062-fa541adb3fc8?w=1200',
+        'https://dummyimage.com/1200x630/ffa822/ffffff&text=GTA+6',
       gallery: [],
       videos: [],
       attachments: [],
@@ -667,13 +669,13 @@ export async function runSeed(app: any) {
       tags: ['دبی', 'سفر', 'ماجراجویی', 'آفرود'],
       isFeatured: true,
       featuredImage:
-        'https://images.unsplash.com/photo-1512453979798-5ea266f8880c?w=1200',
+        'https://dummyimage.com/1200x630/0f3460/ffffff&text=Dubai',
       gallery: [],
       videos: [
         {
-          url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+          url: 'https://www.aparat.com/v/pib0691',
           title: 'تجربه اسکای‌دایوینگ در دبی',
-          source: 'youtube',
+          source: 'aparat',
           order: 0,
         },
       ],
@@ -701,16 +703,16 @@ export async function runSeed(app: any) {
       tags: ['کویر', 'مرنجاب', 'سفر', 'ایران', 'ماجراجویی'],
       isFeatured: true,
       featuredImage:
-        'https://images.unsplash.com/photo-1509316785289-025f5b846b35?w=1200',
+        'https://dummyimage.com/1200x630/1a1a2e/ffffff&text=Maranjab+Desert',
       gallery: [
         {
-          url: 'https://images.unsplash.com/photo-1509316785289-025f5b846b35?w=800',
+          url: 'https://dummyimage.com/800x600/16213e/ffffff&text=Desert+Night',
           alt: 'کویر در شب',
           caption: 'شب پرستاره در کویر',
           order: 0,
         },
         {
-          url: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800',
+          url: 'https://dummyimage.com/800x600/533483/ffffff&text=Sand+Dunes',
           alt: 'تپه‌های شنی',
           caption: 'تپه‌های شنی طلایی',
           order: 1,
@@ -739,13 +741,13 @@ export async function runSeed(app: any) {
       tags: ['تمرین', 'برنامه', 'مبتدی', 'فیتنس', 'سلامت'],
       isFeatured: true,
       featuredImage:
-        'https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=1200',
+        'https://dummyimage.com/1200x630/16213e/ffffff&text=30+Day+Workout',
       gallery: [],
       videos: [
         {
-          url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+          url: 'https://www.aparat.com/v/zwp0wv7',
           title: 'تمرین کامل ۲۰ دقیقه‌ای',
-          source: 'youtube',
+          source: 'aparat',
           order: 0,
         },
       ],
@@ -804,9 +806,9 @@ export async function runSeed(app: any) {
     };
 
     // Add optional media arrays
-    if (def.gallery.length > 0) articleData.gallery = def.gallery;
-    if (def.videos.length > 0) articleData.videos = def.videos;
-    if (def.attachments.length > 0) articleData.attachments = def.attachments;
+    if (def.gallery && def.gallery.length > 0) articleData.gallery = def.gallery;
+    if (def.videos && def.videos.length > 0) articleData.videos = def.videos;
+    if (def.attachments && def.attachments.length > 0) articleData.attachments = def.attachments;
 
     try {
       await articleModel.findOneAndUpdate(
@@ -817,9 +819,9 @@ export async function runSeed(app: any) {
       articleCount++;
       console.log(
         `📄 "${def.title}" ایجاد شد` +
-          (def.gallery.length > 0 ? ` 🖼️${def.gallery.length}` : '') +
-          (def.videos.length > 0 ? ` 🎬${def.videos.length}` : '') +
-          (def.attachments.length > 0 ? ` 📎${def.attachments.length}` : ''),
+          (def.gallery && def.gallery.length > 0 ? ` 🖼️${def.gallery.length}` : '') +
+          (def.videos && def.videos.length > 0 ? ` 🎬${def.videos.length}` : '') +
+          (def.attachments && def.attachments.length > 0 ? ` 📎${def.attachments.length}` : ''),
       );
     } catch (err: any) {
       if (err.code === 11000) {
