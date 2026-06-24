@@ -74,9 +74,10 @@ export interface ContactForm {
 export interface User {
   id: string;
   fullName: string;
-  email: string;
+  mobile: string;
+  countryCode?: string;
   role: string;
-  mobile?: string;
+  email?: string;
   avatar?: string;
   bio?: string;
   birthDate?: string;
@@ -97,6 +98,21 @@ export interface User {
 export interface AuthResponse {
   access_token: string;
   user: User;
+}
+
+export interface RegisterResponse {
+  message: string;
+  mobile: string;
+  countryCode: string;
+  otp?: string;
+}
+
+export interface LoginResponse extends AuthResponse {
+  needsVerification?: boolean;
+  message?: string;
+  mobile?: string;
+  countryCode?: string;
+  otp?: string;
 }
 
 export type ArticleSection =

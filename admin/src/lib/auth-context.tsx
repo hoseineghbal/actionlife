@@ -5,7 +5,7 @@ import type { AuthResponse } from '../types';
 interface AuthContextType {
   user: AuthResponse['user'] | null;
   token: string | null;
-  login: (email: string, password: string) => Promise<void>;
+  login: (mobile: string, password: string, countryCode?: string) => Promise<void>;
   logout: () => void;
   isLoading: boolean;
 }
@@ -27,8 +27,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIsLoading(false);
   }, []);
 
-  const login = async (email: string, password: string) => {
-    const res = await api.post<AuthResponse>('/auth/login', { email, password });
+  const login = async (mobile: string, password: string, countryCode = '+98') => {
+    const res = await api.post<AuthResponse>('/auth/login', { mobile, password, countryCode });
     const { access_token, user: userData } = res.data;
     if (userData.role !== 'admin') {
       throw new Error('دسترسی ادمین ندارید');

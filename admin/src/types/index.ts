@@ -1,8 +1,9 @@
 export interface User {
   _id: string;
   fullName: string;
-  email: string;
-  mobile?: string;
+  mobile: string;
+  countryCode?: string;
+  email?: string;
   role: string;
   avatar?: string;
   bio?: string;
@@ -83,7 +84,8 @@ export interface AuthResponse {
   user: {
     id: string;
     fullName: string;
-    email: string;
+    mobile: string;
+    countryCode?: string;
     role: string;
   };
 }

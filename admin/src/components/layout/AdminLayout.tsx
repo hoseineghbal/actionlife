@@ -56,7 +56,7 @@ export default function AdminLayout() {
           </div>
           <div>
             <p className="text-sm font-medium">{user?.fullName}</p>
-            <p className="text-xs text-indigo-300">{user?.email}</p>
+            <p className="text-xs text-indigo-300" dir="ltr">{user?.countryCode} {user?.mobile}</p>
           </div>
         </div>
         <button

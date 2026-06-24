@@ -149,7 +149,7 @@ export default function Users() {
   const filtered = users.filter(
     (u) =>
       u.fullName.toLowerCase().includes(search.toLowerCase()) ||
-      u.email.toLowerCase().includes(search.toLowerCase()) ||
+      (u.email && u.email.toLowerCase().includes(search.toLowerCase())) ||
       (u.mobile && u.mobile.includes(search))
   );
 

@@ -58,17 +58,31 @@ export async function submitContact(data: import('@/types').ContactForm) {
   });
 }
 
-export async function login(email: string, password: string) {
-  return fetchAPI<import('@/types').AuthResponse>('/auth/login', {
+export async function login(mobile: string, password: string, countryCode = '+98') {
+  return fetchAPI<import('@/types').LoginResponse>('/auth/login', {
     method: 'POST',
-    body: JSON.stringify({ email, password }),
+    body: JSON.stringify({ mobile, password, countryCode }),
   });
 }
 
-export async function register(fullName: string, email: string, password: string) {
-  return fetchAPI<import('@/types').AuthResponse>('/auth/register', {
+export async function register(fullName: string, mobile: string, password: string, countryCode = '+98') {
+  return fetchAPI<import('@/types').RegisterResponse>('/auth/register', {
     method: 'POST',
-    body: JSON.stringify({ fullName, email, password }),
+    body: JSON.stringify({ fullName, mobile, password, countryCode }),
+  });
+}
+
+export async function sendOtp(mobile: string, countryCode = '+98') {
+  return fetchAPI<{ message: string; mobile: string; countryCode: string; otp?: string }>('/auth/send-otp', {
+    method: 'POST',
+    body: JSON.stringify({ mobile, countryCode }),
+  });
+}
+
+export async function verifyOtp(mobile: string, code: string, countryCode = '+98') {
+  return fetchAPI<import('@/types').AuthResponse>('/auth/verify-otp', {
+    method: 'POST',
+    body: JSON.stringify({ mobile, code, countryCode }),
   });
 }
 

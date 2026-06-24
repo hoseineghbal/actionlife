@@ -9,6 +9,7 @@ import { ContactModule } from './contact/contact.module';
 import { TicketsModule } from './tickets/tickets.module';
 import { AnalyticsModule } from './analytics/analytics.module';
 import { UploadModule } from './upload/upload.module';
+import { OtpModule } from './otp/otp.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { UploadModule } from './upload/upload.module';
     TicketsModule,
     AnalyticsModule,
     UploadModule,
+    OtpModule,
   ],
 })
 export class AppModule {}

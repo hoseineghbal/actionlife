@@ -7,14 +7,19 @@ export class CreateUserDto {
   @IsString()
   fullName: string;
 
-  @ApiProperty({ description: 'ایمیل' })
-  @IsEmail()
-  email: string;
+  @ApiProperty({ description: 'شماره موبایل' })
+  @IsString()
+  mobile: string;
 
-  @ApiPropertyOptional({ description: 'موبایل' })
+  @ApiPropertyOptional({ description: 'کد کشور', default: '+98' })
   @IsOptional()
   @IsString()
-  mobile?: string;
+  countryCode?: string;
+
+  @ApiPropertyOptional({ description: 'ایمیل' })
+  @IsOptional()
+  @IsEmail()
+  email?: string;
 
   @ApiProperty({ description: 'رمز عبور', minLength: 6 })
   @IsString()

@@ -29,38 +29,26 @@ export async function runSeed(app: any) {
   const articleModel = app.get(getModelToken(Article.name)) as Model<Article>;
 
   // 1. Create or find admin user
-  const adminEmail = 'admin@actionlife.ir';
-  let admin = await usersService.findByEmail(adminEmail);
+  const adminMobile = '9125758405';
+  let admin = await usersService.findByMobile(adminMobile);
+
+  // Backward compatibility: check old email-based admin too
+  if (!admin) {
+    admin = await usersService.findByEmail('admin@actionlife.ir');
+  }
+
   if (admin) {
-    console.log('✅ ادمین از قبل وجود دارد:', adminEmail);
+    console.log('✅ ادمین از قبل وجود دارد:', admin.mobile || 'admin@actionlife.ir');
   } else {
     admin = await usersService.create({
       fullName: 'مدیر سایت',
-      email: adminEmail,
+      mobile: adminMobile,
+      countryCode: '+98',
       password: 'Admin@1234',
     });
     admin.role = UserRole.ADMIN;
     await admin.save();
-    console.log('✅ ادمین ساخته شد:', adminEmail);
-
-    // Create additional users
-    const editorUser = await usersService.create({
-      fullName: 'سردبیر تیم',
-      email: 'editor@actionlife.ir',
-      password: 'Editor@1234',
-    });
-    editorUser.role = UserRole.EDITOR;
-    await editorUser.save();
-    console.log('✅ سردبیر ساخته شد');
-
-    const authorUser = await usersService.create({
-      fullName: 'نویسنده محتوا',
-      email: 'author@actionlife.ir',
-      password: 'Author@1234',
-    });
-    authorUser.role = UserRole.AUTHOR;
-    await authorUser.save();
-    console.log('✅ نویسنده ساخته شد');
+    console.log('✅ ادمین ساخته شد:', adminMobile);
   }
 
   const authorId = admin._id.toString();

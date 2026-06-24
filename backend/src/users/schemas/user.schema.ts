@@ -17,11 +17,14 @@ export class User {
   @Prop({ required: true })
   fullName: string;
 
-  @Prop({ required: true, unique: true })
+  @Prop()
   email: string;
 
-  @Prop()
+  @Prop({ required: true, unique: true })
   mobile: string;
+
+  @Prop({ default: '+98' })
+  countryCode: string;
 
   @Prop({ required: true })
   password: string;

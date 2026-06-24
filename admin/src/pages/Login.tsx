@@ -2,8 +2,22 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../lib/auth-context';
 
+const COUNTRY_CODES = [
+  { code: '+98', flag: '🇮🇷', label: 'ایران' },
+  { code: '+1', flag: '🇺🇸', label: 'آمریکا' },
+  { code: '+44', flag: '🇬🇧', label: 'انگلیس' },
+  { code: '+971', flag: '🇦🇪', label: 'امارات' },
+  { code: '+966', flag: '🇸🇦', label: 'عربستان' },
+  { code: '+49', flag: '🇩🇪', label: 'آلمان' },
+  { code: '+33', flag: '🇫🇷', label: 'فرانسه' },
+  { code: '+93', flag: '🇦🇫', label: 'افغانستان' },
+  { code: '+964', flag: '🇮🇶', label: 'عراق' },
+  { code: '+90', flag: '🇹🇷', label: 'ترکیه' },
+];
+
 export default function Login() {
-  const [email, setEmail] = useState('');
+  const [countryCode, setCountryCode] = useState('+98');
+  const [mobile, setMobile] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -15,7 +29,7 @@ export default function Login() {
     setError('');
     setLoading(true);
     try {
-      await login(email, password);
+      await login(mobile, password, countryCode);
       navigate('/');
     } catch (err: any) {
       setError(err.response?.data?.message || err.message || 'خطا در ورود');
@@ -41,16 +55,30 @@ export default function Login() {
         <form onSubmit={handleSubmit} className="space-y-5">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              ایمیل
+              شماره موبایل
             </label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition"
-              placeholder="admin@actionlife.ir"
-              required
-            />
+            <div className="flex gap-2" dir="ltr">
+              <select
+                value={countryCode}
+                onChange={(e) => setCountryCode(e.target.value)}
+                className="px-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition appearance-none cursor-pointer"
+              >
+                {COUNTRY_CODES.map((c) => (
+                  <option key={c.code} value={c.code}>
+                    {c.flag} {c.code}
+                  </option>
+                ))}
+              </select>
+              <input
+                type="tel"
+                value={mobile}
+                onChange={(e) => setMobile(e.target.value.replace(/[^0-9]/g, ''))}
+                className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition"
+                placeholder="9123456789"
+                dir="ltr"
+                required
+              />
+            </div>
           </div>
 
           <div>

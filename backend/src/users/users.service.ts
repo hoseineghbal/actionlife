@@ -10,16 +10,21 @@ export class UsersService {
   constructor(@InjectModel(User.name) private userModel: Model<UserDocument>) {}
 
   async create(createUserDto: CreateUserDto): Promise<UserDocument> {
-    const existing = await this.userModel.findOne({ email: createUserDto.email });
+    const existing = await this.userModel.findOne({ mobile: createUserDto.mobile, countryCode: createUserDto.countryCode || '+98' });
     if (existing) {
-      throw new ConflictException('این ایمیل قبلاً ثبت شده است');
+      throw new ConflictException('این شماره موبایل قبلاً ثبت شده است');
     }
     const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
     const user = new this.userModel({
       ...createUserDto,
+      countryCode: createUserDto.countryCode || '+98',
       password: hashedPassword,
     });
     return user.save();
+  }
+
+  async findByMobile(mobile: string): Promise<UserDocument | null> {
+    return this.userModel.findOne({ mobile });
   }
 
   async findByEmail(email: string): Promise<UserDocument | null> {

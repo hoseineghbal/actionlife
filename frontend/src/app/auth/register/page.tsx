@@ -4,13 +4,25 @@ import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { register as registerApi } from "@/lib/api";
-import { useAuth } from "@/lib/auth-context";
+
+const COUNTRY_CODES = [
+  { code: '+98', flag: '🇮🇷', label: 'ایران' },
+  { code: '+1', flag: '🇺🇸', label: 'آمریکا' },
+  { code: '+44', flag: '🇬🇧', label: 'انگلیس' },
+  { code: '+971', flag: '🇦🇪', label: 'امارات' },
+  { code: '+966', flag: '🇸🇦', label: 'عربستان' },
+  { code: '+49', flag: '🇩🇪', label: 'آلمان' },
+  { code: '+33', flag: '🇫🇷', label: 'فرانسه' },
+  { code: '+93', flag: '🇦🇫', label: 'افغانستان' },
+  { code: '+964', flag: '🇮🇶', label: 'عراق' },
+  { code: '+90', flag: '🇹🇷', label: 'ترکیه' },
+];
 
 export default function RegisterPage() {
   const router = useRouter();
-  const { login } = useAuth();
   const [fullName, setFullName] = useState("");
-  const [email, setEmail] = useState("");
+  const [countryCode, setCountryCode] = useState("+98");
+  const [mobile, setMobile] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
@@ -30,14 +42,19 @@ export default function RegisterPage() {
       return;
     }
 
+    if (!mobile.trim()) {
+      setError("شماره موبایل را وارد کنید");
+      return;
+    }
+
     setLoading(true);
 
     try {
-      const res = await registerApi(fullName, email, password);
-      login(res.access_token, res.user);
-      router.push("/");
+      const res = await registerApi(fullName, mobile, password, countryCode);
+      // Redirect to verification page
+      router.push(`/auth/verify?mobile=${mobile}&countryCode=${countryCode}`);
     } catch {
-      setError("خطا در ثبت نام. ممکن است این ایمیل قبلاً ثبت شده باشد.");
+      setError("خطا در ثبت نام. ممکن است این شماره قبلاً ثبت شده باشد.");
     } finally {
       setLoading(false);
     }
@@ -77,19 +94,32 @@ export default function RegisterPage() {
             </div>
 
             <div>
-              <label htmlFor="email" className="block text-sm text-gray-custom mb-2">
-                ایمیل
+              <label className="block text-sm text-gray-custom mb-2">
+                شماره موبایل
               </label>
-              <input
-                id="email"
-                type="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-4 py-3 bg-dark border border-white/10 rounded-lg text-white placeholder-gray-custom/50 focus:outline-none focus:border-primary transition-colors"
-                placeholder="example@email.com"
-                dir="ltr"
-              />
+              <div className="flex gap-2" dir="ltr">
+                <select
+                  value={countryCode}
+                  onChange={(e) => setCountryCode(e.target.value)}
+                  className="px-3 py-3 bg-dark border border-white/10 rounded-lg text-white focus:outline-none focus:border-primary transition-colors appearance-none cursor-pointer"
+                >
+                  {COUNTRY_CODES.map((c) => (
+                    <option key={c.code} value={c.code}>
+                      {c.flag} {c.code}
+                    </option>
+                  ))}
+                </select>
+                <input
+                  id="mobile"
+                  type="tel"
+                  required
+                  value={mobile}
+                  onChange={(e) => setMobile(e.target.value.replace(/[^0-9]/g, ''))}
+                  className="flex-1 px-4 py-3 bg-dark border border-white/10 rounded-lg text-white placeholder-gray-custom/50 focus:outline-none focus:border-primary transition-colors"
+                  placeholder="9123456789"
+                  dir="ltr"
+                />
+              </div>
             </div>
 
             <div>
