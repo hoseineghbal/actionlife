@@ -213,7 +213,7 @@ export default function RichTextEditor({ content, onChange, placeholder }: RichT
       <EditorContent editor={editor} />
 
       {editor && (
-        <BubbleMenu editor={editor} tippyOptions={{ duration: 100 }}>
+        <BubbleMenu editor={editor}>
           <div className="flex gap-1 bg-white shadow-lg rounded-lg border p-1">
             <button
               onClick={() => editor.chain().focus().toggleBold().run()}

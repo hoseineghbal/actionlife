@@ -38,8 +38,8 @@ export const metadata: Metadata = {
       "پلتفرم سبک زندگی اکشن - طبیعت‌گردی، بقا، ورزش، گیم، سینما و جامعه کاربران اکشن",
   },
   robots: {
-    index: true,
-    follow: true,
+    index: false,
+    follow: false,
   },
 };
 

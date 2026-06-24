@@ -19,19 +19,35 @@ export class UploadService {
   private s3Client: S3Client | null = null;
   private useS3: boolean;
   private uploadDir: string;
+  private s3Endpoint: string | null = null;
+  private s3Bucket: string;
 
   constructor(private configService: ConfigService) {
     this.useS3 = this.configService.get('S3_ENABLED') === 'true';
     this.uploadDir = this.configService.get('UPLOAD_DIR') || './uploads';
+    this.s3Bucket = this.configService.get('S3_BUCKET') || 'actionlife';
 
     if (this.useS3) {
-      this.s3Client = new S3Client({
-        region: this.configService.get('AWS_REGION') || 'us-east-1',
+      this.s3Endpoint = this.configService.get('S3_ENDPOINT') || null;
+
+      const s3Config: Record<string, unknown> = {
         credentials: {
           accessKeyId: this.configService.get('AWS_ACCESS_KEY_ID') || '',
           secretAccessKey: this.configService.get('AWS_SECRET_ACCESS_KEY') || '',
         },
-      });
+      };
+
+      if (this.s3Endpoint) {
+        // Custom S3-compatible storage (Liara, MinIO, etc.)
+        s3Config.endpoint = this.s3Endpoint;
+        s3Config.region = 'us-east-1'; // required by SDK but ignored by most custom endpoints
+        s3Config.forcePathStyle = false;
+      } else {
+        // AWS S3
+        s3Config.region = this.configService.get('AWS_REGION') || 'us-east-1';
+      }
+
+      this.s3Client = new S3Client(s3Config as any);
     } else {
       if (!fs.existsSync(this.uploadDir)) {
         fs.mkdirSync(this.uploadDir, { recursive: true });
@@ -58,11 +74,8 @@ export class UploadService {
     file: Express.Multer.File,
     key: string,
   ): Promise<UploadResult> {
-    const bucket = this.configService.get('S3_BUCKET');
-    const region = this.configService.get('AWS_REGION') || 'us-east-1';
-
     const command = new PutObjectCommand({
-      Bucket: bucket,
+      Bucket: this.s3Bucket,
       Key: key,
       Body: file.buffer,
       ContentType: file.mimetype,
@@ -71,7 +84,17 @@ export class UploadService {
 
     await this.s3Client!.send(command);
 
-    const url = `https://${bucket}.s3.${region}.amazonaws.com/${key}`;
+    // Generate URL based on endpoint type
+    let url: string;
+    if (this.s3Endpoint) {
+      // Custom S3 endpoint (Liara, MinIO, etc.)
+      const endpointHost = this.s3Endpoint.replace(/^https?:\/\//, '');
+      url = `https://${this.s3Bucket}.${endpointHost}/${key}`;
+    } else {
+      // AWS S3 standard
+      const region = this.configService.get('AWS_REGION') || 'us-east-1';
+      url = `https://${this.s3Bucket}.s3.${region}.amazonaws.com/${key}`;
+    }
 
     return {
       url,
@@ -95,7 +118,8 @@ export class UploadService {
     const writeFile = util.promisify(fs.writeFile);
     await writeFile(filePath, file.buffer);
 
-    const baseUrl = this.configService.get('BASE_URL') || 'http://localhost:3001';
+    const baseUrl =
+      this.configService.get('BASE_URL') || 'http://localhost:3001';
     const url = `${baseUrl}/uploads/${key}`;
 
     return {
@@ -108,18 +132,31 @@ export class UploadService {
 
   async deleteFile(url: string): Promise<void> {
     if (this.useS3 && this.s3Client) {
-      const bucket = this.configService.get('S3_BUCKET');
-      const key = url.split(`${bucket}.s3.`)[1]?.split('.amazonaws.com/')[1];
+      let key: string | undefined;
+
+      if (this.s3Endpoint) {
+        // Custom S3 endpoint URL: https://{bucket}.{endpoint-host}/{key}
+        const endpointHost = this.s3Endpoint.replace(/^https?:\/\//, '');
+        key = url.split(`${this.s3Bucket}.${endpointHost}/`)[1];
+      } else {
+        // AWS S3 URL: https://{bucket}.s3.{region}.amazonaws.com/{key}
+        key = url.split(`${this.s3Bucket}.s3.`)[1]?.split('.amazonaws.com/')[1];
+      }
+
       if (key) {
         const { DeleteObjectCommand } = await import('@aws-sdk/client-s3');
         await this.s3Client.send(
-          new DeleteObjectCommand({ Bucket: bucket, Key: key }),
+          new DeleteObjectCommand({ Bucket: this.s3Bucket, Key: key }),
         );
       }
     } else {
-      const baseUrl = this.configService.get('BASE_URL') || 'http://localhost:3001';
+      const baseUrl =
+        this.configService.get('BASE_URL') || 'http://localhost:3001';
       const relativePath = url.replace(baseUrl, '');
-      const filePath = path.join(this.uploadDir, relativePath.replace('/uploads/', ''));
+      const filePath = path.join(
+        this.uploadDir,
+        relativePath.replace('/uploads/', ''),
+      );
       if (fs.existsSync(filePath)) {
         fs.unlinkSync(filePath);
       }
