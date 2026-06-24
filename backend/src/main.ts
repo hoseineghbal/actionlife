@@ -34,6 +34,8 @@ async function bootstrap() {
     origin: [
       process.env.FRONTEND_URL ?? 'http://localhost:3000',
       process.env.ADMIN_URL ?? 'http://localhost:5174',
+      'https://actionlife.ir',
+      'https://www.actionlife.ir',
     ],
     credentials: true,
   });
