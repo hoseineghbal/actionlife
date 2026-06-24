@@ -14,7 +14,9 @@ const SECTION_LABELS: Record<string, string> = {
 
 const STATUS_LABELS: Record<string, { label: string; color: string }> = {
   draft: { label: 'پیش‌نویس', color: 'bg-yellow-100 text-yellow-800' },
+  pending_review: { label: 'در انتظار تایید', color: 'bg-blue-100 text-blue-800' },
   published: { label: 'منتشر شده', color: 'bg-green-100 text-green-800' },
+  rejected: { label: 'رد شده', color: 'bg-red-100 text-red-800' },
   archived: { label: 'بایگانی', color: 'bg-gray-100 text-gray-800' },
 };
 
@@ -22,10 +24,17 @@ export default function Articles() {
   const [articles, setArticles] = useState<Article[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [filter, setFilter] = useState('');
 
   const loadArticles = async () => {
     try {
-      const res = await api.get<{ articles: Article[]; total: number }>('/articles');
+      let query = '';
+      if (filter === 'all' || !filter) {
+        query = '?all=true';
+      } else {
+        query = `?status=${filter}`;
+      }
+      const res = await api.get<{ articles: Article[]; total: number }>(`/articles${query}`);
       setArticles(res.data.articles);
     } catch {
       setError('خطا در دریافت مقالات');
@@ -36,7 +45,7 @@ export default function Articles() {
 
   useEffect(() => {
     loadArticles();
-  }, []);
+  }, [filter]);
 
   const handleDelete = async (id: string) => {
     if (!window.confirm('آیا از حذف این مقاله اطمینان دارید؟')) return;
@@ -48,6 +57,25 @@ export default function Articles() {
     }
   };
 
+  const handleApprove = async (id: string) => {
+    try {
+      await api.put(`/articles/${id}/approve`);
+      loadArticles();
+    } catch {
+      alert('خطا در تایید مقاله');
+    }
+  };
+
+  const handleReject = async (id: string) => {
+    const reason = window.prompt('دلیل رد مقاله (اختیاری):');
+    try {
+      await api.put(`/articles/${id}/reject`, { reason });
+      loadArticles();
+    } catch {
+      alert('خطا در رد مقاله');
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -55,6 +83,8 @@ export default function Articles() {
       </div>
     );
   }
+
+  const pendingCount = articles.filter((a) => a.status === 'pending_review').length;
 
   return (
     <div>
@@ -70,6 +100,29 @@ export default function Articles() {
 
       {error && <p className="text-red-500 mb-4">{error}</p>}
 
+      {/* Filter tabs */}
+      <div className="flex gap-2 mb-4 flex-wrap">
+        {[
+          { label: 'همه', value: 'all' },
+          { label: `در انتظار تایید (${pendingCount})`, value: 'pending_review' },
+          { label: 'منتشر شده', value: 'published' },
+          { label: 'پیش‌نویس', value: 'draft' },
+          { label: 'رد شده', value: 'rejected' },
+        ].map((f) => (
+          <button
+            key={f.value}
+            onClick={() => setFilter(f.value)}
+            className={`px-3 py-1.5 text-sm rounded-lg transition-colors ${
+              filter === f.value
+                ? 'bg-indigo-600 text-white'
+                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+            }`}
+          >
+            {f.label}
+          </button>
+        ))}
+      </div>
+
       {articles.length === 0 ? (
         <div className="bg-white rounded-xl shadow-sm p-12 text-center">
           <p className="text-gray-500 text-lg">هیچ مقاله‌ای یافت نشد</p>
@@ -84,6 +137,7 @@ export default function Articles() {
               <thead>
                 <tr className="bg-gray-50 border-b">
                   <th className="text-right px-4 py-3 text-sm font-medium text-gray-600">عنوان</th>
+                  <th className="text-right px-4 py-3 text-sm font-medium text-gray-600">نویسنده</th>
                   <th className="text-right px-4 py-3 text-sm font-medium text-gray-600">بخش</th>
                   <th className="text-right px-4 py-3 text-sm font-medium text-gray-600">وضعیت</th>
                   <th className="text-right px-4 py-3 text-sm font-medium text-gray-600">بازدید</th>
@@ -93,7 +147,7 @@ export default function Articles() {
               </thead>
               <tbody>
                 {articles.map((article) => (
-                  <tr key={article._id} className="border-b hover:bg-gray-50">
+                  <tr key={article._id} className={`border-b hover:bg-gray-50 ${article.status === 'pending_review' ? 'bg-blue-50' : ''}`}>
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-3">
                         {article.featuredImage && (
@@ -106,31 +160,33 @@ export default function Articles() {
                       </div>
                     </td>
                     <td className="px-4 py-3 text-sm text-gray-600">
+                      {article.author?.fullName || '—'}
+                    </td>
+                    <td className="px-4 py-3 text-sm text-gray-600">
                       {SECTION_LABELS[article.section] || article.section}
                     </td>
                     <td className="px-4 py-3">
                       <span className={`px-2 py-1 rounded-full text-xs font-medium ${STATUS_LABELS[article.status]?.color || ''}`}>
                         {STATUS_LABELS[article.status]?.label || article.status}
                       </span>
+                      {article.rejectionReason && (
+                        <p className="text-xs text-red-500 mt-1">{article.rejectionReason}</p>
+                      )}
                     </td>
                     <td className="px-4 py-3 text-sm text-gray-600">{article.views}</td>
                     <td className="px-4 py-3 text-sm text-gray-500">
                       {new Date(article.createdAt).toLocaleDateString('fa-IR')}
                     </td>
                     <td className="px-4 py-3">
-                      <div className="flex gap-2 justify-center">
-                        <Link
-                          to={`/articles/${article._id}`}
-                          className="text-indigo-600 hover:text-indigo-800 text-sm"
-                        >
-                          ویرایش
-                        </Link>
-                        <button
-                          onClick={() => handleDelete(article._id)}
-                          className="text-red-600 hover:text-red-800 text-sm"
-                        >
-                          حذف
-                        </button>
+                      <div className="flex gap-2 justify-center flex-wrap">
+                        <Link to={`/articles/${article._id}`} className="text-indigo-600 hover:text-indigo-800 text-sm">ویرایش</Link>
+                        {article.status === 'pending_review' && (
+                          <>
+                            <button onClick={() => handleApprove(article._id)} className="text-green-600 hover:text-green-800 text-sm font-medium">✓ تایید</button>
+                            <button onClick={() => handleReject(article._id)} className="text-red-600 hover:text-red-800 text-sm">✗ رد</button>
+                          </>
+                        )}
+                        <button onClick={() => handleDelete(article._id)} className="text-gray-600 hover:text-gray-800 text-sm">حذف</button>
                       </div>
                     </td>
                   </tr>

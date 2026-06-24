@@ -14,7 +14,9 @@ export enum ArticleSection {
 
 export enum ArticleStatus {
   DRAFT = 'draft',
+  PENDING_REVIEW = 'pending_review',
   PUBLISHED = 'published',
+  REJECTED = 'rejected',
   ARCHIVED = 'archived',
 }
 
@@ -109,6 +111,9 @@ export class Article {
 
   @Prop({ type: String, enum: ArticleStatus, default: ArticleStatus.DRAFT })
   status: ArticleStatus;
+
+  @Prop()
+  rejectionReason: string;
 
   @Prop({ default: 0 })
   views: number;

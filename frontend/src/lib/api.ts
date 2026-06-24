@@ -89,3 +89,24 @@ export async function updateProfile(token: string, data: Partial<import('@/types
     },
   });
 }
+
+export async function getUserArticles(token: string, userId: string, page = 1, limit = 20) {
+  return fetchAPI<{ articles: import('@/types').Article[]; total: number }>(`/articles/user/${userId}?page=${page}&limit=${limit}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+}
+
+export async function deleteArticle(token: string, id: string) {
+  return fetchAPI<void>(`/articles/${id}`, {
+    method: 'DELETE',
+    headers: { Authorization: `Bearer ${token}` },
+  });
+}
+
+export async function updateArticle(token: string, id: string, data: any) {
+  return fetchAPI<import('@/types').Article>(`/articles/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(data),
+    headers: { Authorization: `Bearer ${token}` },
+  });
+}

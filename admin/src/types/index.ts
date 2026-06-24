@@ -139,7 +139,8 @@ export interface Article {
   categories: { _id: string; name: string; slug: string }[];
   tags: string[];
   author: { _id: string; fullName: string; avatar?: string };
-  status: 'draft' | 'published' | 'archived';
+  status: 'draft' | 'pending_review' | 'published' | 'rejected' | 'archived';
+  rejectionReason?: string;
   views: number;
   metaTitle?: string;
   metaDescription?: string;

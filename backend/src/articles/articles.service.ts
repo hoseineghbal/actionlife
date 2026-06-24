@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Article, ArticleDocument, ArticleSection, ArticleStatus } from './schemas/article.schema';
@@ -24,10 +24,15 @@ export class ArticlesService {
     page?: number;
     limit?: number;
     featured?: boolean;
+    all?: boolean;
   }): Promise<{ articles: ArticleDocument[]; total: number }> {
-    const { section, status: rawStatus, page = 1, limit = 10, featured } = query;
-    const status = rawStatus || ArticleStatus.PUBLISHED;
-    const filter: Record<string, unknown> = { status };
+    const { section, status: rawStatus, page = 1, limit = 10, featured, all } = query;
+    const filter: Record<string, unknown> = {};
+    if (!all) {
+      filter.status = rawStatus || ArticleStatus.PUBLISHED;
+    } else if (rawStatus) {
+      filter.status = rawStatus;
+    }
     if (section) filter.section = section;
     if (featured !== undefined) filter.isFeatured = featured;
 
@@ -67,19 +72,39 @@ export class ArticlesService {
     return article;
   }
 
-  async update(id: string, updateDto: Partial<CreateArticleDto>): Promise<ArticleDocument> {
-    const article = await this.articleModel.findByIdAndUpdate(id, updateDto, { new: true });
-    if (!article) {
-      throw new NotFoundException('مقاله یافت نشد');
+  async update(id: string, updateDto: Partial<CreateArticleDto>, userId?: string, isAdmin?: boolean): Promise<ArticleDocument> {
+    const article = await this.articleModel.findById(id);
+    if (!article) throw new NotFoundException('مقاله یافت نشد');
+
+    // Only admin can update published articles
+    if (article.status === ArticleStatus.PUBLISHED && !isAdmin) {
+      throw new ForbiddenException('امکان ویرایش مقاله منتشر شده وجود ندارد');
     }
-    return article;
+
+    // Non-admin users can only update their own non-published articles
+    if (!isAdmin && article.author.toString() !== userId) {
+      throw new ForbiddenException('شما اجازه ویرایش این مقاله را ندارید');
+    }
+
+    const updated = await this.articleModel.findByIdAndUpdate(id, updateDto, { new: true })!;
+    return updated!;
   }
 
-  async delete(id: string): Promise<void> {
-    const result = await this.articleModel.findByIdAndDelete(id);
-    if (!result) {
-      throw new NotFoundException('مقاله یافت نشد');
+  async delete(id: string, userId?: string, isAdmin?: boolean): Promise<void> {
+    const article = await this.articleModel.findById(id);
+    if (!article) throw new NotFoundException('مقاله یافت نشد');
+
+    // Only admin can delete published articles
+    if (article.status === ArticleStatus.PUBLISHED && !isAdmin) {
+      throw new ForbiddenException('امکان حذف مقاله منتشر شده وجود ندارد');
     }
+
+    // Non-admin users can only delete their own non-published articles
+    if (!isAdmin && article.author.toString() !== userId) {
+      throw new ForbiddenException('شما اجازه حذف این مقاله را ندارید');
+    }
+
+    await this.articleModel.findByIdAndDelete(id);
   }
 
   async getLatest(limit = 6): Promise<ArticleDocument[]> {
@@ -104,5 +129,39 @@ export class ArticlesService {
       .populate('author', 'fullName avatar')
       .sort({ views: -1 })
       .limit(limit);
+  }
+
+  async findByUser(userId: string, page = 1, limit = 10): Promise<{ articles: ArticleDocument[]; total: number }> {
+    const filter = { author: userId as any };
+    const [articles, total] = await Promise.all([
+      this.articleModel
+        .find(filter)
+        .populate('author', 'fullName avatar')
+        .sort({ createdAt: -1 })
+        .skip((page - 1) * limit)
+        .limit(limit),
+      this.articleModel.countDocuments(filter),
+    ]);
+    return { articles, total };
+  }
+
+  async approve(id: string): Promise<ArticleDocument> {
+    const article = await this.articleModel.findByIdAndUpdate(
+      id,
+      { status: ArticleStatus.PUBLISHED },
+      { new: true },
+    );
+    if (!article) throw new NotFoundException('مقاله یافت نشد');
+    return article;
+  }
+
+  async reject(id: string, reason?: string): Promise<ArticleDocument> {
+    const article = await this.articleModel.findByIdAndUpdate(
+      id,
+      { status: ArticleStatus.REJECTED, rejectionReason: reason },
+      { new: true },
+    );
+    if (!article) throw new NotFoundException('مقاله یافت نشد');
+    return article;
   }
 }

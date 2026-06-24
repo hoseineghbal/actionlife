@@ -76,7 +76,11 @@ export default async function CinemaArticlePage({ params }: Props) {
                 </svg>
               )}
             </div>
-            <span>{article.author?.fullName || "اکشن لایف"}</span>
+            {article.author?._id ? (
+              <Link href={`/users/${article.author._id}`} className="hover:text-primary transition-colors">{article.author.fullName}</Link>
+            ) : (
+              <span>{article.author?.fullName || "اکشن لایف"}</span>
+            )}
           </div>
           <span>•</span>
           <span>{new Date(article.createdAt).toLocaleDateString("fa-IR")}</span>

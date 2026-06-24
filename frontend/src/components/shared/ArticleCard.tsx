@@ -1,12 +1,13 @@
 import Link from "next/link";
 
 interface ArticleCardProps {
+  _id?: string;
   title: string;
   slug: string;
   excerpt: string;
   featuredImage?: string;
   section: string;
-  author?: { fullName: string };
+  author?: { _id?: string; fullName: string };
   createdAt?: string;
 }
 
@@ -64,7 +65,15 @@ export default function ArticleCard({
         </Link>
         <p className="text-gray-custom text-sm line-clamp-2 mb-3">{excerpt}</p>
         <div className="flex items-center justify-between text-xs text-gray-custom">
-          {author && <span>{author.fullName}</span>}
+          {author && (
+            author._id ? (
+              <Link href={`/users/${author._id}`} className="hover:text-primary transition-colors">
+                {author.fullName}
+              </Link>
+            ) : (
+              <span>{author.fullName}</span>
+            )
+          )}
           {createdAt && (
             <span>
               {new Date(createdAt).toLocaleDateString("fa-IR")}
