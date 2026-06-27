@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+# =============================================================================
+# post-commit hook — Automated Release
+# =============================================================================
+# After each commit on main/master, checks if the commit should trigger a
+# release (feat, fix, or BREAKING CHANGE) and runs scripts/release.sh.
+#
+# To install:  scripts/install-hooks.sh
+# =============================================================================
+
+set -euo pipefail
+
+REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+SCRIPT="$REPO_ROOT/scripts/release.sh"
+
+if [[ ! -x "$SCRIPT" ]]; then
+  exit 0
+fi
+
+# Run release script inline
+# The release.sh script handles:
+#   - Branch check (main/master only)
+#   - Recursive release check (skips "chore(release):" commits)
+#   - Commit type detection
+#   - Version bump, CHANGELOG update, and tagging
+exec bash "$SCRIPT"
