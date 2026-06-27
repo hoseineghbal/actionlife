@@ -3,6 +3,7 @@ import { randomInt } from "node:crypto";
 import { getLatestArticles } from "@/lib/api";
 import type { Article } from "@/types";
 import HeroCta from "@/components/shared/HeroCta";
+import Footer from "@/components/layout/Footer";
 
 function pickRandom<T>(arr: T[], count: number): T[] {
   const shuffled = [...arr].sort(() => Math.random() - 0.5);
@@ -48,10 +49,9 @@ export default async function HomePage() {
 
   return (
     <>
-      {/* Hide layout footer + prevent scroll on this page only */}
+      {/* Prevent scroll on this page only */}
       <style>{`
         body { overflow: hidden; }
-        body > footer { display: none; }
       `}</style>
 
       {/* Full-screen landing — image fully visible */}
@@ -84,14 +84,9 @@ export default async function HomePage() {
         <HeroCta />
 
         {/* Thin footer bar */}
-        <footer className="absolute bottom-0 left-0 right-0 z-30 border-t border-white/10 bg-dark/80 backdrop-blur-sm">
-          <div className="flex items-center justify-center gap-3 py-1.5 text-[11px] text-gray-custom">
-            <span>&copy; {new Date().getFullYear()} Action Life</span>
-            <Link href="/about" className="hover:text-accent transition-colors">درباره</Link>
-            <Link href="/contact" className="hover:text-accent transition-colors">تماس</Link>
-            <Link href="/terms" className="hover:text-accent transition-colors">قوانین</Link>
-          </div>
-        </footer>
+        <div className="absolute bottom-0 left-0 right-0 z-30">
+          <Footer />
+        </div>
       </section>
 
       {/* JSON-LD */}

@@ -210,3 +210,10 @@ export async function getTokenConfig(token: string) {
     headers: { Authorization: `Bearer ${token}` },
   });
 }
+
+export async function subscribeNewsletter(email: string) {
+  return fetchAPI<{ message: string }>('/newsletter/subscribe', {
+    method: 'POST',
+    body: JSON.stringify({ email }),
+  });
+}

@@ -11,6 +11,7 @@ import { AnalyticsModule } from './analytics/analytics.module';
 import { UploadModule } from './upload/upload.module';
 import { OtpModule } from './otp/otp.module';
 import { WalletModule } from './wallet/wallet.module';
+import { NewsletterModule } from './newsletter/newsletter.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { WalletModule } from './wallet/wallet.module';
     UploadModule,
     OtpModule,
     WalletModule,
+    NewsletterModule,
   ],
 })
 export class AppModule {}

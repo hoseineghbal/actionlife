@@ -1,111 +1,104 @@
-import Link from "next/link";
+"use client";
 
-const footerSections = [
-  {
-    title: "بخش‌ها",
-    links: [
-      { label: "اکشن نما", href: "/action-cinema" },
-      { label: "اکشن گیم", href: "/action-game" },
-      { label: "اکشن تریپ", href: "/action-trip" },
-      { label: "وبلاگ", href: "/blog" },
-    ],
-  },
-  {
-    title: "لینک‌های مفید",
-    links: [
-      { label: "درباره ما", href: "/about" },
-      { label: "تماس با ما", href: "/contact" },
-      { label: "قوانین و مقررات", href: "/terms" },
-      { label: "حریم خصوصی", href: "/privacy" },
-    ],
-  },
-];
+import { useState, FormEvent } from "react";
+import { subscribeNewsletter } from "@/lib/api";
 
 const socialLinks = [
-  { label: "اینستاگرام", href: "#", icon: "instagram" },
-  { label: "تلگرام", href: "#", icon: "telegram" },
-  { label: "یوتیوب", href: "#", icon: "youtube" },
-  { label: "آپارات", href: "#", icon: "aparat" },
+  { label: "اینستاگرام", href: "#", icon: "📸" },
+  { label: "تلگرام", href: "#", icon: "✈️" },
+  { label: "یوتیوب", href: "#", icon: "▶️" },
+  { label: "آپارات", href: "#", icon: "🎬" },
+  { label: "توییتر", href: "#", icon: "🐦" },
 ];
 
 export default function Footer() {
+  const [email, setEmail] = useState("");
+  const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+    if (!email.trim()) return;
+    setLoading(true);
+    setMessage(null);
+    try {
+      const res = await subscribeNewsletter(email);
+      setMessage({ type: "success", text: res.message });
+      setEmail("");
+    } catch (err: any) {
+      setMessage({ type: "error", text: err.message ?? "خطا در ثبت ایمیل" });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
-    <footer className="bg-dark-light border-t border-white/10 mt-16">
-      <div className="max-w-7xl mx-auto px-4 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-          {/* معرفی برند */}
-          <div>
-            <div className="flex items-center gap-2 mb-4">
-              <div className="w-10 h-10 gradient-primary rounded-lg flex items-center justify-center font-bold text-white text-lg">
-                AL
-              </div>
-              <span className="text-xl font-bold text-white">Action Life</span>
-            </div>
-            <p className="text-gray-custom text-sm leading-7">
-              پلتفرم سبک زندگی اکشن - مرجع طبیعت‌گردی، بقا، ورزش، گیم و سینمای
-              اکشن برای علاقه‌مندان به زندگی فعال و پرماجرا.
-            </p>
+    <footer className="bg-dark-light border-t border-white/10">
+      <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between flex-wrap gap-y-2 gap-x-4 text-sm">
+        {/* لوگو و نام سایت */}
+        <div className="flex items-center gap-2">
+          <div className="w-7 h-7 gradient-primary rounded-md flex items-center justify-center font-bold text-white text-xs">
+            AL
           </div>
-
-          {/* بخش‌ها */}
-          {footerSections.map((section) => (
-            <div key={section.title}>
-              <h3 className="text-white font-bold mb-4">{section.title}</h3>
-              <ul className="space-y-2">
-                {section.links.map((link) => (
-                  <li key={link.href}>
-                    <Link
-                      href={link.href}
-                      className="text-gray-custom text-sm hover:text-accent transition-colors"
-                    >
-                      {link.label}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
-
-          {/* شبکه‌های اجتماعی */}
-          <div>
-            <h3 className="text-white font-bold mb-4">شبکه‌های اجتماعی</h3>
-            <div className="flex flex-wrap gap-3">
-              {socialLinks.map((social) => (
-                <a
-                  key={social.icon}
-                  href={social.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-10 h-10 bg-white/5 hover:bg-accent/20 border border-white/10 rounded-lg flex items-center justify-center text-gray-custom hover:text-accent transition-all"
-                  aria-label={social.label}
-                >
-                  <span className="text-xs">{social.label.slice(0, 2)}</span>
-                </a>
-              ))}
-            </div>
-            <div className="mt-6">
-              <h4 className="text-white text-sm font-bold mb-2">
-                عضویت در خبرنامه
-              </h4>
-              <div className="flex gap-2">
-                <input
-                  type="email"
-                  placeholder="ایمیل شما..."
-                  className="flex-1 px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-sm text-white placeholder:text-gray-custom focus:outline-none focus:border-accent"
-                />
-                <button className="px-4 py-2 gradient-primary text-white text-sm rounded-lg hover:opacity-90 transition-opacity">
-                  عضویت
-                </button>
-              </div>
-            </div>
-          </div>
+          <span className="font-bold text-white whitespace-nowrap text-sm">
+            Action Life
+          </span>
         </div>
 
-        {/* کپی رایت */}
-        <div className="border-t border-white/10 mt-8 pt-8 text-center">
-          <p className="text-gray-custom text-sm">
-            © {new Date().getFullYear()} Action Life - تمامی حقوق محفوظ است.
-          </p>
+        {/* عضویت در خبرنامه */}
+        <form
+          onSubmit={handleSubmit}
+          className="flex items-center gap-2 flex-1 max-w-sm min-w-0"
+        >
+          <span className="text-gray-custom whitespace-nowrap text-xs hidden sm:inline">
+            خبرنامه:
+          </span>
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="ایمیل خود را وارد کنید"
+            className="flex-1 min-w-0 px-3 py-1.5 bg-white/5 border border-white/10 rounded-md text-xs text-white placeholder:text-gray-custom focus:outline-none focus:border-accent"
+            required
+          />
+          <button
+            type="submit"
+            disabled={loading}
+            className="px-3 py-1.5 gradient-primary text-white text-xs rounded-md hover:opacity-90 transition-opacity whitespace-nowrap disabled:opacity-50"
+          >
+            {loading ? "..." : "عضویت"}
+          </button>
+        </form>
+        {message && (
+          <div
+            className={`text-xs w-full text-center ${
+              message.type === "success" ? "text-green-400" : "text-red-400"
+            }`}
+          >
+            {message.text}
+          </div>
+        )}
+
+        {/* شبکه‌های اجتماعی */}
+        <div className="flex items-center gap-1.5">
+          {socialLinks.map((social) => (
+            <a
+              key={social.label}
+              href={social.href}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-7 h-7 bg-white/5 hover:bg-accent/20 border border-white/10 rounded-md flex items-center justify-center text-xs text-gray-custom hover:text-accent transition-all"
+              aria-label={social.label}
+              title={social.label}
+            >
+              {social.icon}
+            </a>
+          ))}
+        </div>
+
+        {/* کپی‌رایت */}
+        <div className="text-gray-custom text-xs whitespace-nowrap">
+          © {new Date().getFullYear()} Action Life
         </div>
       </div>
     </footer>
