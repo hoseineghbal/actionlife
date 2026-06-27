@@ -84,6 +84,7 @@ while IFS=$'\t' read -r sha date msg body; do
   bump_type="none"
   is_feat=false
   is_fix=false
+  is_refactor=false
   is_breaking=false
 
   # Check BREAKING CHANGE
@@ -98,6 +99,9 @@ while IFS=$'\t' read -r sha date msg body; do
     [[ "$bump_type" == "none" ]] && bump_type="minor"
   elif echo "$msg" | grep -qE "^fix(\(.*\))?!?:"; then
     is_fix=true
+    [[ "$bump_type" == "none" ]] && bump_type="patch"
+  elif echo "$msg" | grep -qE "^refactor(\(.*\))?!?:"; then
+    is_refactor=true
     [[ "$bump_type" == "none" ]] && bump_type="patch"
   fi
 
@@ -144,6 +148,15 @@ while IFS=$'\t' read -r sha date msg body; do
   fi
   if $is_fix; then
     entry+="### Bug Fixes\n"
+    if [[ -n "$scope" ]]; then
+      entry+="- **${scope}**: ${desc}\n"
+    else
+      entry+="- ${desc}\n"
+    fi
+    entry+="\n"
+  fi
+  if $is_refactor; then
+    entry+="### Refactors\n"
     if [[ -n "$scope" ]]; then
       entry+="- **${scope}**: ${desc}\n"
     else

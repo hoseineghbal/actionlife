@@ -113,6 +113,7 @@ main() {
   local bump_type="none"
   local is_feat=false
   local is_fix=false
+  local is_refactor=false
   local is_breaking=false
 
   # Check for BREAKING CHANGE in body or footer
@@ -127,6 +128,9 @@ main() {
     [[ "$bump_type" == "none" ]] && bump_type="minor"
   elif echo "$last_commit_msg" | grep -qE "^fix(\(.*\))?!?:"; then
     is_fix=true
+    [[ "$bump_type" == "none" ]] && bump_type="patch"
+  elif echo "$last_commit_msg" | grep -qE "^refactor(\(.*\))?!?:"; then
+    is_refactor=true
     [[ "$bump_type" == "none" ]] && bump_type="patch"
   fi
 
@@ -189,6 +193,17 @@ main() {
   # Bug Fixes section
   if $is_fix; then
     changelog_entry+="### Bug Fixes\n"
+    if [[ -n "$scope" ]]; then
+      changelog_entry+="- **${scope}**: ${description}\n"
+    else
+      changelog_entry+="- ${description}\n"
+    fi
+    changelog_entry+="\n"
+  fi
+
+  # Refactors section
+  if $is_refactor; then
+    changelog_entry+="### Refactors\n"
     if [[ -n "$scope" ]]; then
       changelog_entry+="- **${scope}**: ${description}\n"
     else
