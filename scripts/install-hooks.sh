@@ -17,7 +17,7 @@ if [[ ! -f "$REPO_ROOT/$HOOK_DIR/post-commit" ]]; then
   exit 1
 fi
 
-git -C "$REPO_ROOT" config core.hooksPath "$HOOK_DIR"
+git -C "$REPO_ROOT" config core.hooksPath "$REPO_ROOT/$HOOK_DIR"
 
 echo "✅ Git hooks configured: core.hooksPath = $HOOK_DIR"
 echo ""
