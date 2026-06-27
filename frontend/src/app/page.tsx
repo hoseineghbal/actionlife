@@ -37,7 +37,7 @@ export default async function HomePage() {
         <div className="absolute inset-0 bg-gradient-to-b from-primary/10 to-dark z-0" />
         <div className="relative z-10 max-w-7xl mx-auto px-4 py-20 text-center">
           <h1 className="text-4xl md:text-5xl font-black text-white mb-4 animate-fade-in-up">
-            زندگی یعنی <span className="text-primary">اکشن</span>
+            زندگی یعنی <span className="text-accent">اکشن</span>
           </h1>
           <div className="flex flex-wrap justify-center gap-3 animate-fade-in-up">
             <Link href="/blog" className="px-6 py-2.5 gradient-primary text-white rounded-lg font-bold hover:opacity-90 transition-opacity text-sm">آخرین مطالب</Link>
@@ -58,7 +58,7 @@ export default async function HomePage() {
               <Link
                 key={article._id}
                 href={`/${article.section === "blog" ? "blog" : article.section}/${article.slug}`}
-                className={`group relative rounded-xl overflow-hidden bg-dark-light border border-white/10 hover:border-primary/30 transition-all ${i === 0 ? "sm:col-span-2 sm:row-span-2" : ""}`}
+                className={`group relative rounded-xl overflow-hidden bg-dark-light border border-white/10 hover:border-accent/30 transition-all ${i === 0 ? "sm:col-span-2 sm:row-span-2" : ""}`}
               >
                 <div className={`${i === 0 ? "aspect-video sm:aspect-[2/1]" : "aspect-video"} relative`}>
                   {article.featuredImage ? (
@@ -95,7 +95,7 @@ export default async function HomePage() {
                   <span className="text-xl">{sec.icon}</span>
                   <h2 className="text-lg font-black text-white">{sec.title}</h2>
                 </div>
-                <Link href={sectionPath} className="text-primary text-xs hover:underline">مشاهده همه ←</Link>
+                <Link href={sectionPath} className="text-accent text-xs hover:underline">مشاهده همه ←</Link>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {articles.map((article) => (
@@ -111,7 +111,7 @@ export default async function HomePage() {
       {popularArticles.length > 0 && (
         <section className="max-w-7xl mx-auto px-4 py-10">
           <div className="flex items-center gap-2 mb-6">
-            <span className="text-primary text-lg">🔥</span>
+            <span className="text-accent text-lg">🔥</span>
             <h2 className="text-xl font-black text-white">پر بازدیدترین</h2>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -119,7 +119,7 @@ export default async function HomePage() {
               <Link
                 key={article._id}
                 href={`/${article.section === "blog" ? "blog" : article.section}/${article.slug}`}
-                className="flex gap-3 bg-dark-light border border-white/10 rounded-xl p-3 hover:border-primary/30 transition-all group"
+                className="flex gap-3 bg-dark-light border border-white/10 rounded-xl p-3 hover:border-accent/30 transition-all group"
               >
                 <div className="w-12 h-12 rounded-lg overflow-hidden shrink-0 bg-dark flex items-center justify-center text-lg">
                   {article.featuredImage ? (
@@ -129,8 +129,8 @@ export default async function HomePage() {
                   )}
                 </div>
                 <div className="min-w-0 flex-1">
-                  <span className="text-xs text-primary font-bold">#{i + 1}</span>
-                  <h3 className="text-sm text-white font-bold truncate group-hover:text-primary transition-colors">{article.title}</h3>
+                  <span className="text-xs text-accent font-bold">#{i + 1}</span>
+                  <h3 className="text-sm text-white font-bold truncate group-hover:text-accent transition-colors">{article.title}</h3>
                   <p className="text-xs text-gray-custom truncate mt-0.5">{article.views} بازدید</p>
                 </div>
               </Link>
@@ -144,7 +144,7 @@ export default async function HomePage() {
         <section className="max-w-7xl mx-auto px-4 py-10">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-xl font-black text-white">جدیدترین مقالات</h2>
-            <Link href="/blog" className="text-primary text-xs hover:underline">مشاهده همه ←</Link>
+            <Link href="/blog" className="text-accent text-xs hover:underline">مشاهده همه ←</Link>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {latestArticles.map((article) => (

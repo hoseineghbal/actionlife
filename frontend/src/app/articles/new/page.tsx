@@ -211,12 +211,12 @@ export default function SubmitArticlePage() {
             <div>
               <label className="block text-sm text-gray-custom mb-1">عنوان</label>
               <input type="text" value={title} onChange={e => handleTitleChange(e.target.value)}
-                className="w-full px-4 py-3 bg-dark border border-white/10 rounded-lg text-white focus:border-primary/50 outline-none" required />
+                className="w-full px-4 py-3 bg-dark border border-white/10 rounded-lg text-white focus:border-accent/50 outline-none" required />
             </div>
             <div>
               <label className="block text-sm text-gray-custom mb-1">بخش</label>
               <select value={section} onChange={e => setSection(e.target.value)}
-                className="w-full px-4 py-3 bg-dark border border-white/10 rounded-lg text-white focus:border-primary/50 outline-none">
+                className="w-full px-4 py-3 bg-dark border border-white/10 rounded-lg text-white focus:border-accent/50 outline-none">
                 {SECTIONS.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
               </select>
             </div>
@@ -224,7 +224,7 @@ export default function SubmitArticlePage() {
           <div>
             <label className="block text-sm text-gray-custom mb-1">خلاصه</label>
             <textarea value={excerpt} onChange={e => setExcerpt(e.target.value)} rows={3}
-              className="w-full px-4 py-3 bg-dark border border-white/10 rounded-lg text-white focus:border-primary/50 outline-none resize-none" required />
+              className="w-full px-4 py-3 bg-dark border border-white/10 rounded-lg text-white focus:border-accent/50 outline-none resize-none" required />
           </div>
         </div>
 
@@ -240,8 +240,8 @@ export default function SubmitArticlePage() {
           <div className="flex gap-3">
             <input type="text" value={featuredImage} onChange={e => setFeaturedImage(e.target.value)}
               placeholder="آدرس تصویر یا آپلود کنید..."
-              className="flex-1 px-4 py-3 bg-dark border border-white/10 rounded-lg text-white focus:border-primary/50 outline-none" />
-            <label className="px-4 py-3 bg-primary/10 text-primary rounded-lg cursor-pointer hover:bg-primary/20 transition-colors text-sm whitespace-nowrap">
+              className="flex-1 px-4 py-3 bg-dark border border-white/10 rounded-lg text-white focus:border-accent/50 outline-none" />
+            <label className="px-4 py-3 bg-accent/10 text-accent rounded-lg cursor-pointer hover:bg-accent/20 transition-colors text-sm whitespace-nowrap">
               آپلود
               <input type="file" accept="image/*" className="hidden" onChange={handleFeaturedUpload} />
             </label>
@@ -254,8 +254,8 @@ export default function SubmitArticlePage() {
           <h2 className="text-lg font-bold text-white">گالری تصاویر</h2>
           <div className="flex gap-2">
             <input type="text" value={galleryUrl} onChange={e => setGalleryUrl(e.target.value)} placeholder="آدرس تصویر..."
-              className="flex-1 px-4 py-3 bg-dark border border-white/10 rounded-lg text-white focus:border-primary/50 outline-none" />
-            <button type="button" onClick={addGalleryImage} className="px-4 py-3 bg-primary text-white rounded-lg text-sm hover:opacity-90">+</button>
+              className="flex-1 px-4 py-3 bg-dark border border-white/10 rounded-lg text-white focus:border-accent/50 outline-none" />
+            <button type="button" onClick={addGalleryImage} className="px-4 py-3 bg-accent text-white rounded-lg text-sm cursor-pointer">+</button>
           </div>
           <label className="inline-block px-4 py-2 bg-dark border border-white/10 rounded-lg text-gray-custom cursor-pointer hover:text-white text-sm">
             آپلود چند تصویر
@@ -286,13 +286,13 @@ export default function SubmitArticlePage() {
             </select>
             <input type="text" value={videoUrl} onChange={e => setVideoUrl(e.target.value)}
               placeholder={videoSource === 'youtube' ? 'آدرس یوتیوب...' : videoSource === 'aparat' ? 'آدرس آپارات...' : 'آدرس ویدیو...'}
-              className="flex-1 px-4 py-3 bg-dark border border-white/10 rounded-lg text-white focus:border-primary/50 outline-none" />
-            <button type="button" onClick={addVideo} className="px-4 py-3 bg-primary text-white rounded-lg text-sm hover:opacity-90">+</button>
+              className="flex-1 px-4 py-3 bg-dark border border-white/10 rounded-lg text-white focus:border-accent/50 outline-none" />
+            <button type="button" onClick={addVideo} className="px-4 py-3 bg-accent text-white rounded-lg text-sm cursor-pointer">+</button>
           </div>
           {videoSource !== 'upload' && (
             <input type="text" value={videoTitle} onChange={e => setVideoTitle(e.target.value)}
               placeholder="عنوان ویدیو (اختیاری)"
-              className="w-full px-4 py-3 bg-dark border border-white/10 rounded-lg text-white focus:border-primary/50 outline-none" />
+              className="w-full px-4 py-3 bg-dark border border-white/10 rounded-lg text-white focus:border-accent/50 outline-none" />
           )}
           {videos.length > 0 && (
             <div className="space-y-2">
@@ -350,7 +350,7 @@ export default function SubmitArticlePage() {
               <label className="block text-sm text-gray-custom mb-1">برچسب‌ها (با کاما)</label>
               <input type="text" value={tags} onChange={e => setTags(e.target.value)}
                 placeholder="مثال: اکشن, ماجراجویی"
-                className="w-full px-4 py-3 bg-dark border border-white/10 rounded-lg text-white focus:border-primary/50 outline-none" />
+                className="w-full px-4 py-3 bg-dark border border-white/10 rounded-lg text-white focus:border-accent/50 outline-none" />
             </div>
           </div>
         </div>

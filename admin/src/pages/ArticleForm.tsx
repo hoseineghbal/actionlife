@@ -276,7 +276,7 @@ export default function ArticleForm() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-indigo-600" />
+        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-accent" />
       </div>
     );
   }
@@ -299,7 +299,7 @@ export default function ArticleForm() {
                 type="text"
                 value={title}
                 onChange={(e) => handleTitleChange(e.target.value)}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-accent focus:border-accent"
                 required
               />
             </div>
@@ -309,7 +309,7 @@ export default function ArticleForm() {
                 type="text"
                 value={slug}
                 onChange={(e) => { setSlug(e.target.value); setSlugManual(true); }}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-accent focus:border-accent"
                 required
               />
             </div>
@@ -321,7 +321,7 @@ export default function ArticleForm() {
               <select
                 value={section}
                 onChange={(e) => setSection(e.target.value)}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-accent focus:border-accent"
               >
                 {SECTIONS.map((s) => (
                   <option key={s.value} value={s.value}>{s.label}</option>
@@ -333,7 +333,7 @@ export default function ArticleForm() {
               <select
                 value={status}
                 onChange={(e) => setStatus(e.target.value as 'draft' | 'published')}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-accent focus:border-accent"
               >
                 <option value="draft">پیش‌نویس</option>
                 <option value="published">منتشر شده</option>
@@ -358,7 +358,7 @@ export default function ArticleForm() {
               value={excerpt}
               onChange={(e) => setExcerpt(e.target.value)}
               rows={3}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-accent focus:border-accent"
               required
             />
           </div>
@@ -373,9 +373,9 @@ export default function ArticleForm() {
               value={featuredImage}
               onChange={(e) => setFeaturedImage(e.target.value)}
               placeholder="آدرس تصویر یا آپلود کنید..."
-              className="flex-1 border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+              className="flex-1 border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-accent focus:border-accent"
             />
-            <label className="bg-indigo-50 text-indigo-700 px-4 py-2 rounded-lg cursor-pointer hover:bg-indigo-100 transition-colors text-sm">
+            <label className="bg-accent/10 text-accent px-4 py-2 rounded-lg cursor-pointer hover:bg-accent/20 transition-colors text-sm">
               آپلود تصویر
               <input type="file" accept="image/*" className="hidden" onChange={handleFeaturedImageUpload} />
             </label>
@@ -401,16 +401,16 @@ export default function ArticleForm() {
               value={galleryUrl}
               onChange={(e) => setGalleryUrl(e.target.value)}
               placeholder="آدرس تصویر..."
-              className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+              className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-accent focus:border-accent"
             />
             <input
               type="text"
               value={galleryAlt}
               onChange={(e) => setGalleryAlt(e.target.value)}
               placeholder="متن جایگزین"
-              className="w-32 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+              className="w-32 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-accent focus:border-accent"
             />
-            <button type="button" onClick={addGalleryImage} className="bg-indigo-600 text-white px-3 py-2 rounded-lg text-sm hover:bg-indigo-700">
+            <button type="button" onClick={addGalleryImage} className="bg-accent text-white px-3 py-2 rounded-lg text-sm hover:bg-accent">
               افزودن
             </button>
           </div>
@@ -462,9 +462,9 @@ export default function ArticleForm() {
               value={videoUrl}
               onChange={(e) => setVideoUrl(e.target.value)}
               placeholder={videoSource === 'youtube' ? 'آدرس ویدیوی یوتیوب...' : videoSource === 'aparat' ? 'آدرس ویدیوی آپارات...' : 'آدرس ویدیوی آپلود شده...'}
-              className="md:col-span-2 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+              className="md:col-span-2 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-accent focus:border-accent"
             />
-            <button type="button" onClick={addVideo} className="bg-indigo-600 text-white px-3 py-2 rounded-lg text-sm hover:bg-indigo-700">
+            <button type="button" onClick={addVideo} className="bg-accent text-white px-3 py-2 rounded-lg text-sm hover:bg-accent">
               افزودن ویدیو
             </button>
           </div>
@@ -474,7 +474,7 @@ export default function ArticleForm() {
               value={videoTitle}
               onChange={(e) => setVideoTitle(e.target.value)}
               placeholder="عنوان ویدیو (اختیاری)"
-              className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+              className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-accent focus:border-accent"
             />
             {videoSource !== 'upload' && (
               <input
@@ -482,7 +482,7 @@ export default function ArticleForm() {
                 value={videoId}
                 onChange={(e) => setVideoId(e.target.value)}
                 placeholder="شناسه ویدیو (اختیاری)"
-                className="w-48 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                className="w-48 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-accent focus:border-accent"
               />
             )}
           </div>
@@ -574,7 +574,7 @@ export default function ArticleForm() {
                 value={tags}
                 onChange={(e) => setTags(e.target.value)}
                 placeholder="مثال: اکشن, ماجراجویی, ورزشی"
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-accent focus:border-accent"
               />
             </div>
           </div>
@@ -590,7 +590,7 @@ export default function ArticleForm() {
                 type="text"
                 value={metaTitle}
                 onChange={(e) => setMetaTitle(e.target.value)}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-accent focus:border-accent"
               />
             </div>
             <div>
@@ -599,7 +599,7 @@ export default function ArticleForm() {
                 type="text"
                 value={metaDescription}
                 onChange={(e) => setMetaDescription(e.target.value)}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-accent focus:border-accent"
               />
             </div>
           </div>
@@ -610,7 +610,7 @@ export default function ArticleForm() {
           <button
             type="submit"
             disabled={saving}
-            className="bg-indigo-600 text-white px-6 py-2.5 rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-50"
+            className="bg-accent text-white px-6 py-2.5 rounded-lg hover:bg-accent transition-colors disabled:opacity-50"
           >
             {saving ? 'در حال ذخیره...' : isEdit ? 'بروزرسانی مقاله' : 'ایجاد مقاله'}
           </button>

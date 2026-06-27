@@ -45,7 +45,7 @@ export default function ContactForm() {
             required
             value={formData.name}
             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-            className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder:text-gray-custom focus:outline-none focus:border-primary transition-colors"
+            className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder:text-gray-custom focus:outline-none focus:border-accent transition-colors"
             placeholder="نام شما"
           />
         </div>
@@ -56,7 +56,7 @@ export default function ContactForm() {
             required
             value={formData.email}
             onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-            className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder:text-gray-custom focus:outline-none focus:border-primary transition-colors"
+            className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder:text-gray-custom focus:outline-none focus:border-accent transition-colors"
             placeholder="email@example.com"
             dir="ltr"
           />
@@ -69,7 +69,7 @@ export default function ContactForm() {
             type="tel"
             value={formData.mobile}
             onChange={(e) => setFormData({ ...formData, mobile: e.target.value })}
-            className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder:text-gray-custom focus:outline-none focus:border-primary transition-colors"
+            className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder:text-gray-custom focus:outline-none focus:border-accent transition-colors"
             placeholder="09xxxxxxxxx"
             dir="ltr"
           />
@@ -81,7 +81,7 @@ export default function ContactForm() {
             required
             value={formData.subject}
             onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
-            className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder:text-gray-custom focus:outline-none focus:border-primary transition-colors"
+            className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder:text-gray-custom focus:outline-none focus:border-accent transition-colors"
             placeholder="موضوع پیام"
           />
         </div>
@@ -93,7 +93,7 @@ export default function ContactForm() {
           rows={5}
           value={formData.message}
           onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-          className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder:text-gray-custom focus:outline-none focus:border-primary transition-colors resize-none"
+          className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder:text-gray-custom focus:outline-none focus:border-accent transition-colors resize-none"
           placeholder="پیام خود را بنویسید..."
         />
       </div>

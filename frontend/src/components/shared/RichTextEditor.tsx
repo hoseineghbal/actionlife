@@ -25,7 +25,7 @@ function ToolbarButton({
 }) {
   return (
     <button type="button" onClick={onClick} title={title}
-      className={`p-2 rounded transition-colors ${isActive ? 'bg-primary/20 text-primary' : 'text-gray-custom hover:bg-white/10'}`}>
+      className={`p-2 rounded transition-colors ${isActive ? 'bg-accent/20 text-accent' : 'text-gray-custom hover:bg-white/10'}`}>
       {children}
     </button>
   );
@@ -38,7 +38,7 @@ export default function RichTextEditor({ content, onChange, placeholder }: RichT
     extensions: [
       StarterKit,
       UnderlineExtension,
-      LinkExtension.configure({ openOnClick: false, HTMLAttributes: { dir: 'ltr', class: 'text-primary underline' } }),
+      LinkExtension.configure({ openOnClick: false, HTMLAttributes: { dir: 'ltr', class: 'text-accent underline' } }),
       TextAlignExtension.configure({ types: ['heading', 'paragraph'], alignments: ['left', 'center', 'right'], defaultAlignment: 'right' }),
       PlaceholderExtension.configure({ placeholder: placeholder || 'متن مقاله را بنویسید...' }),
       ImageExtension.configure({ HTMLAttributes: { class: 'max-w-full h-auto rounded-lg my-4' } }),
@@ -136,15 +136,15 @@ export default function RichTextEditor({ content, onChange, placeholder }: RichT
         <BubbleMenu editor={editor}>
           <div className="flex gap-1 bg-dark border border-white/10 shadow-xl rounded-lg p-1">
             <button onClick={() => editor.chain().focus().toggleBold().run()}
-              className={`px-2 py-1 text-sm rounded ${editor.isActive('bold') ? 'bg-primary/20 text-primary' : 'text-gray-custom hover:bg-white/10'}`}>
+              className={`px-2 py-1 text-sm rounded ${editor.isActive('bold') ? 'bg-accent/20 text-accent' : 'text-gray-custom hover:bg-white/10'}`}>
               <strong>B</strong>
             </button>
             <button onClick={() => editor.chain().focus().toggleItalic().run()}
-              className={`px-2 py-1 text-sm rounded ${editor.isActive('italic') ? 'bg-primary/20 text-primary' : 'text-gray-custom hover:bg-white/10'}`}>
+              className={`px-2 py-1 text-sm rounded ${editor.isActive('italic') ? 'bg-accent/20 text-accent' : 'text-gray-custom hover:bg-white/10'}`}>
               <em>I</em>
             </button>
             <button onClick={addLink}
-              className={`px-2 py-1 text-sm rounded ${editor.isActive('link') ? 'bg-primary/20 text-primary' : 'text-gray-custom hover:bg-white/10'}`}>
+              className={`px-2 py-1 text-sm rounded ${editor.isActive('link') ? 'bg-accent/20 text-accent' : 'text-gray-custom hover:bg-white/10'}`}>
               Link
             </button>
           </div>

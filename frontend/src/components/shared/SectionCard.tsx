@@ -18,7 +18,7 @@ export default function SectionCard({
   return (
     <Link
       href={href}
-      className="section-card block bg-dark-light border border-white/10 rounded-xl p-6 hover:border-primary/30"
+      className="section-card block bg-dark-light border border-white/10 rounded-xl p-6 hover:border-accent/30"
     >
       <div
         className="w-14 h-14 rounded-xl flex items-center justify-center text-2xl mb-4"

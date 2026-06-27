@@ -17,7 +17,7 @@ export default function Dashboard() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-indigo-600" />
+        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-accent" />
       </div>
     );
   }
@@ -27,7 +27,7 @@ export default function Dashboard() {
   }
 
   const stats = [
-    { label: 'کل بازدید صفحات', value: data.totalPageViews, color: 'bg-indigo-500' },
+    { label: 'کل بازدید صفحات', value: data.totalPageViews, color: 'bg-accent' },
     { label: 'بازدید امروز', value: data.todayPageViews, color: 'bg-green-500' },
     { label: 'تعداد کاربران', value: data.totalUsers, color: 'bg-blue-500' },
     { label: 'پیام‌های تماس', value: data.totalContacts, color: 'bg-yellow-500' },
@@ -63,8 +63,8 @@ export default function Dashboard() {
             <Area
               type="monotone"
               dataKey="count"
-              stroke="#6366f1"
-              fill="#c7d2fe"
+              stroke="#80491e"
+              fill="#80491e33"
               name="بازدید"
             />
           </AreaChart>

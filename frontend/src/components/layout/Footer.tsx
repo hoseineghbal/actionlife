@@ -56,7 +56,7 @@ export default function Footer() {
                   <li key={link.href}>
                     <Link
                       href={link.href}
-                      className="text-gray-custom text-sm hover:text-primary transition-colors"
+                      className="text-gray-custom text-sm hover:text-accent transition-colors"
                     >
                       {link.label}
                     </Link>
@@ -76,7 +76,7 @@ export default function Footer() {
                   href={social.href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="w-10 h-10 bg-white/5 hover:bg-primary/20 border border-white/10 rounded-lg flex items-center justify-center text-gray-custom hover:text-primary transition-all"
+                  className="w-10 h-10 bg-white/5 hover:bg-accent/20 border border-white/10 rounded-lg flex items-center justify-center text-gray-custom hover:text-accent transition-all"
                   aria-label={social.label}
                 >
                   <span className="text-xs">{social.label.slice(0, 2)}</span>
@@ -91,7 +91,7 @@ export default function Footer() {
                 <input
                   type="email"
                   placeholder="ایمیل شما..."
-                  className="flex-1 px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-sm text-white placeholder:text-gray-custom focus:outline-none focus:border-primary"
+                  className="flex-1 px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-sm text-white placeholder:text-gray-custom focus:outline-none focus:border-accent"
                 />
                 <button className="px-4 py-2 gradient-primary text-white text-sm rounded-lg hover:opacity-90 transition-opacity">
                   عضویت

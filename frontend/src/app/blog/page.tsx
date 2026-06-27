@@ -37,7 +37,7 @@ export default async function BlogPage() {
       <section className="bg-dark-light border-b border-white/10">
         <div className="max-w-7xl mx-auto px-4 py-12">
           <h1 className="text-3xl md:text-4xl font-black text-white mb-4">
-            وبلاگ <span className="text-primary">اکشن لایف</span>
+            وبلاگ <span className="text-accent">اکشن لایف</span>
           </h1>
           <p className="text-gray-custom max-w-2xl leading-7">
             آخرین مقالات، آموزش‌ها و اخبار دنیای سبک زندگی اکشن
@@ -54,8 +54,8 @@ export default async function BlogPage() {
               href={cat.slug === "all" ? "/blog" : `/blog?category=${cat.slug}`}
               className={`px-4 py-2 text-sm rounded-lg border transition-colors ${
                 cat.slug === "all"
-                  ? "bg-primary text-white border-primary"
-                  : "bg-white/5 text-gray-custom border-white/10 hover:border-primary/50 hover:text-white"
+                  ? "bg-accent text-white border-accent"
+                  : "bg-white/5 text-gray-custom border-white/10 hover:border-accent/50 hover:text-white"
               }`}
             >
               {cat.label}
@@ -81,10 +81,10 @@ export default async function BlogPage() {
         {/* صفحه‌بندی */}
         <div className="flex justify-center gap-2 mt-12">
           <span className="px-4 py-2 gradient-primary text-white rounded-lg text-sm">۱</span>
-          <button className="px-4 py-2 bg-white/5 text-gray-custom border border-white/10 rounded-lg text-sm hover:text-white hover:border-primary/50 transition-colors">
+          <button className="px-4 py-2 bg-white/5 text-gray-custom border border-white/10 rounded-lg text-sm hover:text-white hover:border-accent/50 transition-colors">
             ۲
           </button>
-          <button className="px-4 py-2 bg-white/5 text-gray-custom border border-white/10 rounded-lg text-sm hover:text-white hover:border-primary/50 transition-colors">
+          <button className="px-4 py-2 bg-white/5 text-gray-custom border border-white/10 rounded-lg text-sm hover:text-white hover:border-accent/50 transition-colors">
             ۳
           </button>
         </div>

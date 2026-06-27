@@ -137,7 +137,7 @@ export default function EditArticlePage() {
 
   if (!user || loading) {
     return <section className="max-w-4xl mx-auto px-4 py-24 text-center">
-      <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-primary mx-auto" />
+      <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-accent mx-auto" />
     </section>;
   }
 
@@ -152,18 +152,18 @@ export default function EditArticlePage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm text-gray-custom mb-1">عنوان</label>
-              <input type="text" value={title} onChange={e => setTitle(e.target.value)} className="w-full px-4 py-3 bg-dark border border-white/10 rounded-lg text-white focus:border-primary/50 outline-none" required />
+              <input type="text" value={title} onChange={e => setTitle(e.target.value)} className="w-full px-4 py-3 bg-dark border border-white/10 rounded-lg text-white focus:border-accent/50 outline-none" required />
             </div>
             <div>
               <label className="block text-sm text-gray-custom mb-1">بخش</label>
-              <select value={section} onChange={e => setSection(e.target.value)} className="w-full px-4 py-3 bg-dark border border-white/10 rounded-lg text-white focus:border-primary/50 outline-none">
+              <select value={section} onChange={e => setSection(e.target.value)} className="w-full px-4 py-3 bg-dark border border-white/10 rounded-lg text-white focus:border-accent/50 outline-none">
                 {SECTIONS.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
               </select>
             </div>
           </div>
           <div>
             <label className="block text-sm text-gray-custom mb-1">خلاصه</label>
-            <textarea value={excerpt} onChange={e => setExcerpt(e.target.value)} rows={3} className="w-full px-4 py-3 bg-dark border border-white/10 rounded-lg text-white focus:border-primary/50 outline-none resize-none" required />
+            <textarea value={excerpt} onChange={e => setExcerpt(e.target.value)} rows={3} className="w-full px-4 py-3 bg-dark border border-white/10 rounded-lg text-white focus:border-accent/50 outline-none resize-none" required />
           </div>
         </div>
 
@@ -175,8 +175,8 @@ export default function EditArticlePage() {
         <div className="bg-dark-light border border-white/10 rounded-xl p-6 space-y-4">
           <h2 className="text-lg font-bold text-white">تصویر شاخص</h2>
           <div className="flex gap-3">
-            <input type="text" value={featuredImage} onChange={e => setFeaturedImage(e.target.value)} placeholder="آدرس تصویر..." className="flex-1 px-4 py-3 bg-dark border border-white/10 rounded-lg text-white focus:border-primary/50 outline-none" />
-            <label className="px-4 py-3 bg-primary/10 text-primary rounded-lg cursor-pointer hover:bg-primary/20 text-sm whitespace-nowrap">آپلود<input type="file" accept="image/*" className="hidden" onChange={handleFeaturedUpload} /></label>
+            <input type="text" value={featuredImage} onChange={e => setFeaturedImage(e.target.value)} placeholder="آدرس تصویر..." className="flex-1 px-4 py-3 bg-dark border border-white/10 rounded-lg text-white focus:border-accent/50 outline-none" />
+            <label className="px-4 py-3 bg-accent/10 text-accent rounded-lg cursor-pointer hover:bg-accent/20 text-sm whitespace-nowrap">آپلود<input type="file" accept="image/*" className="hidden" onChange={handleFeaturedUpload} /></label>
           </div>
           {featuredImage && <img src={featuredImage} alt="" className="max-h-48 rounded-lg object-cover" />}
         </div>
@@ -184,8 +184,8 @@ export default function EditArticlePage() {
         <div className="bg-dark-light border border-white/10 rounded-xl p-6 space-y-4">
           <h2 className="text-lg font-bold text-white">گالری تصاویر</h2>
           <div className="flex gap-2">
-            <input type="text" value={galleryUrl} onChange={e => setGalleryUrl(e.target.value)} placeholder="آدرس تصویر..." className="flex-1 px-4 py-3 bg-dark border border-white/10 rounded-lg text-white focus:border-primary/50 outline-none" />
-            <button type="button" onClick={() => { if (galleryUrl) { setGallery([...gallery, { url: galleryUrl }]); setGalleryUrl(''); }}} className="px-4 py-3 bg-primary text-white rounded-lg text-sm">+</button>
+            <input type="text" value={galleryUrl} onChange={e => setGalleryUrl(e.target.value)} placeholder="آدرس تصویر..." className="flex-1 px-4 py-3 bg-dark border border-white/10 rounded-lg text-white focus:border-accent/50 outline-none" />
+            <button type="button" onClick={() => { if (galleryUrl) { setGallery([...gallery, { url: galleryUrl }]); setGalleryUrl(''); }}} className="px-4 py-3 bg-accent text-white rounded-lg text-sm">+</button>
           </div>
           <label className="inline-block px-4 py-2 bg-dark border border-white/10 rounded-lg text-gray-custom cursor-pointer hover:text-white text-sm">آپلود چند تصویر<input type="file" multiple accept="image/*" className="hidden" onChange={handleGalleryUpload} /></label>
           {gallery.length > 0 && <div className="grid grid-cols-4 gap-2">{gallery.map((img, i) => <div key={i} className="relative group"><img src={img.url} alt="" className="w-full h-20 object-cover rounded-lg" /><button type="button" onClick={() => setGallery(gallery.filter((_, j) => j !== i))} className="absolute top-1 right-1 bg-red-600 text-white w-5 h-5 rounded-full text-xs opacity-0 group-hover:opacity-100">×</button></div>)}</div>}
@@ -195,10 +195,10 @@ export default function EditArticlePage() {
           <h2 className="text-lg font-bold text-white">ویدیوها</h2>
           <div className="flex gap-2">
             <select value={videoSource} onChange={e => setVideoSource(e.target.value as any)} className="px-3 py-3 bg-dark border border-white/10 rounded-lg text-white text-sm"><option value="youtube">یوتیوب</option><option value="aparat">آپارات</option><option value="upload">آپلودی</option></select>
-            <input type="text" value={videoUrl} onChange={e => setVideoUrl(e.target.value)} placeholder="آدرس..." className="flex-1 px-4 py-3 bg-dark border border-white/10 rounded-lg text-white focus:border-primary/50 outline-none" />
-            <button type="button" onClick={() => { if (videoUrl) { setVideos([...videos, { url: videoUrl, title: videoTitle || undefined, source: videoSource }]); setVideoUrl(''); setVideoTitle(''); } }} className="px-4 py-3 bg-primary text-white rounded-lg text-sm">+</button>
+            <input type="text" value={videoUrl} onChange={e => setVideoUrl(e.target.value)} placeholder="آدرس..." className="flex-1 px-4 py-3 bg-dark border border-white/10 rounded-lg text-white focus:border-accent/50 outline-none" />
+            <button type="button" onClick={() => { if (videoUrl) { setVideos([...videos, { url: videoUrl, title: videoTitle || undefined, source: videoSource }]); setVideoUrl(''); setVideoTitle(''); } }} className="px-4 py-3 bg-accent text-white rounded-lg text-sm">+</button>
           </div>
-          {videoSource !== 'upload' && <input type="text" value={videoTitle} onChange={e => setVideoTitle(e.target.value)} placeholder="عنوان (اختیاری)" className="w-full px-4 py-3 bg-dark border border-white/10 rounded-lg text-white focus:border-primary/50 outline-none" />}
+          {videoSource !== 'upload' && <input type="text" value={videoTitle} onChange={e => setVideoTitle(e.target.value)} placeholder="عنوان (اختیاری)" className="w-full px-4 py-3 bg-dark border border-white/10 rounded-lg text-white focus:border-accent/50 outline-none" />}
           {videos.length > 0 && <div className="space-y-2">{videos.map((v, i) => <div key={i} className="flex justify-between items-center bg-dark rounded-lg px-4 py-2"><span className="text-sm text-gray-custom truncate">{v.title || v.url}</span><button type="button" onClick={() => setVideos(videos.filter((_, j) => j !== i))} className="text-red-400 text-sm">حذف</button></div>)}</div>}
         </div>
 
@@ -218,7 +218,7 @@ export default function EditArticlePage() {
               </div>
             </div>
             <div><label className="block text-sm text-gray-custom mb-1">برچسب‌ها (با کاما)</label>
-              <input type="text" value={tags} onChange={e => setTags(e.target.value)} placeholder="مثال: اکشن, ماجراجویی" className="w-full px-4 py-3 bg-dark border border-white/10 rounded-lg text-white focus:border-primary/50 outline-none" />
+              <input type="text" value={tags} onChange={e => setTags(e.target.value)} placeholder="مثال: اکشن, ماجراجویی" className="w-full px-4 py-3 bg-dark border border-white/10 rounded-lg text-white focus:border-accent/50 outline-none" />
             </div>
           </div>
         </div>

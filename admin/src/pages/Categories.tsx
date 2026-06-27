@@ -111,7 +111,7 @@ export default function Categories() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-indigo-600" />
+        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-accent" />
       </div>
     );
   }
@@ -122,7 +122,7 @@ export default function Categories() {
         <h1 className="text-2xl font-bold text-gray-800">مدیریت دسته‌بندی‌ها</h1>
         <button
           onClick={openNew}
-          className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors"
+          className="bg-accent text-white px-4 py-2 rounded-lg hover:bg-accent transition-colors"
         >
           + دسته‌بندی جدید
         </button>
@@ -133,7 +133,7 @@ export default function Categories() {
       {categories.length === 0 ? (
         <div className="bg-white rounded-xl shadow-sm p-12 text-center">
           <p className="text-gray-500 text-lg">هیچ دسته‌بندی‌ای یافت نشد</p>
-          <button onClick={openNew} className="text-indigo-600 hover:underline mt-2 inline-block">
+          <button onClick={openNew} className="text-accent hover:underline mt-2 inline-block">
             اولین دسته‌بندی را ایجاد کنید
           </button>
         </div>
@@ -161,7 +161,7 @@ export default function Categories() {
                     <td className="px-4 py-3 text-sm text-gray-500 max-w-xs truncate">{cat.description || '—'}</td>
                     <td className="px-4 py-3">
                       <div className="flex gap-2 justify-center">
-                        <button onClick={() => openEdit(cat)} className="text-indigo-600 hover:text-indigo-800 text-sm">
+                        <button onClick={() => openEdit(cat)} className="text-accent hover:text-accent text-sm">
                           ویرایش
                         </button>
                         <button onClick={() => handleDelete(cat._id)} className="text-red-600 hover:text-red-800 text-sm">
@@ -191,7 +191,7 @@ export default function Categories() {
                   type="text"
                   value={formName}
                   onChange={(e) => { setFormName(e.target.value); generateSlug(e.target.value); }}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-accent focus:border-accent"
                   required
                 />
               </div>
@@ -201,7 +201,7 @@ export default function Categories() {
                   type="text"
                   value={formSlug}
                   onChange={(e) => setFormSlug(e.target.value)}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-accent focus:border-accent"
                   required
                 />
               </div>
@@ -210,7 +210,7 @@ export default function Categories() {
                 <select
                   value={formParent}
                   onChange={(e) => setFormParent(e.target.value)}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-accent focus:border-accent"
                 >
                   <option value="">بدون والد (دسته اصلی)</option>
                   {categories
@@ -226,7 +226,7 @@ export default function Categories() {
                   type="number"
                   value={formOrder}
                   onChange={(e) => setFormOrder(Number(e.target.value))}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-accent focus:border-accent"
                 />
               </div>
               <div>
@@ -235,7 +235,7 @@ export default function Categories() {
                   value={formDescription}
                   onChange={(e) => setFormDescription(e.target.value)}
                   rows={3}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-accent focus:border-accent"
                 />
               </div>
               <div className="flex gap-3 justify-end pt-2">
@@ -249,7 +249,7 @@ export default function Categories() {
                 <button
                   type="submit"
                   disabled={saving}
-                  className="px-4 py-2 text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-50"
+                  className="px-4 py-2 text-white bg-accent rounded-lg hover:bg-accent transition-colors disabled:opacity-50"
                 >
                   {saving ? 'در حال ذخیره...' : editingCategory ? 'بروزرسانی' : 'ایجاد'}
                 </button>

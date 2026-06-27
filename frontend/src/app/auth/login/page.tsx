@@ -74,7 +74,7 @@ export default function LoginPage() {
                 <select
                   value={countryCode}
                   onChange={(e) => setCountryCode(e.target.value)}
-                  className="px-3 py-3 bg-dark border border-white/10 rounded-lg text-white focus:outline-none focus:border-primary transition-colors appearance-none cursor-pointer"
+                  className="px-3 py-3 bg-dark border border-white/10 rounded-lg text-white focus:outline-none focus:border-accent transition-colors appearance-none cursor-pointer"
                 >
                   {COUNTRY_CODES.map((c) => (
                     <option key={c.code} value={c.code}>
@@ -88,7 +88,7 @@ export default function LoginPage() {
                   required
                   value={mobile}
                   onChange={(e) => setMobile(e.target.value.replace(/[^0-9]/g, ''))}
-                  className="flex-1 px-4 py-3 bg-dark border border-white/10 rounded-lg text-white placeholder-gray-custom/50 focus:outline-none focus:border-primary transition-colors"
+                  className="flex-1 px-4 py-3 bg-dark border border-white/10 rounded-lg text-white placeholder-gray-custom/50 focus:outline-none focus:border-accent transition-colors"
                   placeholder="9123456789"
                   dir="ltr"
                 />
@@ -105,7 +105,7 @@ export default function LoginPage() {
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-4 py-3 bg-dark border border-white/10 rounded-lg text-white placeholder-gray-custom/50 focus:outline-none focus:border-primary transition-colors"
+                className="w-full px-4 py-3 bg-dark border border-white/10 rounded-lg text-white placeholder-gray-custom/50 focus:outline-none focus:border-accent transition-colors"
                 placeholder="رمز عبور خود را وارد کنید"
                 dir="ltr"
               />
@@ -122,7 +122,7 @@ export default function LoginPage() {
 
           <p className="text-center text-gray-custom text-sm mt-6">
             حساب کاربری ندارید؟{" "}
-            <Link href="/auth/register" className="text-primary hover:underline">
+            <Link href="/auth/register" className="text-accent hover:underline">
               ثبت نام کنید
             </Link>
           </p>

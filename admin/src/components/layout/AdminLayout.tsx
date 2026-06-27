@@ -23,9 +23,9 @@ export default function AdminLayout() {
 
   const sidebarContent = (
     <>
-      <div className="p-5 border-b border-indigo-800 flex flex-col items-center">
+      <div className="p-5 border-b border-primary/30 flex flex-col items-center">
         <img src="/logo.png" alt="Action Life" className="h-12 w-auto mb-1" />
-        <p className="text-indigo-300 text-sm">پنل مدیریت</p>
+        <p className="text-muted text-sm">پنل مدیریت</p>
       </div>
 
       <nav className="flex-1 py-4">
@@ -38,8 +38,8 @@ export default function AdminLayout() {
             className={({ isActive }) =>
               `flex items-center gap-3 px-5 py-3 text-sm transition-colors ${
                 isActive
-                  ? 'bg-sidebar-hover text-white border-l-4 border-indigo-400'
-                  : 'text-indigo-200 hover:bg-sidebar-hover hover:text-white'
+                  ? 'bg-sidebar-hover text-white border-l-4 border-accent'
+                  : 'text-muted hover:bg-sidebar-hover hover:text-white'
               }`
             }
           >
@@ -49,19 +49,19 @@ export default function AdminLayout() {
         ))}
       </nav>
 
-      <div className="p-4 border-t border-indigo-800">
+      <div className="p-4 border-t border-primary/30">
         <div className="flex items-center gap-3 mb-3">
-          <div className="w-9 h-9 bg-indigo-600 rounded-full flex items-center justify-center text-sm font-bold">
+          <div className="w-9 h-9 bg-accent rounded-full flex items-center justify-center text-sm font-bold">
             {user?.fullName?.charAt(0)}
           </div>
           <div>
             <p className="text-sm font-medium">{user?.fullName}</p>
-            <p className="text-xs text-indigo-300" dir="ltr">{user?.countryCode} {user?.mobile}</p>
+            <p className="text-xs text-muted" dir="ltr">{user?.countryCode} {user?.mobile}</p>
           </div>
         </div>
         <button
           onClick={handleLogout}
-          className="w-full text-sm text-indigo-300 hover:text-white transition-colors text-right cursor-pointer"
+          className="w-full text-sm text-muted hover:text-white transition-colors text-right cursor-pointer"
         >
           خروج از حساب
         </button>
@@ -92,7 +92,7 @@ export default function AdminLayout() {
       >
         <button
           onClick={() => setSidebarOpen(false)}
-          className="absolute top-4 left-4 p-1 text-indigo-300 hover:text-white"
+          className="absolute top-4 left-4 p-1 text-muted hover:text-white"
         >
           <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />

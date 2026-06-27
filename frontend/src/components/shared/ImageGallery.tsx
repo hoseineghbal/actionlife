@@ -34,7 +34,7 @@ export default function ImageGallery({ images }: ImageGalleryProps) {
           <button
             key={index}
             onClick={() => openLightbox(index)}
-            className="relative group aspect-square overflow-hidden rounded-xl bg-dark-light border border-white/10 hover:border-primary/50 transition-all"
+            className="relative group aspect-square overflow-hidden rounded-xl bg-dark-light border border-white/10 hover:border-accent/50 transition-all"
           >
             <img
               src={img.url}

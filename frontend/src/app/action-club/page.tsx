@@ -12,13 +12,13 @@ export default function ActionClubPage() {
       <div className="flex items-center gap-3 mb-4">
         <span className="text-4xl">👥</span>
         <h1 className="text-3xl md:text-4xl font-black text-white">
-          اکشن <span className="text-primary">کلاب</span>
+          اکشن <span className="text-accent">کلاب</span>
         </h1>
       </div>
       <p className="text-gray-custom max-w-2xl leading-7 mb-8">
         به زودی جامعه کاربران، انجمن گفتگو و چالش‌های هفتگی در این بخش فعال خواهد شد.
       </p>
-      <Link href="/" className="text-primary hover:underline text-sm">بازگشت به خانه ←</Link>
+      <Link href="/" className="text-accent hover:underline text-sm">بازگشت به خانه ←</Link>
     </section>
   );
 }

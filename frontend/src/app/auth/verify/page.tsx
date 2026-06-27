@@ -109,7 +109,7 @@ function VerifyForm() {
             <p className="text-gray-custom text-sm">
               کد ۴ رقمی ارسال شده به
             </p>
-            <p className="text-primary font-bold mt-1" dir="ltr">{countryCode} {mobile}</p>
+            <p className="text-accent font-bold mt-1" dir="ltr">{countryCode} {mobile}</p>
           </div>
 
           <form onSubmit={(e) => { e.preventDefault(); handleVerify(); }} className="space-y-6">
@@ -129,7 +129,7 @@ function VerifyForm() {
                   value={digit}
                   onChange={(e) => handleChange(index, e.target.value)}
                   onKeyDown={(e) => handleKeyDown(index, e)}
-                  className="w-14 h-14 text-center text-xl font-bold bg-dark border border-white/10 rounded-lg text-white focus:outline-none focus:border-primary transition-colors"
+                  className="w-14 h-14 text-center text-xl font-bold bg-dark border border-white/10 rounded-lg text-white focus:outline-none focus:border-accent transition-colors"
                   autoFocus={index === 0}
                   inputMode="numeric"
                 />
@@ -154,7 +154,7 @@ function VerifyForm() {
               <button
                 onClick={handleResend}
                 disabled={resending}
-                className="text-primary hover:underline text-sm disabled:opacity-50"
+                className="text-accent hover:underline text-sm disabled:opacity-50"
               >
                 {resending ? "در حال ارسال..." : "ارسال مجدد کد"}
               </button>
@@ -170,7 +170,7 @@ export default function VerifyPage() {
   return (
     <Suspense fallback={
       <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center">
-        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-primary" />
+        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-accent" />
       </div>
     }>
       <VerifyForm />

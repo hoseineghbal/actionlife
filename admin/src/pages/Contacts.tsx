@@ -38,7 +38,7 @@ export default function Contacts() {
 
       {loading ? (
         <div className="flex items-center justify-center h-64">
-          <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-indigo-600" />
+          <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-accent" />
         </div>
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -50,7 +50,7 @@ export default function Contacts() {
                 onClick={() => handleSelect(contact)}
                 className={`w-full text-right p-4 rounded-xl transition cursor-pointer ${
                   selected?._id === contact._id
-                    ? 'bg-indigo-50 border-2 border-indigo-300'
+                    ? 'bg-accent/10 border-2 border-accent'
                     : 'bg-white shadow-sm hover:shadow-md border-2 border-transparent'
                 }`}
               >

@@ -88,7 +88,7 @@ export default function TicketChatPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-96">
-        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-primary" />
+        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-accent" />
       </div>
     );
   }
@@ -131,11 +131,11 @@ export default function TicketChatPage() {
                 className={`max-w-[90%] sm:max-w-[75%] rounded-2xl px-4 py-3 ${
                   msg.senderRole === "user"
                     ? "bg-white/5 border border-white/10"
-                    : "bg-primary/20 border border-primary/30"
+                    : "bg-accent/20 border border-accent/30"
                 }`}
               >
                 <div className="flex items-center gap-2 mb-1">
-                  <span className="text-xs font-medium text-primary">
+                  <span className="text-xs font-medium text-accent">
                     {msg.senderName}
                   </span>
                   <span className="text-xs text-gray-custom">
@@ -162,7 +162,7 @@ export default function TicketChatPage() {
             value={message}
             onChange={(e) => setMessage(e.target.value)}
             placeholder="پیام خود را بنویسید..."
-            className="flex-1 min-w-0 px-3 sm:px-4 py-3 bg-dark border border-white/10 rounded-lg text-white focus:border-primary/50 outline-none transition"
+            className="flex-1 min-w-0 px-3 sm:px-4 py-3 bg-dark border border-white/10 rounded-lg text-white focus:border-accent/50 outline-none transition"
           />
           <button
             type="submit"

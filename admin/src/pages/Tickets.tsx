@@ -56,7 +56,7 @@ export default function Tickets() {
             onClick={() => setFilter(f)}
             className={`px-4 py-2 rounded-lg text-sm font-medium transition cursor-pointer ${
               filter === f
-                ? 'bg-indigo-600 text-white'
+                ? 'bg-accent text-white'
                 : 'bg-white text-gray-600 hover:bg-gray-50 border border-gray-200'
             }`}
           >
@@ -67,7 +67,7 @@ export default function Tickets() {
 
       {loading ? (
         <div className="flex items-center justify-center h-64">
-          <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-indigo-600" />
+          <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-accent" />
         </div>
       ) : (
         <div className="space-y-3">

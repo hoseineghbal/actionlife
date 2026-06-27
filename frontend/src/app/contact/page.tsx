@@ -35,7 +35,7 @@ export default function ContactPage() {
       <section className="bg-dark-light border-b border-white/10">
         <div className="max-w-7xl mx-auto px-4 py-12">
           <h1 className="text-3xl md:text-4xl font-black text-white mb-4">
-            تماس با <span className="text-primary">ما</span>
+            تماس با <span className="text-accent">ما</span>
           </h1>
           <p className="text-gray-custom max-w-2xl leading-7">
             سوالی دارید؟ پیشنهادی برای همکاری دارید؟ یا فقط می‌خواهید سلام کنید؟ 
@@ -60,7 +60,7 @@ export default function ContactPage() {
                 <a
                   key={item.title}
                   href={item.href}
-                  className="flex items-start gap-4 p-4 bg-dark-light border border-white/10 rounded-xl hover:border-primary/30 transition-colors"
+                  className="flex items-start gap-4 p-4 bg-dark-light border border-white/10 rounded-xl hover:border-accent/30 transition-colors"
                 >
                   <span className="text-2xl">{item.icon}</span>
                   <div>
@@ -81,7 +81,7 @@ export default function ContactPage() {
                   <a
                     key={social}
                     href="#"
-                    className="px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-sm text-gray-custom hover:text-primary hover:border-primary/30 transition-all"
+                    className="px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-sm text-gray-custom hover:text-accent hover:border-accent/30 transition-all"
                   >
                     {social}
                   </a>

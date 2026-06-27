@@ -181,7 +181,7 @@ export default function ProfilePage() {
             </div>
             <div>
               <h1 className="text-3xl md:text-4xl font-black text-white mb-1">
-                پروفایل <span className="text-primary">کاربری</span>
+                پروفایل <span className="text-accent">کاربری</span>
               </h1>
               <p className="text-gray-custom">{profile?.email || user.email}</p>
             </div>
@@ -192,7 +192,7 @@ export default function ProfilePage() {
       <section className="max-w-4xl mx-auto px-4 py-8">
         {loading ? (
           <div className="flex items-center justify-center h-64">
-            <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-primary" />
+            <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-accent" />
           </div>
         ) : (
           <form onSubmit={handleSubmit}>
@@ -227,7 +227,7 @@ export default function ProfilePage() {
                       type="text"
                       value={form.fullName}
                       onChange={(e) => handleChange("fullName", e.target.value)}
-                      className="w-full px-4 py-3 bg-dark border border-white/10 rounded-lg text-white focus:border-primary/50 outline-none transition"
+                      className="w-full px-4 py-3 bg-dark border border-white/10 rounded-lg text-white focus:accent/50 outline-none transition"
                       placeholder="نام کامل خود را وارد کنید"
                     />
                   </div>
@@ -237,7 +237,7 @@ export default function ProfilePage() {
                       type="tel"
                       value={form.mobile}
                       onChange={(e) => handleChange("mobile", e.target.value)}
-                      className="w-full px-4 py-3 bg-dark border border-white/10 rounded-lg text-white focus:border-primary/50 outline-none transition"
+                      className="w-full px-4 py-3 bg-dark border border-white/10 rounded-lg text-white focus:accent/50 outline-none transition"
                       placeholder="09123456789"
                       dir="ltr"
                     />
@@ -251,7 +251,7 @@ export default function ProfilePage() {
                       type="text"
                       value={form.birthDate}
                       onChange={(e) => handleChange("birthDate", e.target.value)}
-                      className="w-full px-4 py-3 bg-dark border border-white/10 rounded-lg text-white focus:border-primary/50 outline-none transition"
+                      className="w-full px-4 py-3 bg-dark border border-white/10 rounded-lg text-white focus:accent/50 outline-none transition"
                       placeholder="مثلا: 1375/06/15"
                       dir="ltr"
                     />
@@ -266,7 +266,7 @@ export default function ProfilePage() {
                           onClick={() => handleChange("gender", opt.value)}
                           className={`flex-1 px-4 py-3 rounded-lg text-sm font-medium border transition-colors ${
                             form.gender === opt.value
-                              ? "border-primary bg-primary/10 text-primary"
+                              ? "border-accent bg-accent/10 text-accent"
                               : "border-white/10 bg-dark text-gray-custom hover:border-white/20"
                           }`}
                         >
@@ -283,7 +283,7 @@ export default function ProfilePage() {
                     value={form.bio}
                     onChange={(e) => handleChange("bio", e.target.value)}
                     rows={4}
-                    className="w-full px-4 py-3 bg-dark border border-white/10 rounded-lg text-white focus:border-primary/50 outline-none transition resize-none"
+                    className="w-full px-4 py-3 bg-dark border border-white/10 rounded-lg text-white focus:accent/50 outline-none transition resize-none"
                     placeholder="کمی درباره خودتان بنویسید..."
                   />
                 </div>
@@ -301,7 +301,7 @@ export default function ProfilePage() {
                     <select
                       value={form.education}
                       onChange={(e) => handleChange("education", e.target.value)}
-                      className="w-full px-4 py-3 bg-dark border border-white/10 rounded-lg text-white focus:border-primary/50 outline-none transition"
+                      className="w-full px-4 py-3 bg-dark border border-white/10 rounded-lg text-white focus:accent/50 outline-none transition"
                     >
                       <option value="">انتخاب کنید</option>
                       {educationOptions.map((opt) => (
@@ -317,7 +317,7 @@ export default function ProfilePage() {
                       type="text"
                       value={form.fieldOfStudy}
                       onChange={(e) => handleChange("fieldOfStudy", e.target.value)}
-                      className="w-full px-4 py-3 bg-dark border border-white/10 rounded-lg text-white focus:border-primary/50 outline-none transition"
+                      className="w-full px-4 py-3 bg-dark border border-white/10 rounded-lg text-white focus:accent/50 outline-none transition"
                       placeholder="مثلا: مهندسی نرم‌افزار"
                     />
                   </div>
@@ -329,7 +329,7 @@ export default function ProfilePage() {
                     type="text"
                     value={form.expertise}
                     onChange={(e) => handleChange("expertise", e.target.value)}
-                    className="w-full px-4 py-3 bg-dark border border-white/10 rounded-lg text-white focus:border-primary/50 outline-none transition"
+                    className="w-full px-4 py-3 bg-dark border border-white/10 rounded-lg text-white focus:accent/50 outline-none transition"
                     placeholder="مثلا: توسعه‌دهنده وب، طراح گرافیک"
                   />
                 </div>
@@ -345,7 +345,7 @@ export default function ProfilePage() {
                         onClick={() => toggleInterest(interest)}
                         className={`px-3 py-1.5 rounded-full text-sm border transition-colors ${
                           form.interests.includes(interest)
-                            ? "border-primary bg-primary/10 text-primary"
+                            ? "border-accent bg-accent/10 text-accent"
                             : "border-white/10 text-gray-custom hover:border-white/20 hover:text-white"
                         }`}
                       >
@@ -369,7 +369,7 @@ export default function ProfilePage() {
                       type="text"
                       value={form.country}
                       onChange={(e) => handleChange("country", e.target.value)}
-                      className="w-full px-4 py-3 bg-dark border border-white/10 rounded-lg text-white focus:border-primary/50 outline-none transition"
+                      className="w-full px-4 py-3 bg-dark border border-white/10 rounded-lg text-white focus:accent/50 outline-none transition"
                       placeholder="مثلا: ایران"
                     />
                   </div>
@@ -379,7 +379,7 @@ export default function ProfilePage() {
                       type="text"
                       value={form.city}
                       onChange={(e) => handleChange("city", e.target.value)}
-                      className="w-full px-4 py-3 bg-dark border border-white/10 rounded-lg text-white focus:border-primary/50 outline-none transition"
+                      className="w-full px-4 py-3 bg-dark border border-white/10 rounded-lg text-white focus:accent/50 outline-none transition"
                       placeholder="مثلا: تهران"
                     />
                   </div>
@@ -398,7 +398,7 @@ export default function ProfilePage() {
                     type="url"
                     value={form.website}
                     onChange={(e) => handleChange("website", e.target.value)}
-                    className="w-full px-4 py-3 bg-dark border border-white/10 rounded-lg text-white focus:border-primary/50 outline-none transition"
+                    className="w-full px-4 py-3 bg-dark border border-white/10 rounded-lg text-white focus:accent/50 outline-none transition"
                     placeholder="https://example.com"
                     dir="ltr"
                   />
@@ -411,7 +411,7 @@ export default function ProfilePage() {
                       type="text"
                       value={form.instagram}
                       onChange={(e) => handleChange("instagram", e.target.value)}
-                      className="w-full px-4 py-3 bg-dark border border-white/10 rounded-lg text-white focus:border-primary/50 outline-none transition"
+                      className="w-full px-4 py-3 bg-dark border border-white/10 rounded-lg text-white focus:accent/50 outline-none transition"
                       placeholder="@username"
                       dir="ltr"
                     />
@@ -422,7 +422,7 @@ export default function ProfilePage() {
                       type="text"
                       value={form.linkedin}
                       onChange={(e) => handleChange("linkedin", e.target.value)}
-                      className="w-full px-4 py-3 bg-dark border border-white/10 rounded-lg text-white focus:border-primary/50 outline-none transition"
+                      className="w-full px-4 py-3 bg-dark border border-white/10 rounded-lg text-white focus:accent/50 outline-none transition"
                       placeholder="linkedin.com/in/username"
                       dir="ltr"
                     />
@@ -435,7 +435,7 @@ export default function ProfilePage() {
                     type="text"
                     value={form.twitter}
                     onChange={(e) => handleChange("twitter", e.target.value)}
-                    className="w-full px-4 py-3 bg-dark border border-white/10 rounded-lg text-white focus:border-primary/50 outline-none transition"
+                    className="w-full px-4 py-3 bg-dark border border-white/10 rounded-lg text-white focus:accent/50 outline-none transition"
                     placeholder="@username"
                     dir="ltr"
                   />

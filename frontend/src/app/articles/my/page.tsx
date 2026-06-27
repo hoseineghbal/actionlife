@@ -78,12 +78,12 @@ export default function MyArticlesPage() {
 
       {loading ? (
         <div className="flex items-center justify-center h-64">
-          <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-primary" />
+          <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-accent" />
         </div>
       ) : articles.length === 0 ? (
         <div className="bg-dark-light border border-white/10 rounded-xl p-12 text-center">
           <p className="text-gray-custom text-lg mb-4">هنوز مقاله‌ای ارسال نکرده‌اید</p>
-          <Link href="/articles/new" className="text-primary hover:underline">ارسال اولین مقاله</Link>
+          <Link href="/articles/new" className="text-accent hover:underline">ارسال اولین مقاله</Link>
         </div>
       ) : (
         <div className="space-y-3">
@@ -116,7 +116,7 @@ export default function MyArticlesPage() {
                     <div className="flex items-center gap-2 mt-2">
                       <Link
                         href={`${sectionPath}/${article.slug}`}
-                        className="text-xs text-primary hover:underline"
+                        className="text-xs text-accent hover:underline"
                         target="_blank"
                       >
                         مشاهده

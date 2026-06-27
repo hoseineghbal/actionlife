@@ -64,17 +64,17 @@ export default async function UserProfilePage({ params }: Props) {
               {(user.website || user.instagram || user.twitter) && (
                 <div className="flex gap-3 mt-3">
                   {user.website && (
-                    <a href={user.website} target="_blank" rel="noopener noreferrer" className="text-primary text-sm hover:underline">
+                    <a href={user.website} target="_blank" rel="noopener noreferrer" className="text-accent text-sm hover:underline">
                       وبسایت
                     </a>
                   )}
                   {user.instagram && (
-                    <a href={`https://instagram.com/${user.instagram.replace('@', '')}`} target="_blank" rel="noopener noreferrer" className="text-primary text-sm hover:underline">
+                    <a href={`https://instagram.com/${user.instagram.replace('@', '')}`} target="_blank" rel="noopener noreferrer" className="text-accent text-sm hover:underline">
                       اینستاگرام
                     </a>
                   )}
                   {user.twitter && (
-                    <a href={`https://x.com/${user.twitter.replace('@', '')}`} target="_blank" rel="noopener noreferrer" className="text-primary text-sm hover:underline">
+                    <a href={`https://x.com/${user.twitter.replace('@', '')}`} target="_blank" rel="noopener noreferrer" className="text-accent text-sm hover:underline">
                       توییتر
                     </a>
                   )}

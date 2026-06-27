@@ -99,7 +99,7 @@ export default function TicketsPage() {
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
               <h1 className="text-3xl md:text-4xl font-black text-white mb-2 sm:mb-4">
-                تیکت‌های <span className="text-primary">پشتیبانی</span>
+                تیکت‌های <span className="text-accent">پشتیبانی</span>
               </h1>
               <p className="text-gray-custom max-w-2xl leading-7">
                 سوال یا مشکلی دارید؟ یک تیکت جدید ایجاد کنید و تیم پشتیبانی در
@@ -130,7 +130,7 @@ export default function TicketsPage() {
                   type="text"
                   value={subject}
                   onChange={(e) => setSubject(e.target.value)}
-                  className="w-full px-4 py-3 bg-dark border border-white/10 rounded-lg text-white focus:border-primary/50 outline-none transition"
+                  className="w-full px-4 py-3 bg-dark border border-white/10 rounded-lg text-white focus:border-accent/50 outline-none transition"
                   placeholder="موضوع تیکت..."
                   required
                 />
@@ -140,7 +140,7 @@ export default function TicketsPage() {
                 <select
                   value={priority}
                   onChange={(e) => setPriority(e.target.value)}
-                  className="w-full px-4 py-3 bg-dark border border-white/10 rounded-lg text-white focus:border-primary/50 outline-none transition"
+                  className="w-full px-4 py-3 bg-dark border border-white/10 rounded-lg text-white focus:border-accent/50 outline-none transition"
                 >
                   <option value="low">پایین</option>
                   <option value="medium">متوسط</option>
@@ -154,7 +154,7 @@ export default function TicketsPage() {
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
                 rows={4}
-                className="w-full px-4 py-3 bg-dark border border-white/10 rounded-lg text-white focus:border-primary/50 outline-none transition resize-none"
+                className="w-full px-4 py-3 bg-dark border border-white/10 rounded-lg text-white focus:border-accent/50 outline-none transition resize-none"
                 placeholder="مشکل خود را شرح دهید..."
                 required
               />
@@ -171,7 +171,7 @@ export default function TicketsPage() {
 
         {loading ? (
           <div className="flex items-center justify-center h-64">
-            <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-primary" />
+            <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-accent" />
           </div>
         ) : tickets.length === 0 ? (
           <div className="text-center py-20 text-gray-custom">
@@ -184,7 +184,7 @@ export default function TicketsPage() {
               <Link
                 key={ticket._id}
                 href={`/tickets/${ticket._id}`}
-                className="block bg-dark-light border border-white/10 rounded-xl p-5 hover:border-primary/30 transition-colors"
+                className="block bg-dark-light border border-white/10 rounded-xl p-5 hover:border-accent/30 transition-colors"
               >
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
                   <h3 className="font-bold text-white truncate">{ticket.subject}</h3>

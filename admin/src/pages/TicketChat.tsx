@@ -62,7 +62,7 @@ export default function TicketChat() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-indigo-600" />
+        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-accent" />
       </div>
     );
   }
@@ -102,7 +102,7 @@ export default function TicketChat() {
               onClick={() => updateStatus(s)}
               className={`px-3 py-1.5 rounded-lg text-xs font-medium transition cursor-pointer ${
                 ticket.status === s
-                  ? 'bg-indigo-600 text-white'
+                  ? 'bg-accent text-white'
                   : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
               }`}
             >
@@ -123,12 +123,12 @@ export default function TicketChat() {
               <div
                 className={`max-w-[85%] sm:max-w-[70%] rounded-2xl px-4 py-3 ${
                   msg.senderRole === 'admin'
-                    ? 'bg-indigo-50 text-gray-800'
+                    ? 'bg-accent/10 text-gray-800'
                     : 'bg-gray-100 text-gray-800'
                 }`}
               >
                 <div className="flex items-center gap-2 mb-1">
-                  <span className="text-xs font-medium text-indigo-600">
+                  <span className="text-xs font-medium text-accent">
                     {msg.senderName}
                   </span>
                   <span className="text-xs text-gray-400">
@@ -150,12 +150,12 @@ export default function TicketChat() {
             value={message}
             onChange={(e) => setMessage(e.target.value)}
             placeholder="پیام خود را بنویسید..."
-            className="flex-1 min-w-0 px-3 sm:px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none"
+            className="flex-1 min-w-0 px-3 sm:px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent outline-none"
           />
           <button
             type="submit"
             disabled={sending || !message.trim()}
-            className="px-4 sm:px-6 py-3 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 transition disabled:opacity-50 cursor-pointer shrink-0"
+            className="px-4 sm:px-6 py-3 bg-accent text-white rounded-lg font-medium hover:bg-accent transition disabled:opacity-50 cursor-pointer shrink-0"
           >
             {sending ? 'ارسال...' : 'ارسال'}
           </button>

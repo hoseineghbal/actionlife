@@ -89,7 +89,7 @@ export default function PrivacyPage() {
       <section className="bg-dark-light border-b border-white/10">
         <div className="max-w-4xl mx-auto px-4 py-12">
           <h1 className="text-3xl md:text-4xl font-black text-white mb-4">
-            حریم <span className="text-primary">خصوصی</span>
+            حریم <span className="text-accent">خصوصی</span>
           </h1>
           <p className="text-gray-custom leading-7">
             حریم خصوصی شما برای ما مهم است. این سیاست نحوه جمع‌آوری، استفاده و
@@ -115,7 +115,7 @@ export default function PrivacyPage() {
               <ul className="space-y-3">
                 {section.items.map((item, i) => (
                   <li key={i} className="flex items-start gap-3 text-gray-custom leading-7">
-                    <span className="text-primary mt-1.5 flex-shrink-0">•</span>
+                    <span className="text-accent mt-1.5 flex-shrink-0">•</span>
                     <span>{item}</span>
                   </li>
                 ))}
@@ -125,7 +125,7 @@ export default function PrivacyPage() {
         </div>
 
         {/* اطلاعیه پایانی */}
-        <div className="mt-10 bg-primary/10 border border-primary/20 rounded-2xl p-6 text-center">
+        <div className="mt-10 bg-accent/10 border border-accent/20 rounded-2xl p-6 text-center">
           <p className="text-gray-custom leading-7">
             آخرین به‌روزرسانی: فروردین ۱۴۰۵
           </p>

@@ -27,7 +27,7 @@ export default async function ActionCinemaPage() {
           <div className="flex items-center gap-3 mb-4">
             <span className="text-4xl">🎬</span>
             <h1 className="text-3xl md:text-4xl font-black text-white">
-              اکشن <span className="text-primary">نما</span>
+              اکشن <span className="text-accent">نما</span>
             </h1>
           </div>
           <p className="text-gray-custom max-w-2xl leading-7">

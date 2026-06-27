@@ -38,7 +38,7 @@ function ToolbarButton({ onClick, isActive, title, children }: ToolbarButtonProp
       onClick={onClick}
       title={title}
       className={`p-2 rounded transition-colors ${
-        isActive ? 'bg-indigo-100 text-indigo-700' : 'text-gray-600 hover:bg-gray-100'
+        isActive ? 'bg-accent/20 text-accent' : 'text-gray-600 hover:bg-gray-100'
       }`}
     >
       {children}
@@ -55,7 +55,7 @@ export default function RichTextEditor({ content, onChange, placeholder }: RichT
       UnderlineExtension,
       LinkExtension.configure({
         openOnClick: false,
-        HTMLAttributes: { dir: 'ltr', class: 'text-indigo-600 underline' },
+        HTMLAttributes: { dir: 'ltr', class: 'text-accent underline' },
       }),
       TextAlignExtension.configure({
         types: ['heading', 'paragraph'],
@@ -217,25 +217,25 @@ export default function RichTextEditor({ content, onChange, placeholder }: RichT
           <div className="flex gap-1 bg-white shadow-lg rounded-lg border p-1">
             <button
               onClick={() => editor.chain().focus().toggleBold().run()}
-              className={`px-2 py-1 text-sm rounded ${editor.isActive('bold') ? 'bg-indigo-100 text-indigo-700' : ''}`}
+              className={`px-2 py-1 text-sm rounded ${editor.isActive('bold') ? 'bg-accent/20 text-accent' : ''}`}
             >
               <strong>B</strong>
             </button>
             <button
               onClick={() => editor.chain().focus().toggleItalic().run()}
-              className={`px-2 py-1 text-sm rounded ${editor.isActive('italic') ? 'bg-indigo-100 text-indigo-700' : ''}`}
+              className={`px-2 py-1 text-sm rounded ${editor.isActive('italic') ? 'bg-accent/20 text-accent' : ''}`}
             >
               <em>I</em>
             </button>
             <button
               onClick={() => editor.chain().focus().toggleUnderline().run()}
-              className={`px-2 py-1 text-sm rounded ${editor.isActive('underline') ? 'bg-indigo-100 text-indigo-700' : ''}`}
+              className={`px-2 py-1 text-sm rounded ${editor.isActive('underline') ? 'bg-accent/20 text-accent' : ''}`}
             >
               <span className="underline">U</span>
             </button>
             <button
               onClick={addLink}
-              className={`px-2 py-1 text-sm rounded ${editor.isActive('link') ? 'bg-indigo-100 text-indigo-700' : ''}`}
+              className={`px-2 py-1 text-sm rounded ${editor.isActive('link') ? 'bg-accent/20 text-accent' : ''}`}
             >
               Link
             </button>

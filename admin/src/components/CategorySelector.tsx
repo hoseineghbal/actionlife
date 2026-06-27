@@ -74,7 +74,7 @@ function CategoryNode({
           type="checkbox"
           checked={selectedIds.includes(node.category._id)}
           onChange={() => onToggle(node.category._id)}
-          className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+          className="rounded border-gray-300 text-accent focus:ring-accent"
         />
         <span className={`${depth === 0 ? 'font-medium text-gray-800' : 'text-gray-600'}`}>
           {node.category.name}
@@ -129,7 +129,7 @@ export default function CategorySelector({ categories, selectedIds, onChange }: 
         value={searchTerm}
         onChange={(e) => setSearchTerm(e.target.value)}
         placeholder="جستجوی دسته‌بندی..."
-        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm mb-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm mb-2 focus:ring-2 focus:ring-accent focus:border-accent"
       />
       <div className="max-h-60 overflow-y-auto border rounded-lg p-2">
         {tree.map((node) => (

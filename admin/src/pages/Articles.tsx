@@ -79,7 +79,7 @@ export default function Articles() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-indigo-600" />
+        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-accent" />
       </div>
     );
   }
@@ -92,7 +92,7 @@ export default function Articles() {
         <h1 className="text-2xl font-bold text-gray-800">مدیریت مقالات</h1>
         <Link
           to="/articles/new"
-          className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors"
+          className="bg-accent text-white px-4 py-2 rounded-lg hover:bg-accent transition-colors"
         >
           + مقاله جدید
         </Link>
@@ -114,7 +114,7 @@ export default function Articles() {
             onClick={() => setFilter(f.value)}
             className={`px-3 py-1.5 text-sm rounded-lg transition-colors ${
               filter === f.value
-                ? 'bg-indigo-600 text-white'
+                ? 'bg-accent text-white'
                 : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
             }`}
           >
@@ -126,7 +126,7 @@ export default function Articles() {
       {articles.length === 0 ? (
         <div className="bg-white rounded-xl shadow-sm p-12 text-center">
           <p className="text-gray-500 text-lg">هیچ مقاله‌ای یافت نشد</p>
-          <Link to="/articles/new" className="text-indigo-600 hover:underline mt-2 inline-block">
+          <Link to="/articles/new" className="text-accent hover:underline mt-2 inline-block">
             اولین مقاله را ایجاد کنید
           </Link>
         </div>
@@ -179,7 +179,7 @@ export default function Articles() {
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex gap-2 justify-center flex-wrap">
-                        <Link to={`/articles/${article._id}`} className="text-indigo-600 hover:text-indigo-800 text-sm">ویرایش</Link>
+                        <Link to={`/articles/${article._id}`} className="text-accent hover:text-accent text-sm">ویرایش</Link>
                         {article.status === 'pending_review' && (
                           <>
                             <button onClick={() => handleApprove(article._id)} className="text-green-600 hover:text-green-800 text-sm font-medium">✓ تایید</button>

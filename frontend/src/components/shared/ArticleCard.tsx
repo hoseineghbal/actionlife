@@ -33,7 +33,7 @@ export default function ArticleCard({
     section === "blog" ? "/blog" : `/${section}`;
 
   return (
-    <article className="group bg-dark-light border border-white/10 rounded-xl overflow-hidden hover:border-primary/30 transition-all">
+    <article className="group bg-dark-light border border-white/10 rounded-xl overflow-hidden hover:border-accent/30 transition-all">
       {/* تصویر */}
       <Link href={`${sectionPath}/${slug}`} className="block relative overflow-hidden">
         <div className="aspect-video bg-white/5">
@@ -59,7 +59,7 @@ export default function ArticleCard({
       {/* محتوا */}
       <div className="p-4">
         <Link href={`${sectionPath}/${slug}`}>
-          <h3 className="text-white font-bold mb-2 line-clamp-2 group-hover:text-primary transition-colors">
+          <h3 className="text-white font-bold mb-2 line-clamp-2 group-hover:text-accent transition-colors">
             {title}
           </h3>
         </Link>
@@ -67,7 +67,7 @@ export default function ArticleCard({
         <div className="flex items-center justify-between text-xs text-gray-custom">
           {author && (
             author._id ? (
-              <Link href={`/users/${author._id}`} className="hover:text-primary transition-colors">
+              <Link href={`/users/${author._id}`} className="hover:text-accent transition-colors">
                 {author.fullName}
               </Link>
             ) : (

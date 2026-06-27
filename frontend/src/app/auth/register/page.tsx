@@ -88,7 +88,7 @@ export default function RegisterPage() {
                 required
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
-                className="w-full px-4 py-3 bg-dark border border-white/10 rounded-lg text-white placeholder-gray-custom/50 focus:outline-none focus:border-primary transition-colors"
+                className="w-full px-4 py-3 bg-dark border border-white/10 rounded-lg text-white placeholder-gray-custom/50 focus:outline-none focus:border-accent transition-colors"
                 placeholder="نام کامل خود را وارد کنید"
               />
             </div>
@@ -101,7 +101,7 @@ export default function RegisterPage() {
                 <select
                   value={countryCode}
                   onChange={(e) => setCountryCode(e.target.value)}
-                  className="px-3 py-3 bg-dark border border-white/10 rounded-lg text-white focus:outline-none focus:border-primary transition-colors appearance-none cursor-pointer"
+                  className="px-3 py-3 bg-dark border border-white/10 rounded-lg text-white focus:outline-none focus:border-accent transition-colors appearance-none cursor-pointer"
                 >
                   {COUNTRY_CODES.map((c) => (
                     <option key={c.code} value={c.code}>
@@ -115,7 +115,7 @@ export default function RegisterPage() {
                   required
                   value={mobile}
                   onChange={(e) => setMobile(e.target.value.replace(/[^0-9]/g, ''))}
-                  className="flex-1 px-4 py-3 bg-dark border border-white/10 rounded-lg text-white placeholder-gray-custom/50 focus:outline-none focus:border-primary transition-colors"
+                  className="flex-1 px-4 py-3 bg-dark border border-white/10 rounded-lg text-white placeholder-gray-custom/50 focus:outline-none focus:border-accent transition-colors"
                   placeholder="9123456789"
                   dir="ltr"
                 />
@@ -132,7 +132,7 @@ export default function RegisterPage() {
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-4 py-3 bg-dark border border-white/10 rounded-lg text-white placeholder-gray-custom/50 focus:outline-none focus:border-primary transition-colors"
+                className="w-full px-4 py-3 bg-dark border border-white/10 rounded-lg text-white placeholder-gray-custom/50 focus:outline-none focus:border-accent transition-colors"
                 placeholder="حداقل ۶ کاراکتر"
                 dir="ltr"
               />
@@ -148,7 +148,7 @@ export default function RegisterPage() {
                 required
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
-                className="w-full px-4 py-3 bg-dark border border-white/10 rounded-lg text-white placeholder-gray-custom/50 focus:outline-none focus:border-primary transition-colors"
+                className="w-full px-4 py-3 bg-dark border border-white/10 rounded-lg text-white placeholder-gray-custom/50 focus:outline-none focus:border-accent transition-colors"
                 placeholder="رمز عبور را دوباره وارد کنید"
                 dir="ltr"
               />
@@ -165,7 +165,7 @@ export default function RegisterPage() {
 
           <p className="text-center text-gray-custom text-sm mt-6">
             قبلاً ثبت نام کرده‌اید؟{" "}
-            <Link href="/auth/login" className="text-primary hover:underline">
+            <Link href="/auth/login" className="text-accent hover:underline">
               وارد شوید
             </Link>
           </p>

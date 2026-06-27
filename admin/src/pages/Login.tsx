@@ -39,11 +39,11 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-900 to-purple-900 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-primary to-primary-dark flex items-center justify-center p-4">
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8">
         <div className="text-center mb-8 flex flex-col items-center">
           <img src="/logo.png" alt="Action Life" className="h-16 w-auto mb-3" />
-          <p className="text-gray-500">ورود به پنل مدیریت</p>
+          <p className="text-muted">ورود به پنل مدیریت</p>
         </div>
 
         {error && (
@@ -61,7 +61,7 @@ export default function Login() {
               <select
                 value={countryCode}
                 onChange={(e) => setCountryCode(e.target.value)}
-                className="px-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition appearance-none cursor-pointer"
+                className="px-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent outline-none transition appearance-none cursor-pointer"
               >
                 {COUNTRY_CODES.map((c) => (
                   <option key={c.code} value={c.code}>
@@ -73,7 +73,7 @@ export default function Login() {
                 type="tel"
                 value={mobile}
                 onChange={(e) => setMobile(e.target.value.replace(/[^0-9]/g, ''))}
-                className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition"
+                className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent outline-none transition"
                 placeholder="9123456789"
                 dir="ltr"
                 required
@@ -89,7 +89,7 @@ export default function Login() {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent outline-none transition"
               placeholder="••••••••"
               required
             />
@@ -98,7 +98,7 @@ export default function Login() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-indigo-600 text-white py-3 rounded-lg font-medium hover:bg-indigo-700 transition disabled:opacity-50 cursor-pointer"
+            className="w-full bg-accent text-white py-3 rounded-lg font-medium hover:opacity-90 transition disabled:opacity-50 cursor-pointer"
           >
             {loading ? 'در حال ورود...' : 'ورود'}
           </button>

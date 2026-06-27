@@ -60,7 +60,7 @@ export default function AboutPage() {
         <div className="absolute inset-0 bg-gradient-to-b from-secondary/20 to-dark z-0" />
         <div className="relative z-10 max-w-4xl mx-auto px-4 py-20 text-center">
           <h1 className="text-4xl md:text-5xl font-black text-white mb-6">
-            درباره <span className="text-primary">Action Life</span>
+            درباره <span className="text-accent">Action Life</span>
           </h1>
           <p className="text-lg text-gray-custom leading-8">
             اکشن لایف پلتفرمی است برای کسانی که زندگی فعال و پرماجرا را انتخاب می‌کنند.
@@ -75,7 +75,7 @@ export default function AboutPage() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
           <div>
             <h2 className="text-2xl md:text-3xl font-black text-white mb-6">
-              مأموریت <span className="text-primary">ما</span>
+              مأموریت <span className="text-accent">ما</span>
             </h2>
             <p className="text-gray-custom leading-8 mb-4">
               مأموریت ما در اکشن لایف ایجاد بزرگ‌ترین پلتفرم فارسی‌زبان برای سبک زندگی اکشن است.
@@ -89,7 +89,7 @@ export default function AboutPage() {
           </div>
           <div className="bg-dark-light border border-white/10 rounded-2xl p-8">
             <h3 className="text-xl font-bold text-white mb-4">فلسفه برند</h3>
-            <blockquote className="text-lg text-primary italic mb-4">
+            <blockquote className="text-lg text-accent italic mb-4">
               &ldquo;زندگی کوتاه‌تر از آن است که در آن تماشاگر باشی. بازیکن باش!&rdquo;
             </blockquote>
             <p className="text-gray-custom leading-7">
@@ -103,7 +103,7 @@ export default function AboutPage() {
       {/* ارزش‌ها */}
       <section className="max-w-7xl mx-auto px-4 py-16">
         <h2 className="text-2xl md:text-3xl font-black text-white text-center mb-12">
-          ارزش‌های <span className="text-primary">ما</span>
+          ارزش‌های <span className="text-accent">ما</span>
         </h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {values.map((value) => (
@@ -122,7 +122,7 @@ export default function AboutPage() {
       {/* تیم */}
       <section className="max-w-7xl mx-auto px-4 py-16">
         <h2 className="text-2xl md:text-3xl font-black text-white text-center mb-12">
-          تیم <span className="text-primary">ما</span>
+          تیم <span className="text-accent">ما</span>
         </h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {team.map((member) => (
@@ -136,7 +136,7 @@ export default function AboutPage() {
                 </svg>
               </div>
               <h3 className="text-white font-bold mb-1">{member.name}</h3>
-              <p className="text-primary text-sm mb-2">{member.role}</p>
+              <p className="text-accent text-sm mb-2">{member.role}</p>
               <p className="text-gray-custom text-sm leading-6">{member.description}</p>
             </div>
           ))}
@@ -147,7 +147,7 @@ export default function AboutPage() {
       <section className="max-w-7xl mx-auto px-4 py-16">
         <div className="bg-dark-light border border-white/10 rounded-2xl p-8 md:p-12 text-center">
           <h2 className="text-2xl md:text-3xl font-black text-white mb-4">
-            همکاری با <span className="text-primary">ما</span>
+            همکاری با <span className="text-accent">ما</span>
           </h2>
           <p className="text-gray-custom max-w-2xl mx-auto mb-6 leading-7">
             اگر در حوزه‌های طبیعت‌گردی، ورزش، گیم، سینما یا تولید محتوا تخصص دارید

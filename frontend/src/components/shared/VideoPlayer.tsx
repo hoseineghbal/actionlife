@@ -63,7 +63,7 @@ export default function VideoPlayer({ video }: VideoPlayerProps) {
 
         {isLoading && (
           <div className="absolute inset-0 flex items-center justify-center bg-black/60">
-            <div className="w-10 h-10 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+            <div className="w-10 h-10 border-2 border-accent border-t-transparent rounded-full animate-spin" />
           </div>
         )}
       </div>

@@ -32,7 +32,7 @@ function UserDetailModal({ user, onClose }: { user: User; onClose: () => void })
         {/* پروفایل کاربر */}
         <div className="px-6 py-5 border-b bg-gray-50">
           <div className="flex items-center gap-4">
-            <div className="w-14 h-14 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center text-xl font-bold">
+            <div className="w-14 h-14 bg-accent/20 text-accent rounded-full flex items-center justify-center text-xl font-bold">
               {user.fullName.charAt(0)}
             </div>
             <div>
@@ -51,7 +51,7 @@ function UserDetailModal({ user, onClose }: { user: User; onClose: () => void })
           {/* اطلاعات پایه */}
           <div>
             <h4 className="text-sm font-bold text-gray-800 mb-2 flex items-center gap-2">
-              <svg className="w-4 h-4 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-4 h-4 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
               </svg>
               اطلاعات پایه
@@ -70,7 +70,7 @@ function UserDetailModal({ user, onClose }: { user: User; onClose: () => void })
           {/* تحصیلات و تخصص */}
           <div>
             <h4 className="text-sm font-bold text-gray-800 mb-2 flex items-center gap-2">
-              <svg className="w-4 h-4 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-4 h-4 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 14l9-5-9-5-9 5 9 5zm0 7l-9-5 9-5 9 5-9 5z" />
               </svg>
               تحصیلات و تخصص
@@ -87,7 +87,7 @@ function UserDetailModal({ user, onClose }: { user: User; onClose: () => void })
                   {user.interests.map((interest) => (
                     <span
                       key={interest}
-                      className="px-2.5 py-1 bg-indigo-50 text-indigo-600 text-xs rounded-full"
+                      className="px-2.5 py-1 bg-accent/10 text-accent text-xs rounded-full"
                     >
                       {interest}
                     </span>
@@ -100,7 +100,7 @@ function UserDetailModal({ user, onClose }: { user: User; onClose: () => void })
           {/* محل زندگی */}
           <div>
             <h4 className="text-sm font-bold text-gray-800 mb-2 flex items-center gap-2">
-              <svg className="w-4 h-4 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-4 h-4 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
               </svg>
@@ -115,7 +115,7 @@ function UserDetailModal({ user, onClose }: { user: User; onClose: () => void })
           {/* شبکه‌های اجتماعی */}
           <div>
             <h4 className="text-sm font-bold text-gray-800 mb-2 flex items-center gap-2">
-              <svg className="w-4 h-4 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-4 h-4 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
               </svg>
               شبکه‌های اجتماعی
@@ -176,13 +176,13 @@ export default function Users() {
           placeholder="جستجو بر اساس نام، ایمیل یا موبایل..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="w-full max-w-md px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none"
+          className="w-full max-w-md px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent outline-none"
         />
       </div>
 
       {loading ? (
         <div className="flex items-center justify-center h-64">
-          <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-indigo-600" />
+          <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-accent" />
         </div>
       ) : (
         <div className="bg-white rounded-xl shadow-sm overflow-hidden">
@@ -208,7 +208,7 @@ export default function Users() {
                   >
                     <td className="px-5 py-4">
                       <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center text-sm font-bold">
+                        <div className="w-8 h-8 bg-accent/20 text-accent rounded-full flex items-center justify-center text-sm font-bold">
                           {user.fullName.charAt(0)}
                         </div>
                         <span className="font-medium text-gray-800">{user.fullName}</span>

@@ -99,7 +99,7 @@ export default async function BlogPostPage({ params }: Props) {
               )}
             </div>
             {article.author?._id ? (
-              <Link href={`/users/${article.author._id}`} className="hover:text-primary transition-colors">{article.author.fullName}</Link>
+              <Link href={`/users/${article.author._id}`} className="hover:text-accent transition-colors">{article.author.fullName}</Link>
             ) : (
               <span>{article.author?.fullName || "اکشن لایف"}</span>
             )}
@@ -183,7 +183,7 @@ export default async function BlogPostPage({ params }: Props) {
             <Link
               key={cat._id}
               href={`/blog?category=${cat.slug}`}
-              className="px-3 py-1 text-xs bg-primary/10 text-primary rounded-full hover:bg-primary/20 transition-colors"
+              className="px-3 py-1 text-xs bg-accent/10 text-accent rounded-full hover:bg-accent/20 transition-colors"
             >
               {cat.name}
             </Link>
