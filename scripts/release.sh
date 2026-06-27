@@ -84,7 +84,7 @@ extract_description() {
   # Remove optional scope notation like feat(scope): desc  →  desc
   # Also handles "!" for breaking changes: "feat(scope)!: desc"
   local cleaned
-  cleaned="$(echo "$msg" | sed -E 's/^[a-zA-Z_]+(\([^)]*\))?!?:\s*//')"
+  cleaned="$(echo "$msg" | sed -E 's/^[a-zA-Z_]+(\([^)]*\))?!?:[[:space:]]*//')"
   echo "$cleaned"
 }
 
@@ -166,7 +166,7 @@ main() {
   if $is_breaking; then
     changelog_entry+="### BREAKING CHANGES\n"
     local bc_msg
-    bc_msg="$(printf "%s\n%s" "$last_commit_msg" "$last_commit_body" | grep -i "BREAKING CHANGE" | head -1 | sed 's/^BREAKING CHANGE:\s*//I')"
+    bc_msg="$(printf "%s\n%s" "$last_commit_msg" "$last_commit_body" | grep -i "BREAKING CHANGE" | head -1 | sed 's/^BREAKING CHANGE:[[:space:]]*//I')"
     if [[ -n "$scope" ]]; then
       changelog_entry+="- **${scope}**: ${bc_msg:-$description}\n"
     else

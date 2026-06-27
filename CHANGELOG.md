@@ -5,22 +5,22 @@ All notable changes to this project will be documented in this file.
 ## [0.1.0] - 2026-06-18
 
 ### Features
--  initialize full-stack Action Life platform
+- initialize full-stack Action Life platform
 
 ## [0.2.0] - 2026-06-18
 
 ### Features
--  add admin panel, support tickets, and site analytics
+- add admin panel, support tickets, and site analytics
 
 ## [0.3.0] - 2026-06-18
 
 ### Features
--  add comprehensive user profile management features
+- add comprehensive user profile management features
 
 ## [0.4.0] - 2026-06-18
 
 ### Features
--  improve responsive layouts and add mobile sidebar
+- improve responsive layouts and add mobile sidebar
 
 ## [0.4.1] - 2026-06-24
 
@@ -45,12 +45,12 @@ All notable changes to this project will be documented in this file.
 ## [0.8.0] - 2026-06-24
 
 ### Features
--  add S3-compatible storage support and fixes
+- add S3-compatible storage support and fixes
 
 ## [0.9.0] - 2026-06-24
 
 ### Features
--  add mobile-first auth with OTP verification and country code support
+- add mobile-first auth with OTP verification and country code support
 
 ## [0.10.0] - 2026-06-24
 
