@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { randomInt } from "node:crypto";
 import { getLatestArticles } from "@/lib/api";
 import type { Article } from "@/types";
 import HeroCta from "@/components/shared/HeroCta";
@@ -43,6 +44,7 @@ export default async function HomePage() {
   const pool = latestArticles.filter((a) => a.title?.trim());
   const randomOverlay = pickRandom(pool, 3);
   const positions = randomPositions(randomOverlay.length);
+  const heroImage = randomInt(2) === 0 ? "/hero-bg.jpg" : "/hero-bg2.jpg";
 
   return (
     <>
@@ -55,7 +57,7 @@ export default async function HomePage() {
       {/* Full-screen landing — image fully visible */}
       <section className="relative h-screen w-screen overflow-hidden bg-dark">
         <img
-          src="/hero-bg.jpg"
+          src={heroImage}
           alt=""
           className="w-full h-full object-contain mx-auto"
         />
