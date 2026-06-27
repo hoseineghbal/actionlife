@@ -23,9 +23,9 @@ export default function AdminLayout() {
 
   const sidebarContent = (
     <>
-      <div className="p-5 border-b border-indigo-800">
-        <h1 className="text-xl font-bold">Action Life</h1>
-        <p className="text-indigo-300 text-sm mt-1">پنل مدیریت</p>
+      <div className="p-5 border-b border-indigo-800 flex flex-col items-center">
+        <img src="/logo.png" alt="Action Life" className="h-12 w-auto mb-1" />
+        <p className="text-indigo-300 text-sm">پنل مدیریت</p>
       </div>
 
       <nav className="flex-1 py-4">
@@ -105,7 +105,7 @@ export default function AdminLayout() {
       <main className="flex-1 overflow-y-auto">
         {/* Mobile top bar */}
         <div className="sticky top-0 z-30 bg-white border-b px-4 py-3 flex items-center justify-between lg:hidden">
-          <h1 className="text-lg font-bold text-gray-800">Action Life</h1>
+          <img src="/logo.png" alt="Action Life" className="h-8 w-auto" />
           <button
             onClick={() => setSidebarOpen(true)}
             className="p-2 text-gray-600 hover:text-gray-800"
