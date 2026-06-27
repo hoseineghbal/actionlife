@@ -36,7 +36,7 @@ const interestOptions = [
   "برنامه‌نویسی",
 ];
 
-type ActiveTab = "basic" | "education" | "location" | "social";
+type ActiveTab = "basic" | "education" | "location" | "social" | "banking";
 
 export default function ProfilePage() {
   const { user } = useAuth();
@@ -46,9 +46,12 @@ export default function ProfilePage() {
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
   const [activeTab, setActiveTab] = useState<ActiveTab>("basic");
+  const [showUsernameConfirm, setShowUsernameConfirm] = useState(false);
+  const [usernameConfirmInput, setUsernameConfirmInput] = useState('');
 
   const [form, setForm] = useState({
     fullName: "",
+    username: "",
     mobile: "",
     bio: "",
     birthDate: "",
@@ -63,6 +66,8 @@ export default function ProfilePage() {
     instagram: "",
     linkedin: "",
     twitter: "",
+    cardNumber: "",
+    shebaNumber: "",
   });
 
   useEffect(() => {
@@ -78,6 +83,7 @@ export default function ProfilePage() {
         setProfile(data);
         setForm({
           fullName: data.fullName || "",
+          username: data.username || "",
           mobile: data.mobile || "",
           bio: data.bio || "",
           birthDate: data.birthDate || "",
@@ -92,6 +98,8 @@ export default function ProfilePage() {
           instagram: data.instagram || "",
           linkedin: data.linkedin || "",
           twitter: data.twitter || "",
+          cardNumber: data.cardNumber || "",
+          shebaNumber: data.shebaNumber || "",
         });
       })
       .catch(() => {})
@@ -113,6 +121,17 @@ export default function ProfilePage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // If username is being set for the first time, show confirmation modal
+    if (!profile?.username && form.username.trim()) {
+      setShowUsernameConfirm(true);
+      return;
+    }
+
+    await doSave();
+  };
+
+  const doSave = async () => {
     setSaving(true);
     setMessage(null);
     const token = localStorage.getItem("access_token");
@@ -121,11 +140,25 @@ export default function ProfilePage() {
     try {
       await updateProfile(token, form);
       setMessage({ type: "success", text: "پروفایل با موفقیت به‌روزرسانی شد" });
+      setShowUsernameConfirm(false);
+      setUsernameConfirmInput('');
+      // Refresh profile data
+      const prof = await getProfile(token);
+      setProfile(prof);
     } catch {
       setMessage({ type: "error", text: "خطا در به‌روزرسانی پروفایل" });
     } finally {
       setSaving(false);
     }
+  };
+
+  const handleConfirmUsername = () => {
+    if (usernameConfirmInput.trim().toLowerCase() !== form.username.trim().toLowerCase()) {
+      setMessage({ type: "error", text: "نام کاربری وارد شده با مقدار انتخابی مطابقت ندارد" });
+      return;
+    }
+    setMessage(null);
+    doSave();
   };
 
   if (!user) return null;
@@ -165,6 +198,15 @@ export default function ProfilePage() {
       icon: (
         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+        </svg>
+      ),
+    },
+    {
+      key: "banking",
+      label: "اطلاعات بانکی",
+      icon: (
+        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
         </svg>
       ),
     },
@@ -232,16 +274,43 @@ export default function ProfilePage() {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm text-gray-custom mb-1.5">شماره موبایل</label>
+                    <label className="block text-sm text-gray-custom mb-1.5">
+                      نام کاربری
+                      {profile?.username ? (
+                        <span className="text-amber-400 text-[10px] mr-1">(قابل تغییر نیست)</span>
+                      ) : (
+                        <span className="text-emerald-400 text-[10px] mr-1">(بعد از ثبت قابل تغییر نیست)</span>
+                      )}
+                    </label>
                     <input
-                      type="tel"
-                      value={form.mobile}
-                      onChange={(e) => handleChange("mobile", e.target.value)}
-                      className="w-full px-4 py-3 bg-dark border border-white/10 rounded-lg text-white focus:accent/50 outline-none transition"
-                      placeholder="09123456789"
+                      type="text"
+                      value={form.username}
+                      onChange={(e) => !profile?.username && handleChange("username", e.target.value)}
+                      disabled={!!profile?.username}
+                      className="w-full px-4 py-3 bg-dark border border-white/10 rounded-lg text-white focus:accent/50 outline-none transition disabled:bg-dark/50 disabled:border-white/5 disabled:text-gray-custom disabled:opacity-60 disabled:cursor-not-allowed"
+                      placeholder="نام کاربری یکتا (برای انتقال توکن)"
                       dir="ltr"
                     />
+                    {!profile?.username && form.username.trim() && (
+                      <p className="text-[10px] text-amber-400 mt-1">
+                        ⚠️ پس از ذخیره، نام کاربری و شماره موبایل هرگز قابل تغییر نخواهند بود.
+                      </p>
+                    )}
                   </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm text-gray-custom mb-1.5">
+                    شماره موبایل
+                    <span className="text-amber-400 text-[10px] mr-1">(قابل تغییر نیست)</span>
+                  </label>
+                  <input
+                    type="tel"
+                    value={form.mobile}
+                    disabled
+                    className="w-full px-4 py-3 bg-dark/50 border border-white/5 rounded-lg text-gray-custom opacity-60 cursor-not-allowed"
+                    dir="ltr"
+                  />
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -443,6 +512,41 @@ export default function ProfilePage() {
               </div>
             )}
 
+            {/* اطلاعات بانکی */}
+            {activeTab === "banking" && (
+              <div className="bg-dark-light border border-white/10 rounded-xl p-6 space-y-5">
+                <h2 className="text-lg font-bold text-white mb-4">اطلاعات حساب بانکی</h2>
+
+                <div className="p-3 bg-amber-500/10 border border-amber-500/20 rounded-lg text-xs text-amber-400 mb-2">
+                  ⚠️ حساب بانکی باید حتما به نام {user.fullName} باشد.
+                </div>
+
+                <div>
+                  <label className="block text-sm text-gray-custom mb-1.5">شماره کارت</label>
+                  <input
+                    type="text"
+                    value={form.cardNumber}
+                    onChange={(e) => handleChange("cardNumber", e.target.value)}
+                    className="w-full px-4 py-3 bg-dark border border-white/10 rounded-lg text-white focus:accent/50 outline-none transition"
+                    placeholder="۶۲۱۹-۸۶۱۹-****-****"
+                    dir="ltr"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm text-gray-custom mb-1.5">شماره شبا</label>
+                  <input
+                    type="text"
+                    value={form.shebaNumber}
+                    onChange={(e) => handleChange("shebaNumber", e.target.value)}
+                    className="w-full px-4 py-3 bg-dark border border-white/10 rounded-lg text-white focus:accent/50 outline-none transition"
+                    placeholder="IR..."
+                    dir="ltr"
+                  />
+                </div>
+              </div>
+            )}
+
             {/* پیام و دکمه ذخیره */}
             {message && (
               <div
@@ -468,6 +572,61 @@ export default function ProfilePage() {
           </form>
         )}
       </section>
+
+      {/* Username Confirmation Modal */}
+      {showUsernameConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div
+            className="absolute inset-0 bg-black/70 backdrop-blur-sm"
+            onClick={() => { setShowUsernameConfirm(false); setUsernameConfirmInput(''); }}
+          />
+          <div className="relative bg-dark-light border border-white/10 rounded-2xl p-6 md:p-8 max-w-md w-full mx-4 shadow-2xl">
+            <div className="flex items-center gap-3 mb-5">
+              <div className="w-10 h-10 bg-amber-500/10 text-amber-400 rounded-xl flex items-center justify-center text-lg">⚠️</div>
+              <div>
+                <h2 className="text-lg font-bold text-white">تایید نام کاربری</h2>
+                <p className="text-xs text-gray-custom mt-0.5">این انتخاب غیرقابل بازگشت است</p>
+              </div>
+            </div>
+
+            <div className="mb-4 p-3 bg-amber-500/10 border border-amber-500/20 rounded-xl text-xs text-amber-400">
+              <p className="font-medium mb-1">توجه: پس از ثبت، نام کاربری و شماره موبایل هرگز قابل تغییر نخواهند بود.</p>
+              <p>نام کاربری برای انتقال توکن و شناسایی شما در سیستم استفاده می‌شود.</p>
+            </div>
+
+            <div className="mb-4">
+              <label className="block text-xs text-gray-custom mb-2">
+                برای تایید، نام کاربری <span className="text-white font-mono font-bold">{form.username}</span> را مجدداً وارد کنید:
+              </label>
+              <input
+                type="text"
+                value={usernameConfirmInput}
+                onChange={(e) => setUsernameConfirmInput(e.target.value)}
+                className="w-full bg-dark border border-white/10 rounded-xl px-4 py-3 text-left text-white text-lg font-mono focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/30 transition-all"
+                placeholder={form.username}
+                dir="ltr"
+                autoFocus
+              />
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                onClick={handleConfirmUsername}
+                disabled={!usernameConfirmInput.trim()}
+                className="flex-1 bg-accent hover:bg-accent/90 text-white py-3 rounded-xl font-bold disabled:opacity-40 transition-all"
+              >
+                تایید و ذخیره
+              </button>
+              <button
+                onClick={() => { setShowUsernameConfirm(false); setUsernameConfirmInput(''); }}
+                className="flex-1 bg-dark border border-white/10 text-gray-custom hover:text-white py-3 rounded-xl font-medium transition-all"
+              >
+                انصراف
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }

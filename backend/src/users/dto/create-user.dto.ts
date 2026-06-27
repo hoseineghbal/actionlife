@@ -41,6 +41,11 @@ export class UpdateUserDto {
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
+  username?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
   mobile?: string;
 
   @ApiPropertyOptional()
@@ -113,4 +118,14 @@ export class UpdateUserDto {
   @IsOptional()
   @IsString()
   twitter?: string;
+
+  @ApiPropertyOptional({ description: 'شماره کارت بانکی' })
+  @IsOptional()
+  @IsString()
+  cardNumber?: string;
+
+  @ApiPropertyOptional({ description: 'شماره شبا' })
+  @IsOptional()
+  @IsString()
+  shebaNumber?: string;
 }

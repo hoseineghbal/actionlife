@@ -10,6 +10,10 @@ import Contacts from './pages/Contacts';
 import Categories from './pages/Categories';
 import Articles from './pages/Articles';
 import ArticleForm from './pages/ArticleForm';
+import TokenSettings from './pages/TokenSettings';
+import SellRequests from './pages/SellRequests';
+import TransactionsAdmin from './pages/TransactionsAdmin';
+import GiftCardsAdmin from './pages/GiftCardsAdmin';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, isLoading } = useAuth();
@@ -56,6 +60,10 @@ function AppRoutes() {
         <Route path="/articles" element={<Articles />} />
         <Route path="/articles/new" element={<ArticleForm />} />
         <Route path="/articles/:id" element={<ArticleForm />} />
+        <Route path="/token-settings" element={<TokenSettings />} />
+        <Route path="/sell-requests" element={<SellRequests />} />
+        <Route path="/transactions" element={<TransactionsAdmin />} />
+        <Route path="/gift-cards" element={<GiftCardsAdmin />} />
       </Route>
     </Routes>
   );

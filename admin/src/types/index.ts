@@ -150,3 +150,69 @@ export interface Article {
   createdAt: string;
   updatedAt: string;
 }
+
+// Wallet / Token types
+export interface TokenConfig {
+  tomanPerToken: number;
+  minPurchaseAmount: number;
+  maxPurchaseAmount: number;
+  minSellAmount: number;
+  maxSellAmount: number;
+  sellCooldownHours: number;
+  signupBonus: number;
+  sellEnabled: boolean;
+  purchaseEnabled: boolean;
+  transferEnabled: boolean;
+  giftCardEnabled: boolean;
+  minGiftCardAmount: number;
+  maxGiftCardAmount: number;
+  maxGiftCardsPerUser: number;
+  giftCardExpiryDays: number;
+  transferFee: number;
+  transferFeePercent: number;
+}
+
+export interface WalletTransaction {
+  _id: string;
+  user: { _id: string; fullName: string; mobile: string } | string;
+  type: string;
+  amount: number;
+  status: string;
+  description?: string;
+  relatedUser?: { _id: string; fullName: string; mobile: string; username?: string } | string;
+  createdAt: string;
+}
+
+export interface SellRequest {
+  _id: string;
+  user: { _id: string; fullName: string; mobile?: string };
+  tokenAmount: number;
+  tomanAmount: number;
+  status: 'pending' | 'approved' | 'rejected';
+  adminNote?: string;
+  cardNumber?: string;
+  shebaNumber?: string;
+  createdAt: string;
+  processedAt?: string;
+}
+
+export interface GiftCard {
+  _id: string;
+  code: string;
+  creator: { _id: string; fullName: string; mobile: string };
+  amount: number;
+  status: 'active' | 'redeemed' | 'expired' | 'cancelled';
+  redeemedBy?: { _id: string; fullName: string; mobile: string };
+  redeemedAt?: string;
+  expiresAt?: string;
+  message?: string;
+  createdAt: string;
+}
+
+export interface Wallet {
+  _id: string;
+  user: string;
+  balance: number;
+  totalPurchased: number;
+  totalSpent: number;
+}

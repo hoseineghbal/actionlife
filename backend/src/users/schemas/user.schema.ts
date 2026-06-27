@@ -17,6 +17,9 @@ export class User {
   @Prop({ required: true })
   fullName: string;
 
+  @Prop({ unique: true, sparse: true })
+  username: string;
+
   @Prop()
   email: string;
 
@@ -73,6 +76,12 @@ export class User {
 
   @Prop()
   twitter: string;
+
+  @Prop()
+  cardNumber: string;
+
+  @Prop()
+  shebaNumber: string;
 
   @Prop({ default: 0 })
   points: number;

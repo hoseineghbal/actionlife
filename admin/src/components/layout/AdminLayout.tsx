@@ -9,6 +9,10 @@ const navItems = [
   { to: '/users', label: 'کاربران', icon: '👥' },
   { to: '/tickets', label: 'تیکت‌ها', icon: '🎫' },
   { to: '/contacts', label: 'تماس با ما', icon: '📩' },
+  { to: '/token-settings', label: 'تنظیمات توکن', icon: '⚙️' },
+  { to: '/sell-requests', label: 'درخواست فروش', icon: '💰' },
+  { to: '/transactions', label: 'تراکنش‌ها', icon: '🔄' },
+  { to: '/gift-cards', label: 'کارت‌های هدیه', icon: '🎁' },
 ];
 
 export default function AdminLayout() {

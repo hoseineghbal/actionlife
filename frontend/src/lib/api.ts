@@ -9,7 +9,16 @@ async function fetchAPI<T>(endpoint: string, options?: RequestInit): Promise<T> 
     },
   });
   if (!res.ok) {
-    throw new Error(`API Error: ${res.status}`);
+    let msg = `خطای سرور (${res.status})`;
+    try {
+      const body = await res.json();
+      if (typeof body.message === 'string') {
+        msg = body.message;
+      } else if (Array.isArray(body.message) && body.message.length > 0) {
+        msg = body.message[0];
+      }
+    } catch {}
+    throw new Error(msg);
   }
   return res.json() as Promise<T>;
 }
@@ -121,6 +130,83 @@ export async function updateArticle(token: string, id: string, data: any) {
   return fetchAPI<import('@/types').Article>(`/articles/${id}`, {
     method: 'PUT',
     body: JSON.stringify(data),
+    headers: { Authorization: `Bearer ${token}` },
+  });
+}
+
+// Wallet & Token APIs
+export async function getWallet(token: string) {
+  return fetchAPI<import('@/types').WalletInfo>('/wallet/me', {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+}
+
+export async function getTransactions(token: string, page = 1, limit = 20) {
+  return fetchAPI<{ transactions: import('@/types').WalletTransaction[]; total: number }>(
+    `/wallet/transactions?page=${page}&limit=${limit}`,
+    { headers: { Authorization: `Bearer ${token}` } },
+  );
+}
+
+export async function purchaseTokens(token: string, tokenAmount: number) {
+  return fetchAPI<{ transaction: any; wallet: import('@/types').WalletInfo }>('/wallet/purchase', {
+    method: 'POST',
+    body: JSON.stringify({ tokenAmount }),
+    headers: { Authorization: `Bearer ${token}` },
+  });
+}
+
+export async function transferTokens(
+  token: string,
+  targetMobile: string,
+  targetUsername: string,
+  amount: number,
+  description?: string,
+) {
+  return fetchAPI<{ sentTx: any; wallet: import('@/types').WalletInfo }>('/wallet/transfer', {
+    method: 'POST',
+    body: JSON.stringify({
+      targetMobile: targetMobile || undefined,
+      targetUsername: targetUsername || undefined,
+      amount,
+      description,
+    }),
+    headers: { Authorization: `Bearer ${token}` },
+  });
+}
+
+export async function requestSell(token: string, tokenAmount: number, cardNumber?: string, shebaNumber?: string) {
+  return fetchAPI<any>('/wallet/sell-request', {
+    method: 'POST',
+    body: JSON.stringify({ tokenAmount, cardNumber, shebaNumber }),
+    headers: { Authorization: `Bearer ${token}` },
+  });
+}
+
+export async function createGiftCard(token: string, amount: number, message?: string) {
+  return fetchAPI<import('@/types').GiftCard>('/wallet/gift-card', {
+    method: 'POST',
+    body: JSON.stringify({ amount, message }),
+    headers: { Authorization: `Bearer ${token}` },
+  });
+}
+
+export async function redeemGiftCard(token: string, code: string) {
+  return fetchAPI<import('@/types').GiftCard>('/wallet/gift-card/redeem', {
+    method: 'POST',
+    body: JSON.stringify({ code }),
+    headers: { Authorization: `Bearer ${token}` },
+  });
+}
+
+export async function getMyGiftCards(token: string) {
+  return fetchAPI<import('@/types').GiftCard[]>('/wallet/gift-cards', {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+}
+
+export async function getTokenConfig(token: string) {
+  return fetchAPI<import('@/types').TokenConfig>('/wallet/config', {
     headers: { Authorization: `Bearer ${token}` },
   });
 }

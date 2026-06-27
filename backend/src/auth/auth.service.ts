@@ -3,6 +3,7 @@ import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { UsersService } from '../users/users.service';
 import { OtpService } from '../otp/otp.service';
+import { WalletService } from '../wallet/wallet.service';
 import { RegisterDto, LoginDto, VerifyOtpDto, SendOtpDto } from './dto/auth.dto';
 
 @Injectable()
@@ -11,6 +12,7 @@ export class AuthService {
     private usersService: UsersService,
     private jwtService: JwtService,
     private otpService: OtpService,
+    private walletService: WalletService,
   ) {}
 
   async register(registerDto: RegisterDto) {
@@ -60,6 +62,8 @@ export class AuthService {
     if (!user.isActive) {
       user.isActive = true;
       await user.save();
+      // Give signup bonus on first verification
+      await this.walletService.giveSignupBonus(user._id.toString()).catch(() => {});
     }
 
     // Generate JWT

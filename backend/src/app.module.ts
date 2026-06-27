@@ -10,6 +10,7 @@ import { TicketsModule } from './tickets/tickets.module';
 import { AnalyticsModule } from './analytics/analytics.module';
 import { UploadModule } from './upload/upload.module';
 import { OtpModule } from './otp/otp.module';
+import { WalletModule } from './wallet/wallet.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { OtpModule } from './otp/otp.module';
     AnalyticsModule,
     UploadModule,
     OtpModule,
+    WalletModule,
   ],
 })
 export class AppModule {}

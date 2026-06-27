@@ -76,6 +76,7 @@ export interface User {
   fullName: string;
   mobile: string;
   countryCode?: string;
+  username?: string;
   role: string;
   email?: string;
   avatar?: string;
@@ -92,6 +93,8 @@ export interface User {
   instagram?: string;
   linkedin?: string;
   twitter?: string;
+  cardNumber?: string;
+  shebaNumber?: string;
   points?: number;
 }
 
@@ -148,4 +151,54 @@ export interface Ticket {
   messages: TicketMessage[];
   createdAt: string;
   updatedAt: string;
+}
+
+// Wallet / Token types
+export interface WalletInfo {
+  _id: string;
+  user: string;
+  balance: number;
+  totalPurchased: number;
+  totalSpent: number;
+}
+
+export interface WalletTransaction {
+  _id: string;
+  user: string;
+  type: string;
+  amount: number;
+  status: string;
+  description?: string;
+  relatedUser?: string | { _id: string; fullName?: string; mobile?: string; username?: string };
+  createdAt: string;
+}
+
+export interface TokenConfig {
+  tomanPerToken: number;
+  minPurchaseAmount: number;
+  maxPurchaseAmount: number;
+  minSellAmount: number;
+  maxSellAmount: number;
+  sellCooldownHours: number;
+  sellEnabled: boolean;
+  purchaseEnabled: boolean;
+  transferEnabled: boolean;
+  giftCardEnabled: boolean;
+  minGiftCardAmount: number;
+  maxGiftCardAmount: number;
+  maxGiftCardsPerUser: number;
+  giftCardExpiryDays: number;
+  transferFee: number;
+  transferFeePercent: number;
+}
+
+export interface GiftCard {
+  _id: string;
+  code: string;
+  amount: number;
+  status: string;
+  message?: string;
+  expiresAt?: string;
+  redeemedAt?: string;
+  createdAt: string;
 }

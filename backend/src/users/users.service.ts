@@ -24,7 +24,24 @@ export class UsersService {
   }
 
   async findByMobile(mobile: string): Promise<UserDocument | null> {
+    const parsed = this.parseMobile(mobile);
+    if (parsed) {
+      return this.userModel.findOne({ mobile: parsed.number, countryCode: parsed.countryCode });
+    }
     return this.userModel.findOne({ mobile });
+  }
+
+  private parseMobile(raw: string): { countryCode: string; number: string } | null {
+    // Match formats like +989121111111, 00989121111111, 989121111111
+    const match = raw.trim().match(/^(?:\+|00)?(98\d{9})$/);
+    if (match) {
+      return { countryCode: '+98', number: match[1] }; // match[1] = 989121111111
+    }
+    return null;
+  }
+
+  async findByUsername(username: string): Promise<UserDocument | null> {
+    return this.userModel.findOne({ username });
   }
 
   async findByEmail(email: string): Promise<UserDocument | null> {
@@ -40,6 +57,6 @@ export class UsersService {
   }
 
   async update(id: string, updateUserDto: UpdateUserDto): Promise<UserDocument | null> {
-    return this.userModel.findByIdAndUpdate(id, updateUserDto, { new: true }).select('-password');
+    return this.userModel.findByIdAndUpdate(id, updateUserDto, { returnDocument: 'after' }).select('-password');
   }
 }
