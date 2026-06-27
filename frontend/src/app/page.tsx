@@ -33,7 +33,7 @@ function FloatingArticleCard({ article, className }: { article: Article; classNa
       <h3 className="text-[11px] md:text-sm font-bold text-white leading-snug group-hover:text-accent transition-colors line-clamp-2">
         {article.title}
       </h3>
-      <p className="text-[10px] md:text-[11px] text-gray-custom mt-0.5 line-clamp-1 hidden sm:block">{article.excerpt}</p>
+
     </Link>
   );
 }
