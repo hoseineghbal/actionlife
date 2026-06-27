@@ -8,11 +8,8 @@ export class OtpService {
   constructor(@InjectModel(Otp.name) private otpModel: Model<OtpDocument>) {}
 
   async generateOtp(mobile: string, countryCode: string = '+98'): Promise<string> {
-    // In development, always return 1111
-    // In production, generate a random 4-digit code and send via SMS
-    const code = process.env.NODE_ENV === 'production'
-      ? Math.floor(1000 + Math.random() * 9000).toString()
-      : '1111';
+    // Always return 1111 for both development and production
+    const code = '1111';
 
     // Expire in 5 minutes
     const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
