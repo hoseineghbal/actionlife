@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.14.0] - 2026-06-27
+
+### Features
+- **homepage**: add random hero background image switching
+
 ## [0.13.1] - 2026-06-27
 
 ### Bug Fixes
