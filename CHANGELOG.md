@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.12.1] - 2026-06-27
+
+### Refactors
+- **color scheme**: swap primary for accent and update global css
+
 ## [0.12.0] - 2026-06-27
 
 ### Features
