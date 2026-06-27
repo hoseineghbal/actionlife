@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.13.0] - 2026-06-27
+
+### Features
+- **homepage**: rewrite homepage hero design
+
 ## [0.12.1] - 2026-06-27
 
 ### Refactors
