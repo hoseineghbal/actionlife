@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.15.0] - 2026-06-27
+
+### Features
+- add complete wallet and token economy system
+
 ## [0.14.0] - 2026-06-27
 
 ### Features
