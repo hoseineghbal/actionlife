@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.16.0] - 2026-06-27
+
+### Features
+- **newsletter**: add newsletter subscription
+
 ## [0.15.0] - 2026-06-27
 
 ### Features
