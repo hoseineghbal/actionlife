@@ -84,9 +84,12 @@ export class UploadService {
 
     await this.s3Client!.send(command);
 
-    // Generate URL based on endpoint type
+    // Use custom public URL if configured (e.g., http://storage.actionlife.ir)
+    const storagePublicUrl = this.configService.get('STORAGE_PUBLIC_URL');
     let url: string;
-    if (this.s3Endpoint) {
+    if (storagePublicUrl) {
+      url = `${storagePublicUrl.replace(/\/+$/, '')}/${key}`;
+    } else if (this.s3Endpoint) {
       // Custom S3 endpoint (Liara, MinIO, etc.)
       const endpointHost = this.s3Endpoint.replace(/^https?:\/\//, '');
       url = `https://${this.s3Bucket}.${endpointHost}/${key}`;
