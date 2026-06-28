@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.22.0] - 2026-06-28
+
+### Features
+- **upload**: add custom public storage URL
+
 ## [0.21.0] - 2026-06-28
 
 ### Features
