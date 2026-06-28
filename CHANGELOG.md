@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.20.0] - 2026-06-28
+
+### Features
+- add category filtering and pagination
+
 ## [0.19.1] - 2026-06-28
 
 ### Bug Fixes
