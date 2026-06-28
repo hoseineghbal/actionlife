@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.23.0] - 2026-06-28
+
+### Features
+- **admin,store,tickets**: add admin product detail view and seller messaging
+
 ## [0.22.0] - 2026-06-28
 
 ### Features
