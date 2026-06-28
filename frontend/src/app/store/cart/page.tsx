@@ -52,13 +52,14 @@ export default function CartPage() {
       try {
         await purchaseProduct(token, item.productId);
         successCount++;
-      } catch {
-        failedItems.push(item.title);
+      } catch (err: any) {
+        const msg = err?.message ?? "";
+        failedItems.push(`${item.title}${msg ? ` (${msg})` : ""}`);
       }
     }
 
     // Clear cart for successfully purchased items
-    const remaining = cart.filter((i) => failedItems.includes(i.title));
+    const remaining = cart.filter((i) => !failedItems.some((f) => f.startsWith(i.title)));
     setCart(remaining);
     localStorage.setItem("cart", JSON.stringify(remaining));
     window.dispatchEvent(new Event("cart-updated"));
@@ -69,7 +70,9 @@ export default function CartPage() {
       alert("همه محصولات با موفقیت خریداری شدند!");
       router.push("/store");
     } else if (successCount > 0) {
-      alert(`${successCount} محصول با موفقیت خریداری شد. محصولات ناموفق: ${failedItems.join("، ")}`);
+      alert(`${successCount} محصول با موفقیت خریداری شد.\nناموفق:\n${failedItems.join("\n")}`);
+    } else {
+      alert(`خرید ناموفق:\n${failedItems.join("\n")}`);
     }
   };
 
