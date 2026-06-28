@@ -86,6 +86,9 @@ export class User {
   @Prop({ default: 0 })
   points: number;
 
+  @Prop({ default: false })
+  hasStore: boolean;
+
   @Prop({ default: true })
   isActive: boolean;
 }

@@ -96,6 +96,7 @@ export interface User {
   cardNumber?: string;
   shebaNumber?: string;
   points?: number;
+  hasStore?: boolean;
 }
 
 export interface AuthResponse {
@@ -201,4 +202,67 @@ export interface GiftCard {
   expiresAt?: string;
   redeemedAt?: string;
   createdAt: string;
+}
+
+// Store types
+export interface ProductFile {
+  url: string;
+  title: string;
+  description?: string;
+  fileType: 'pdf' | 'image' | 'video' | 'audio';
+  order: number;
+}
+
+export interface StoreProduct {
+  _id: string;
+  title: string;
+  slug: string;
+  description?: string;
+  excerpt?: string;
+  coverImage?: string;
+  price: number;
+  discountPrice: number;
+  files: ProductFile[];
+  category?: Category | null;
+  tags: string[];
+  status: 'draft' | 'pending' | 'published' | 'rejected' | 'archived';
+  seller: {
+    _id: string;
+    fullName: string;
+    avatar?: string;
+    bio?: string;
+  };
+  salesCount: number;
+  views: number;
+  hasPurchased?: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface StoreOrder {
+  _id: string;
+  buyer: string | {
+    _id: string;
+    fullName: string;
+    mobile?: string;
+  };
+  product: string;
+  productTitle: string;
+  productSlug: string;
+  productCover?: string;
+  price: number;
+  finalPrice: number;
+  status: 'completed' | 'refunded';
+  transactionId: string;
+  createdAt: string;
+}
+
+export interface CartItem {
+  productId: string;
+  title: string;
+  slug: string;
+  coverImage?: string;
+  price: number;
+  discountPrice: number;
+  sellerName: string;
 }

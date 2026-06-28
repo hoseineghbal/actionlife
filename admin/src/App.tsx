@@ -14,6 +14,7 @@ import TokenSettings from './pages/TokenSettings';
 import SellRequests from './pages/SellRequests';
 import TransactionsAdmin from './pages/TransactionsAdmin';
 import GiftCardsAdmin from './pages/GiftCardsAdmin';
+import StoreProducts from './pages/StoreProducts';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, isLoading } = useAuth();
@@ -64,6 +65,7 @@ function AppRoutes() {
         <Route path="/sell-requests" element={<SellRequests />} />
         <Route path="/transactions" element={<TransactionsAdmin />} />
         <Route path="/gift-cards" element={<GiftCardsAdmin />} />
+        <Route path="/store-products" element={<StoreProducts />} />
       </Route>
     </Routes>
   );

@@ -76,6 +76,7 @@ export class AuthService {
         mobile: user.mobile,
         countryCode: user.countryCode,
         role: user.role,
+        hasStore: user.hasStore,
       },
     };
   }
@@ -111,6 +112,7 @@ export class AuthService {
         mobile: user.mobile,
         countryCode: user.countryCode,
         role: user.role,
+        hasStore: user.hasStore,
       },
     };
   }

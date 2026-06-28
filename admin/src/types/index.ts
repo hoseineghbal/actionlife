@@ -20,6 +20,7 @@ export interface User {
   linkedin?: string;
   twitter?: string;
   points: number;
+  hasStore: boolean;
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
@@ -215,4 +216,25 @@ export interface Wallet {
   balance: number;
   totalPurchased: number;
   totalSpent: number;
+}
+
+// Store types
+export interface StoreProduct {
+  _id: string;
+  title: string;
+  slug: string;
+  description?: string;
+  excerpt?: string;
+  coverImage?: string;
+  price: number;
+  discountPrice: number;
+  files: { url: string; title: string; description?: string; fileType: string; order: number }[];
+  category?: string | { _id: string; name: string; slug: string } | null;
+  tags: string[];
+  status: string;
+  seller: { _id: string; fullName: string; mobile?: string };
+  salesCount: number;
+  views: number;
+  createdAt: string;
+  updatedAt: string;
 }

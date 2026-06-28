@@ -1,12 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
+import { getWallet } from "@/lib/api";
 
 const navItems = [
   { label: "خانه", href: "/" },
+  { label: "فروشگاه", href: "/store" },
   { label: "اکشن نما", href: "/action-cinema" },
   { label: "اکشن گیم", href: "/action-game" },
   { label: "اکشن تریپ", href: "/action-trip" },
@@ -20,6 +22,33 @@ export default function Header() {
   const { user, logout } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
+  const [cartCount, setCartCount] = useState(0);
+  const [walletBalance, setWalletBalance] = useState<number | null>(null);
+
+  useEffect(() => {
+    const token = localStorage.getItem("access_token");
+    if (token && user) {
+      getWallet(token)
+        .then((w) => setWalletBalance(w.balance))
+        .catch(() => setWalletBalance(0));
+    } else {
+      setWalletBalance(null);
+    }
+  }, [user]);
+
+  useEffect(() => {
+    const update = () => {
+      try {
+        const cart = JSON.parse(localStorage.getItem("cart") || "[]");
+        setCartCount(cart.length);
+      } catch {
+        setCartCount(0);
+      }
+    };
+    update();
+    window.addEventListener("cart-updated", update);
+    return () => window.removeEventListener("cart-updated", update);
+  }, []);
 
   const handleLogout = () => {
     logout();
@@ -51,6 +80,21 @@ export default function Header() {
 
           {/* دکمه‌های سمت چپ */}
           <div className="flex items-center gap-3">
+            {/* Cart */}
+            <Link
+              href="/store/cart"
+              className="relative p-2 text-gray-custom hover:text-white transition-colors"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 100 4 2 2 0 000-4z" />
+              </svg>
+              {cartCount > 0 && (
+                <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center">
+                  {cartCount > 99 ? "99+" : cartCount}
+                </span>
+              )}
+            </Link>
+
             {user ? (
               <div className="relative">
                 <button
@@ -60,9 +104,21 @@ export default function Header() {
                   <div className="w-8 h-8 gradient-primary rounded-full flex items-center justify-center text-white text-sm font-bold">
                     {user.fullName.charAt(0)}
                   </div>
-                  <span className="hidden sm:block text-sm text-white">
-                    {user.fullName}
-                  </span>
+                  <div className="hidden sm:block">
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm text-white">
+                        {user.fullName}
+                      </span>
+                      {walletBalance !== null && (
+                        <span className="text-xs text-accent font-bold bg-accent/10 px-2 py-0.5 rounded-lg">
+                          {new Intl.NumberFormat("fa-IR").format(walletBalance)} توکن
+                        </span>
+                      )}
+                    </div>
+                    <span className="block text-xs text-gray-custom" dir="ltr">
+                      {user.countryCode} {user.mobile}
+                    </span>
+                  </div>
                   <svg
                     className={`w-4 h-4 text-gray-custom transition-transform ${profileMenuOpen ? "rotate-180" : ""}`}
                     fill="none"
@@ -82,7 +138,9 @@ export default function Header() {
                     <div className="absolute left-0 mt-2 w-56 bg-dark-light border border-white/10 rounded-xl shadow-xl z-50 overflow-hidden">
                       <div className="px-4 py-3 border-b border-white/10">
                         <p className="text-sm text-white font-medium">{user.fullName}</p>
-                        <p className="text-xs text-gray-custom mt-0.5">{user.email}</p>
+                        <p className="text-xs text-gray-custom mt-0.5" dir="ltr">
+                          {user.countryCode} {user.mobile}
+                        </p>
                       </div>
                       <div className="py-1">
                         <Link
@@ -125,6 +183,30 @@ export default function Header() {
                           </svg>
                           مقالات من
                         </Link>
+                        {(user.hasStore || user.role === "admin") && (
+                          <>
+                            <Link
+                              href="/store/add"
+                              onClick={() => setProfileMenuOpen(false)}
+                              className="flex items-center gap-3 px-4 py-2.5 text-sm text-accent hover:text-white hover:bg-white/5 transition-colors"
+                            >
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+                              </svg>
+                              افزودن محصول
+                            </Link>
+                            <Link
+                              href="/store/my-products"
+                              onClick={() => setProfileMenuOpen(false)}
+                              className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-custom hover:text-white hover:bg-white/5 transition-colors"
+                            >
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                              </svg>
+                              مدیریت فروشگاه
+                            </Link>
+                          </>
+                        )}
                         <Link
                           href="/tickets"
                           onClick={() => setProfileMenuOpen(false)}

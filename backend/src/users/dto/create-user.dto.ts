@@ -1,4 +1,4 @@
-import { IsArray, IsEmail, IsEnum, IsOptional, IsString, MinLength } from 'class-validator';
+import { IsArray, IsBoolean, IsEmail, IsEnum, IsOptional, IsString, MinLength } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { UserRole } from '../schemas/user.schema';
 
@@ -128,4 +128,9 @@ export class UpdateUserDto {
   @IsOptional()
   @IsString()
   shebaNumber?: string;
+
+  @ApiPropertyOptional({ description: 'دسترسی فروشگاه' })
+  @IsOptional()
+  @IsBoolean()
+  hasStore?: boolean;
 }

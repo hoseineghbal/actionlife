@@ -13,6 +13,7 @@ const navItems = [
   { to: '/sell-requests', label: 'درخواست فروش', icon: '💰' },
   { to: '/transactions', label: 'تراکنش‌ها', icon: '🔄' },
   { to: '/gift-cards', label: 'کارت‌های هدیه', icon: '🎁' },
+  { to: '/store-products', label: 'محصولات فروشگاه', icon: '🛍️' },
 ];
 
 export default function AdminLayout() {

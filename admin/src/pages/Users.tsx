@@ -196,6 +196,7 @@ export default function Users() {
                   <th className="text-right px-5 py-3 font-medium">نقش</th>
                   <th className="text-right px-5 py-3 font-medium">امتیاز</th>
                   <th className="text-right px-5 py-3 font-medium">وضعیت</th>
+                  <th className="text-right px-5 py-3 font-medium">فروشگاه</th>
                   <th className="text-right px-5 py-3 font-medium">تاریخ عضویت</th>
                 </tr>
               </thead>
@@ -226,6 +227,29 @@ export default function Users() {
                       <span className={`w-2 h-2 rounded-full inline-block ${user.isActive ? 'bg-green-500' : 'bg-red-500'}`} />
                       <span className="mr-2 text-gray-600">{user.isActive ? 'فعال' : 'غیرفعال'}</span>
                     </td>
+                    <td className="px-5 py-4" onClick={(e) => e.stopPropagation()}>
+                      <button
+                        onClick={async () => {
+                          try {
+                            await api.put(`/users/${user._id}`, { hasStore: !user.hasStore });
+                            setUsers((prev) =>
+                              prev.map((u) =>
+                                u._id === user._id ? { ...u, hasStore: !u.hasStore } : u,
+                              ),
+                            );
+                          } catch (err: any) {
+                            alert(err.response?.data?.message || 'خطا در تغییر دسترسی');
+                          }
+                        }}
+                        className={`px-3 py-1 rounded-lg text-xs font-medium transition-colors ${
+                          user.hasStore
+                            ? 'bg-green-100 text-green-700 hover:bg-green-200'
+                            : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+                        }`}
+                      >
+                        {user.hasStore ? 'فعال' : 'غیرفعال'}
+                      </button>
+                    </td>
                     <td className="px-5 py-4 text-gray-500 text-xs">
                       {new Date(user.createdAt).toLocaleDateString('fa-IR')}
                     </td>
@@ -233,7 +257,7 @@ export default function Users() {
                 ))}
                 {filtered.length === 0 && (
                   <tr>
-                    <td colSpan={7} className="text-center py-10 text-gray-400">
+                    <td colSpan={8} className="text-center py-10 text-gray-400">
                       کاربری یافت نشد
                     </td>
                   </tr>

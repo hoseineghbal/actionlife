@@ -217,3 +217,91 @@ export async function subscribeNewsletter(email: string) {
     body: JSON.stringify({ email }),
   });
 }
+
+// Store APIs
+export async function getStoreProducts(params?: {
+  page?: number;
+  limit?: number;
+  category?: string;
+  search?: string;
+  minPrice?: number;
+  maxPrice?: number;
+  seller?: string;
+}) {
+  const searchParams = new URLSearchParams();
+  if (params?.page) searchParams.set('page', params.page.toString());
+  if (params?.limit) searchParams.set('limit', params.limit.toString());
+  if (params?.category) searchParams.set('category', params.category);
+  if (params?.search) searchParams.set('search', params.search);
+  if (params?.minPrice !== undefined) searchParams.set('minPrice', params.minPrice.toString());
+  if (params?.maxPrice !== undefined) searchParams.set('maxPrice', params.maxPrice.toString());
+  if (params?.seller) searchParams.set('seller', params.seller);
+  const q = searchParams.toString();
+  return fetchAPI<{ products: import('@/types').StoreProduct[]; total: number }>(
+    `/store/products${q ? `?${q}` : ''}`,
+  );
+}
+
+export async function getStoreProductBySlug(slug: string, token?: string) {
+  return fetchAPI<import('@/types').StoreProduct>(`/store/products/${slug}`, {
+    headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+  });
+}
+
+export async function createStoreProduct(token: string, data: any) {
+  return fetchAPI<import('@/types').StoreProduct>('/store/products', {
+    method: 'POST',
+    body: JSON.stringify(data),
+    headers: { Authorization: `Bearer ${token}` },
+  });
+}
+
+export async function updateStoreProduct(token: string, id: string, data: any) {
+  return fetchAPI<import('@/types').StoreProduct>(`/store/products/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(data),
+    headers: { Authorization: `Bearer ${token}` },
+  });
+}
+
+export async function deleteStoreProduct(token: string, id: string) {
+  return fetchAPI<{ message: string }>(`/store/products/${id}`, {
+    method: 'DELETE',
+    headers: { Authorization: `Bearer ${token}` },
+  });
+}
+
+export async function purchaseProduct(token: string, productId: string) {
+  return fetchAPI<{ order: any; walletBalance: number }>('/store/purchase', {
+    method: 'POST',
+    body: JSON.stringify({ productId }),
+    headers: { Authorization: `Bearer ${token}` },
+  });
+}
+
+export async function getMyPurchases(token: string, page = 1, limit = 20) {
+  return fetchAPI<{ orders: import('@/types').StoreOrder[]; total: number }>(
+    `/store/my-purchases?page=${page}&limit=${limit}`,
+    { headers: { Authorization: `Bearer ${token}` } },
+  );
+}
+
+export async function getMyStoreProducts(token: string, page = 1, limit = 20) {
+  return fetchAPI<{ products: import('@/types').StoreProduct[]; total: number }>(
+    `/store/my-products?page=${page}&limit=${limit}`,
+    { headers: { Authorization: `Bearer ${token}` } },
+  );
+}
+
+export async function checkPurchased(token: string, productId: string) {
+  return fetchAPI<{ purchased: boolean }>(`/store/purchased/${productId}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+}
+
+export async function getSellerOrders(token: string, page = 1, limit = 20) {
+  return fetchAPI<{ orders: import('@/types').StoreOrder[]; total: number }>(
+    `/store/seller-orders?page=${page}&limit=${limit}`,
+    { headers: { Authorization: `Bearer ${token}` } },
+  );
+}
