@@ -56,6 +56,11 @@ export class UpdateUserDto {
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
+  headerImage?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
   bio?: string;
 
   @ApiPropertyOptional({ description: 'تاریخ تولد' })

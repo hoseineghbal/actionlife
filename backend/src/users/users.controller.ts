@@ -30,6 +30,11 @@ export class UsersController {
     return this.usersService.update(req.user.userId, updateUserDto);
   }
 
+  @Get('u/:identifier')
+  findByUsernameOrId(@Param('identifier') identifier: string) {
+    return this.usersService.findByIdentifier(identifier);
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.usersService.findById(id);

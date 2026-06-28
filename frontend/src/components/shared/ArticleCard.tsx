@@ -7,7 +7,7 @@ interface ArticleCardProps {
   excerpt: string;
   featuredImage?: string;
   section: string;
-  author?: { _id?: string; fullName: string };
+  author?: { _id?: string; fullName: string; username?: string };
   createdAt?: string;
 }
 
@@ -67,7 +67,7 @@ export default function ArticleCard({
         <div className="flex items-center justify-between text-xs text-gray-custom">
           {author && (
             author._id ? (
-              <Link href={`/users/${author._id}`} className="hover:text-accent transition-colors">
+              <Link href={`/users/${author.username || author._id}`} className="hover:text-accent transition-colors">
                 {author.fullName}
               </Link>
             ) : (

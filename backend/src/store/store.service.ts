@@ -67,7 +67,7 @@ export class StoreService {
       this.productModel
         .find(filter)
         .select('-files')
-        .populate('seller', 'fullName avatar')
+        .populate('seller', 'fullName avatar username')
         .populate('category', 'name slug')
         .sort({ createdAt: -1 })
         .skip(skip)
@@ -81,7 +81,7 @@ export class StoreService {
   async findBySlug(slug: string) {
     const product = await this.productModel
       .findOne({ slug, status: 'published' })
-      .populate('seller', 'fullName avatar bio')
+      .populate('seller', 'fullName avatar bio username')
       .populate('category', 'name slug');
 
     if (!product) throw new NotFoundException('محصول یافت نشد');
@@ -91,7 +91,7 @@ export class StoreService {
   async findById(id: string) {
     const product = await this.productModel
       .findById(id)
-      .populate('seller', 'fullName avatar bio')
+      .populate('seller', 'fullName avatar bio username')
       .populate('category', 'name slug');
 
     if (!product) throw new NotFoundException('محصول یافت نشد');
@@ -377,7 +377,7 @@ export class StoreService {
     const [products, total] = await Promise.all([
       this.productModel
         .find(filter)
-        .populate('seller', 'fullName mobile')
+        .populate('seller', 'fullName mobile username')
         .populate('category', 'name')
         .sort(sortObj)
         .skip(skip)
@@ -391,7 +391,7 @@ export class StoreService {
   async adminFindById(id: string) {
     const product = await this.productModel
       .findById(id)
-      .populate('seller', 'fullName mobile avatar')
+      .populate('seller', 'fullName mobile avatar username')
       .populate('category', 'name slug');
 
     if (!product) throw new NotFoundException('محصول یافت نشد');

@@ -247,15 +247,27 @@ export default function ProductDetailPage({
             </h1>
 
             {/* Seller */}
-            <div className="flex items-center gap-3 mb-6 p-3 bg-dark-light rounded-xl border border-white/5">
-              <div className="w-10 h-10 rounded-full gradient-primary flex items-center justify-center text-white font-bold">
-                {product.seller?.fullName?.charAt(0) ?? "?"}
+            {product.seller?._id ? (
+              <Link href={`/users/${product.seller.username || product.seller._id}`} className="flex items-center gap-3 mb-6 p-3 bg-dark-light rounded-xl border border-white/5 hover:border-accent/30 transition-colors">
+                <div className="w-10 h-10 rounded-full gradient-primary flex items-center justify-center text-white font-bold">
+                  {product.seller?.fullName?.charAt(0) ?? "?"}
+                </div>
+                <div>
+                  <p className="text-white text-sm font-medium hover:text-accent transition-colors">{product.seller?.fullName ?? "نامشخص"}</p>
+                  <p className="text-gray-custom text-xs">فروشنده</p>
+                </div>
+              </Link>
+            ) : (
+              <div className="flex items-center gap-3 mb-6 p-3 bg-dark-light rounded-xl border border-white/5">
+                <div className="w-10 h-10 rounded-full gradient-primary flex items-center justify-center text-white font-bold">
+                  {product.seller?.fullName?.charAt(0) ?? "?"}
+                </div>
+                <div>
+                  <p className="text-white text-sm font-medium">{product.seller?.fullName ?? "نامشخص"}</p>
+                  <p className="text-gray-custom text-xs">فروشنده</p>
+                </div>
               </div>
-              <div>
-                <p className="text-white text-sm font-medium">{product.seller?.fullName ?? "نامشخص"}</p>
-                <p className="text-gray-custom text-xs">فروشنده</p>
-              </div>
-            </div>
+            )}
 
             {/* Price */}
             <div className="bg-dark-light rounded-2xl p-6 border border-white/5 mb-6">

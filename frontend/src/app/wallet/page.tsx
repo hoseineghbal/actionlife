@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { useAuth } from '@/lib/auth-context';
 import { getWallet, getTransactions, getTokenConfig } from '@/lib/api';
 import type { WalletInfo, WalletTransaction, TokenConfig } from '@/types';
@@ -126,7 +127,13 @@ export default function WalletPage() {
                         {(tx.type === 'transfer_sent' || tx.type === 'transfer_received') && tx.relatedUser && typeof tx.relatedUser === 'object' && (
                           <p className="text-xs text-gray-custom mt-0.5">
                             {tx.type === 'transfer_sent' ? 'به: ' : 'از: '}
-                            {tx.relatedUser.username ? `@${tx.relatedUser.username}` : tx.relatedUser.fullName}
+                            {tx.relatedUser._id ? (
+                              <Link href={`/users/${tx.relatedUser.username || tx.relatedUser._id}`} className="hover:text-accent transition-colors">
+                                {tx.relatedUser.username ? `@${tx.relatedUser.username}` : tx.relatedUser.fullName}
+                              </Link>
+                            ) : (
+                              <>{tx.relatedUser.username ? `@${tx.relatedUser.username}` : tx.relatedUser.fullName}</>
+                            )}
                           </p>
                         )}
                         {tx.type === 'sell' && tx.status === 'rejected' && (

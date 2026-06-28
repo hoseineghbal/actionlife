@@ -99,7 +99,7 @@ export default async function BlogPostPage({ params }: Props) {
               )}
             </div>
             {article.author?._id ? (
-              <Link href={`/users/${article.author._id}`} className="hover:text-accent transition-colors">{article.author.fullName}</Link>
+              <Link href={`/users/${article.author.username || article.author._id}`} className="hover:text-accent transition-colors">{article.author.fullName}</Link>
             ) : (
               <span>{article.author?.fullName || "اکشن لایف"}</span>
             )}

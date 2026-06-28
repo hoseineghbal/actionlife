@@ -295,6 +295,10 @@ export async function getMyStoreProducts(token: string, page = 1, limit = 20) {
   );
 }
 
+export async function getUserStoreProducts(userId: string, page = 1, limit = 12) {
+  return getStoreProducts({ seller: userId, page, limit });
+}
+
 export async function checkPurchased(token: string, productId: string) {
   return fetchAPI<{ purchased: boolean }>(`/store/purchased/${productId}`, {
     headers: { Authorization: `Bearer ${token}` },

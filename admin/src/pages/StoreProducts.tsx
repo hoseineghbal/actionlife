@@ -10,7 +10,7 @@ export default function StoreProducts() {
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [detailProduct, setDetailProduct] = useState<StoreProduct | null>(null);
-  const [detailLoading, setDetailLoading] = useState(false);
+  const [, setDetailLoading] = useState(false);
   const [previewFile, setPreviewFile] = useState<{ url: string; title: string; fileType: string } | null>(null);
   const [messageText, setMessageText] = useState('');
   const [sending, setSending] = useState(false);

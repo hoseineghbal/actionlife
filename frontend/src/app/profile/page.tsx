@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
-import { getProfile, updateProfile } from "@/lib/api";
+import { getProfile, updateProfile, uploadFile } from "@/lib/api";
 import type { User } from "@/types";
 
 const educationOptions = [
@@ -48,11 +48,14 @@ export default function ProfilePage() {
   const [activeTab, setActiveTab] = useState<ActiveTab>("basic");
   const [showUsernameConfirm, setShowUsernameConfirm] = useState(false);
   const [usernameConfirmInput, setUsernameConfirmInput] = useState('');
+  const [uploadingHeader, setUploadingHeader] = useState(false);
+  const headerInputRef = useRef<HTMLInputElement>(null);
 
   const [form, setForm] = useState({
     fullName: "",
     username: "",
     mobile: "",
+    headerImage: "",
     bio: "",
     birthDate: "",
     gender: "",
@@ -85,6 +88,7 @@ export default function ProfilePage() {
           fullName: data.fullName || "",
           username: data.username || "",
           mobile: data.mobile || "",
+          headerImage: data.headerImage || "",
           bio: data.bio || "",
           birthDate: data.birthDate || "",
           gender: data.gender || "",
@@ -117,6 +121,31 @@ export default function ProfilePage() {
         ? prev.interests.filter((i) => i !== interest)
         : [...prev.interests, interest],
     }));
+  };
+
+  const handleHeaderImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      setMessage({ type: "error", text: "فقط فایل‌های تصویری مجاز هستند" });
+      return;
+    }
+
+    setUploadingHeader(true);
+    setMessage(null);
+    const token = localStorage.getItem("access_token");
+    if (!token) return;
+
+    try {
+      const result = await uploadFile(token, file, "profile");
+      handleChange("headerImage", result.url);
+      setMessage({ type: "success", text: "عکس هدر با موفقیت آپلود شد. برای ذخیره دکمه ذخیره را بزنید." });
+    } catch {
+      setMessage({ type: "error", text: "خطا در آپلود عکس هدر" });
+    } finally {
+      setUploadingHeader(false);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -261,6 +290,61 @@ export default function ProfilePage() {
             {activeTab === "basic" && (
               <div className="bg-dark-light border border-white/10 rounded-xl p-6 space-y-5">
                 <h2 className="text-lg font-bold text-white mb-4">اطلاعات پایه</h2>
+
+                {/* Header Image */}
+                <div>
+                  <label className="block text-sm text-gray-custom mb-2">عکس هدر پروفایل</label>
+                  <div className="relative h-40 bg-dark rounded-xl overflow-hidden border border-white/10 group">
+                    {form.headerImage ? (
+                      <>
+                        <img
+                          src={form.headerImage}
+                          alt="هدر پروفایل"
+                          className="w-full h-full object-cover"
+                        />
+                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors flex items-center justify-center">
+                          <div className="opacity-0 group-hover:opacity-100 transition-opacity flex gap-2">
+                            <button
+                              type="button"
+                              onClick={() => headerInputRef.current?.click()}
+                              className="px-3 py-1.5 bg-white/20 backdrop-blur text-white text-sm rounded-lg hover:bg-white/30 transition"
+                            >
+                              تغییر عکس
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleChange("headerImage", "")}
+                              className="px-3 py-1.5 bg-red-500/20 backdrop-blur text-red-400 text-sm rounded-lg hover:bg-red-500/30 transition"
+                            >
+                              حذف
+                            </button>
+                          </div>
+                        </div>
+                      </>
+                    ) : (
+                      <div className="w-full h-full bg-gradient-to-r from-primary/20 via-accent/10 to-primary/20 flex items-center justify-center">
+                        <button
+                          type="button"
+                          onClick={() => headerInputRef.current?.click()}
+                          disabled={uploadingHeader}
+                          className="px-4 py-2 bg-white/10 hover:bg-white/20 text-white text-sm rounded-lg transition disabled:opacity-50"
+                        >
+                          {uploadingHeader ? "در حال آپلود..." : "آپلود عکس هدر"}
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                  <input
+                    ref={headerInputRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={handleHeaderImageUpload}
+                    className="hidden"
+                  />
+                  <p className="text-[10px] text-gray-custom mt-1">
+                    سایز پیشنهادی: 1200×400 پیکسل. عکس هدر در بالای صفحه پروفایل عمومی شما نمایش داده می‌شود.
+                  </p>
+                </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                   <div>

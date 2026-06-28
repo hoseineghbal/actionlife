@@ -48,7 +48,7 @@ export class ArticlesService {
     const [articles, total] = await Promise.all([
       this.articleModel
         .find(filter)
-        .populate('author', 'fullName avatar')
+        .populate('author', 'fullName avatar username')
         .populate('categories', 'name slug')
         .sort({ createdAt: -1 })
         .skip((page - 1) * limit)
@@ -62,7 +62,7 @@ export class ArticlesService {
   async findBySlug(slug: string): Promise<ArticleDocument> {
     const article = await this.articleModel
       .findOne({ slug, status: ArticleStatus.PUBLISHED })
-      .populate('author', 'fullName avatar bio')
+      .populate('author', 'fullName avatar bio username')
       .populate('categories', 'name slug');
     if (!article) {
       throw new NotFoundException('مقاله یافت نشد');
@@ -73,7 +73,7 @@ export class ArticlesService {
 
   async findById(id: string): Promise<ArticleDocument> {
     const article = await this.articleModel.findById(id)
-      .populate('author', 'fullName avatar')
+      .populate('author', 'fullName avatar username')
       .populate('categories', 'name slug');
     if (!article) {
       throw new NotFoundException('مقاله یافت نشد');
@@ -119,7 +119,7 @@ export class ArticlesService {
   async getLatest(limit = 6): Promise<ArticleDocument[]> {
     return this.articleModel
       .find({ status: ArticleStatus.PUBLISHED })
-      .populate('author', 'fullName avatar')
+      .populate('author', 'fullName avatar username')
       .sort({ createdAt: -1 })
       .limit(limit);
   }
@@ -127,7 +127,7 @@ export class ArticlesService {
   async getFeatured(limit = 4): Promise<ArticleDocument[]> {
     return this.articleModel
       .find({ status: ArticleStatus.PUBLISHED, isFeatured: true })
-      .populate('author', 'fullName avatar')
+      .populate('author', 'fullName avatar username')
       .sort({ createdAt: -1 })
       .limit(limit);
   }
@@ -135,7 +135,7 @@ export class ArticlesService {
   async getPopular(limit = 6): Promise<ArticleDocument[]> {
     return this.articleModel
       .find({ status: ArticleStatus.PUBLISHED })
-      .populate('author', 'fullName avatar')
+      .populate('author', 'fullName avatar username')
       .sort({ views: -1 })
       .limit(limit);
   }
@@ -145,7 +145,7 @@ export class ArticlesService {
     const [articles, total] = await Promise.all([
       this.articleModel
         .find(filter)
-        .populate('author', 'fullName avatar')
+        .populate('author', 'fullName avatar username')
         .sort({ createdAt: -1 })
         .skip((page - 1) * limit)
         .limit(limit),

@@ -39,6 +39,9 @@ export class User {
   avatar: string;
 
   @Prop()
+  headerImage: string;
+
+  @Prop()
   bio: string;
 
   @Prop()

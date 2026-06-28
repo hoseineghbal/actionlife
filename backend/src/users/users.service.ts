@@ -52,6 +52,19 @@ export class UsersService {
     return this.userModel.findById(id).select('-password');
   }
 
+  async findByIdentifier(identifier: string): Promise<UserDocument | null> {
+    // First try by username
+    const byUsername = await this.userModel.findOne({ username: identifier }).select('-password');
+    if (byUsername) return byUsername;
+
+    // Try by MongoDB ObjectId
+    if (identifier.match(/^[0-9a-fA-F]{24}$/)) {
+      return this.userModel.findById(identifier).select('-password');
+    }
+
+    return null;
+  }
+
   async findAll(): Promise<UserDocument[]> {
     return this.userModel.find().select('-password');
   }

@@ -49,6 +49,7 @@ export interface Author {
   _id: string;
   fullName: string;
   avatar?: string;
+  username?: string;
   bio?: string;
 }
 
@@ -80,6 +81,7 @@ export interface User {
   role: string;
   email?: string;
   avatar?: string;
+  headerImage?: string;
   bio?: string;
   birthDate?: string;
   gender?: string;
@@ -231,6 +233,7 @@ export interface StoreProduct {
     _id: string;
     fullName: string;
     avatar?: string;
+    username?: string;
     bio?: string;
   };
   salesCount: number;
