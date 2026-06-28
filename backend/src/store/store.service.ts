@@ -8,6 +8,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Product, ProductDocument } from './schemas/product.schema';
 import { Order, OrderDocument } from './schemas/order.schema';
+import { TokenConfig, TokenConfigDocument } from '../wallet/schemas/token-config.schema';
 import { Wallet, WalletDocument } from '../wallet/schemas/wallet.schema';
 import {
   Transaction,
@@ -28,6 +29,7 @@ export class StoreService {
     @InjectModel(Wallet.name) private walletModel: Model<WalletDocument>,
     @InjectModel(Transaction.name) private transactionModel: Model<TransactionDocument>,
     @InjectModel(User.name) private userModel: Model<UserDocument>,
+    @InjectModel(TokenConfig.name) private tokenConfigModel: Model<TokenConfigDocument>,
   ) {}
 
   async findAll(query: {
@@ -194,22 +196,24 @@ export class StoreService {
 
     const finalPrice = product.discountPrice > 0 ? product.discountPrice : product.price;
 
-    const wallet = await this.walletModel.findOne({ user: buyerId } as MongoFilter);
-    if (!wallet || wallet.balance < finalPrice) {
+    const buyerWallet = await this.walletModel.findOne({ user: buyerId } as MongoFilter);
+    if (!buyerWallet || buyerWallet.balance < finalPrice) {
       throw new BadRequestException('موجودی توکن کافی نیست');
     }
 
-    wallet.balance -= finalPrice;
-    wallet.totalSpent += finalPrice;
-    await wallet.save();
+    // Calculate marketplace fee
+    const config = await this.tokenConfigModel.findOne();
+    const feePercent = config?.marketplaceFeePercent ?? 0;
+    const feeAmount = Math.floor(finalPrice * feePercent / 100);
+    const sellerAmount = finalPrice - feeAmount;
 
-    await this.walletModel.findOneAndUpdate(
-      { user: product.seller },
-      { $inc: { balance: finalPrice, totalPurchased: finalPrice } },
-      { upsert: true },
-    );
+    // Deduct from buyer
+    buyerWallet.balance -= finalPrice;
+    buyerWallet.totalSpent += finalPrice;
+    await buyerWallet.save();
 
-    const tx = await this.transactionModel.create({
+    // Create buyer transaction
+    await this.transactionModel.create({
       user: buyerId,
       type: TransactionType.SHOP_PURCHASE,
       amount: -finalPrice,
@@ -218,6 +222,45 @@ export class StoreService {
       relatedUser: product.seller,
     } as any);
 
+    // Credit seller (after fee)
+    await this.walletModel.findOneAndUpdate(
+      { user: product.seller },
+      { $inc: { balance: sellerAmount, totalPurchased: sellerAmount } },
+      { upsert: true },
+    );
+
+    // Create seller transaction
+    await this.transactionModel.create({
+      user: product.seller,
+      type: TransactionType.SHOP_PURCHASE,
+      amount: sellerAmount,
+      status: TransactionStatus.COMPLETED,
+      description: `فروش محصول: ${product.title}${feeAmount > 0 ? ` (کارمزد ${feePercent}%: ${feeAmount} توکن)` : ''}`,
+      relatedUser: buyerId,
+    } as any);
+
+    // Credit platform fee to admin
+    if (feeAmount > 0) {
+      const adminUser = await this.userModel.findOne({ role: 'admin' } as MongoFilter);
+      if (adminUser) {
+        await this.walletModel.findOneAndUpdate(
+          { user: adminUser._id } as MongoFilter,
+          { $inc: { balance: feeAmount, totalPurchased: feeAmount } },
+          { upsert: true },
+        );
+
+        await this.transactionModel.create({
+          user: adminUser._id,
+          type: TransactionType.SHOP_PURCHASE,
+          amount: feeAmount,
+          status: TransactionStatus.COMPLETED,
+          description: `کارمزد فروشگاه: ${product.title} (${feePercent}%)`,
+          relatedUser: buyerId,
+        } as any);
+      }
+    }
+
+    // Create order
     const order = await this.orderModel.create({
       buyer: buyerId,
       product: productId,
@@ -228,13 +271,13 @@ export class StoreService {
       price: product.price,
       finalPrice,
       status: 'completed',
-      transactionId: tx._id.toString(),
+      transactionId: buyerId,
     } as any);
 
     product.salesCount += 1;
     await product.save();
 
-    return { order, walletBalance: wallet.balance };
+    return { order, walletBalance: buyerWallet.balance };
   }
 
   async getUserPurchases(buyerId: string, page = 1, limit = 20) {

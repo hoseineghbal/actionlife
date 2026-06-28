@@ -114,7 +114,7 @@ export default function WalletPage() {
             <div className="space-y-2">
               {transactions.map((tx) => {
                 const ts = typeStyles[tx.type] || { label: tx.type, icon: '📌', bg: 'bg-white/5', text: 'text-gray-custom', border: 'border-white/10' };
-                const isCredit = tx.type === 'purchase' || tx.type === 'transfer_received' || tx.type === 'initial_bonus' || tx.type === 'gift_card_redeem' || tx.type === 'admin_adjustment';
+                const isCredit = tx.type === 'purchase' || tx.type === 'transfer_received' || tx.type === 'initial_bonus' || tx.type === 'gift_card_redeem' || tx.type === 'admin_adjustment' || tx.type === 'shop_purchase' && tx.amount > 0;
                 return (
                   <div key={tx._id} className={`flex items-center justify-between p-4 rounded-xl border ${ts.border} ${ts.bg} transition-colors hover:border-white/20`}>
                     <div className="flex items-center gap-3">

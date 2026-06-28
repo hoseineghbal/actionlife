@@ -7,6 +7,7 @@ import { Order, OrderSchema } from './schemas/order.schema';
 import { Wallet, WalletSchema } from '../wallet/schemas/wallet.schema';
 import { Transaction, TransactionSchema } from '../wallet/schemas/transaction.schema';
 import { User, UserSchema } from '../users/schemas/user.schema';
+import { TokenConfig, TokenConfigSchema } from '../wallet/schemas/token-config.schema';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { User, UserSchema } from '../users/schemas/user.schema';
       { name: Wallet.name, schema: WalletSchema },
       { name: Transaction.name, schema: TransactionSchema },
       { name: User.name, schema: UserSchema },
+      { name: TokenConfig.name, schema: TokenConfigSchema },
     ]),
   ],
   controllers: [StoreController],

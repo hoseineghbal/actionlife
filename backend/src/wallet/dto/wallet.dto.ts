@@ -1,4 +1,4 @@
-import { IsNumber, IsOptional, IsString, Min } from 'class-validator';
+import { IsNumber, IsOptional, IsString, Min, Max } from 'class-validator';
 
 export class PurchaseTokenDto {
   @IsNumber()
@@ -54,6 +54,23 @@ export class RedeemGiftCardDto {
 }
 
 export class UpdateTokenConfigDto {
+  @IsOptional()
+  @IsString()
+  _id?: string;
+
+  @IsOptional()
+  __v?: number;
+
+  @IsOptional()
+  @IsString()
+  id?: string;
+
+  @IsOptional()
+  createdAt?: string;
+
+  @IsOptional()
+  updatedAt?: string;
+
   @IsOptional()
   @IsNumber()
   @Min(1)
@@ -130,6 +147,12 @@ export class UpdateTokenConfigDto {
   @IsNumber()
   @Min(0)
   transferFeePercent?: number;
+
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  @Max(100)
+  marketplaceFeePercent?: number;
 }
 
 export class ProcessSellRequestDto {

@@ -171,6 +171,7 @@ export interface TokenConfig {
   giftCardExpiryDays: number;
   transferFee: number;
   transferFeePercent: number;
+  marketplaceFeePercent: number;
 }
 
 export interface WalletTransaction {

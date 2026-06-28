@@ -55,6 +55,9 @@ export class TokenConfig {
 
   @Prop({ default: 0 })
   transferFeePercent: number;
+
+  @Prop({ default: 0 })
+  marketplaceFeePercent: number;
 }
 
 export const TokenConfigSchema = SchemaFactory.createForClass(TokenConfig);

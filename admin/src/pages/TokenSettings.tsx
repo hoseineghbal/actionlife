@@ -244,6 +244,20 @@ export default function TokenSettings() {
           </div>
         </section>
 
+        {/* --- Marketplace Section --- */}
+        <section className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+          <div className="px-6 py-4 border-b border-gray-50 flex items-center gap-3">
+            <div className="w-9 h-9 bg-teal-50 text-teal-600 rounded-xl flex items-center justify-center text-base">🏪</div>
+            <div>
+              <h2 className="text-sm font-semibold text-gray-800">تنظیمات فروشگاه</h2>
+              <p className="text-xs text-gray-400">کارمزد فروش محصولات</p>
+            </div>
+          </div>
+          <div className="p-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {numField('marketplaceFeePercent', 'کارمزد فروشگاه (درصد)', '%', 'درصدی از فروش هر محصول که به سایت تعلق می‌گیرد')}
+          </div>
+        </section>
+
         {/* --- Transfer Section --- */}
         <section className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
           <div className="px-6 py-4 border-b border-gray-50 flex items-center gap-3">

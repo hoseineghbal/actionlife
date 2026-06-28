@@ -53,9 +53,22 @@ export class WalletService {
   async updateTokenConfig(dto: any): Promise<TokenConfigDocument> {
     let config = await this.tokenConfigModel.findOne();
     if (!config) {
-      config = await this.tokenConfigModel.create(dto);
+      // Strip non-schema fields before create
+      const clean: any = {};
+      for (const key of Object.keys(dto)) {
+        if (!['_id', '__v', 'createdAt', 'updatedAt'].includes(key) && dto[key] !== undefined) {
+          clean[key] = dto[key];
+        }
+      }
+      config = await this.tokenConfigModel.create(clean);
     } else {
-      Object.assign(config, dto);
+      for (const key of Object.keys(dto)) {
+        if (['_id', '__v', 'createdAt', 'updatedAt'].includes(key)) continue;
+        const val = dto[key];
+        if (val !== undefined) {
+          (config as any)[key] = val;
+        }
+      }
       await config.save();
     }
     return config;
