@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.18.0] - 2026-06-28
+
+### Features
+- **store**: add complete digital store marketplace functionality
+
 ## [0.17.0] - 2026-06-28
 
 ### Features
