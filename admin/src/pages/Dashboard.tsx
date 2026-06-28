@@ -63,8 +63,8 @@ export default function Dashboard() {
             <Area
               type="monotone"
               dataKey="count"
-              stroke="#80491e"
-              fill="#80491e33"
+              stroke="#8B7D4A"
+              fill="#8B7D4A33"
               name="بازدید"
             />
           </AreaChart>

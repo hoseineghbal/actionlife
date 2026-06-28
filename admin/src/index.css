@@ -2,14 +2,14 @@
 
 @theme {
   --font-sans: 'Vazirmatn', 'Tahoma', sans-serif;
-  --color-primary: #3d3d27;
-  --color-primary-dark: #2c1c10;
-  --color-accent: #80491e;
-  --color-surface: #4b2e18;
-  --color-muted: #916e44;
-  --color-foreground: #d8bc8a;
-  --color-sidebar: #2c1c10;
-  --color-sidebar-hover: #3d3d27;
+  --color-primary: #556B2F;
+  --color-primary-dark: #1A1A1A;
+  --color-accent: #8B7D4A;
+  --color-surface: #3D4F1E;
+  --color-muted: #A0935E;
+  --color-foreground: #F5F0E6;
+  --color-sidebar: #1A1A1A;
+  --color-sidebar-hover: #4A5D23;
 }
 
 /* ===== Fonts ===== */
@@ -90,5 +90,5 @@ body {
 
 * {
   scrollbar-width: thin;
-  scrollbar-color: #916e44 transparent;
+  scrollbar-color: #A0935E transparent;
 }

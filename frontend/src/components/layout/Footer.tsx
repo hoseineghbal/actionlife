@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, FormEvent } from "react";
+import { useAuth } from "@/lib/auth-context";
 import { subscribeNewsletter } from "@/lib/api";
 
 const socialLinks = [
@@ -12,6 +13,7 @@ const socialLinks = [
 ];
 
 export default function Footer() {
+  const { user } = useAuth();
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
   const [loading, setLoading] = useState(false);
@@ -45,30 +47,32 @@ export default function Footer() {
           </span>
         </div>
 
-        {/* عضویت در خبرنامه */}
-        <form
-          onSubmit={handleSubmit}
-          className="flex items-center gap-2 flex-1 max-w-sm min-w-0"
-        >
-          <span className="text-gray-custom whitespace-nowrap text-xs hidden sm:inline">
-            خبرنامه:
-          </span>
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="ایمیل خود را وارد کنید"
-            className="flex-1 min-w-0 px-3 py-1.5 bg-white/5 border border-white/10 rounded-md text-xs text-white placeholder:text-gray-custom focus:outline-none focus:border-accent"
-            required
-          />
-          <button
-            type="submit"
-            disabled={loading}
-            className="px-3 py-1.5 gradient-primary text-white text-xs rounded-md hover:opacity-90 transition-opacity whitespace-nowrap disabled:opacity-50"
+        {/* عضویت در خبرنامه - فقط برای کاربران مهمان */}
+        {!user && (
+          <form
+            onSubmit={handleSubmit}
+            className="flex items-center gap-2 flex-1 max-w-sm min-w-0"
           >
-            {loading ? "..." : "عضویت"}
-          </button>
-        </form>
+            <span className="text-gray-custom whitespace-nowrap text-xs hidden sm:inline">
+              خبرنامه:
+            </span>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="ایمیل خود را وارد کنید"
+              className="flex-1 min-w-0 px-3 py-1.5 bg-white/5 border border-white/10 rounded-md text-xs text-white placeholder:text-gray-custom focus:outline-none focus:border-accent"
+              required
+            />
+            <button
+              type="submit"
+              disabled={loading}
+              className="px-3 py-1.5 gradient-primary text-white text-xs rounded-md hover:opacity-90 transition-opacity whitespace-nowrap disabled:opacity-50"
+            >
+              {loading ? "..." : "عضویت"}
+            </button>
+          </form>
+        )}
         {message && (
           <div
             className={`text-xs w-full text-center ${
