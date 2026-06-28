@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.24.0] - 2026-06-28
+
+### Features
+- **store admin**: add search, filters and sorting
+
 ## [0.23.0] - 2026-06-28
 
 ### Features
