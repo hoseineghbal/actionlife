@@ -82,7 +82,7 @@ function AddProductForm() {
 
   const updateFile = (index: number, field: string, value: string) => {
     const updated = [...files];
-    (updated[index] as Record<string, string>)[field] = value;
+    (updated[index] as unknown as Record<string, string>)[field] = value;
     setFiles(updated);
   };
 

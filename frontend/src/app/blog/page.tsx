@@ -22,14 +22,35 @@ const blogCategories = [
   { label: "ورزش", slug: "sport" },
 ];
 
-export default async function BlogPage() {
+const PAGE_SIZE = 12;
+
+export default async function BlogPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ category?: string; page?: string }>;
+}) {
+  const { category, page: pageParam } = await searchParams;
+  const page = Math.max(1, parseInt(pageParam || "1") || 1);
+
   let articles: Article[] = [];
+  let total = 0;
   try {
-    const res = await getArticles({ limit: 12 });
+    const res = await getArticles({ limit: PAGE_SIZE, page, category });
     articles = res.articles;
+    total = res.total;
   } catch {
     articles = [];
   }
+
+  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+
+  const buildHref = (p: number) => {
+    const params = new URLSearchParams();
+    if (category) params.set("category", category);
+    if (p > 1) params.set("page", String(p));
+    const qs = params.toString();
+    return qs ? `/blog?${qs}` : "/blog";
+  };
 
   return (
     <>
@@ -53,7 +74,7 @@ export default async function BlogPage() {
               key={cat.slug}
               href={cat.slug === "all" ? "/blog" : `/blog?category=${cat.slug}`}
               className={`px-4 py-2 text-sm rounded-lg border transition-colors ${
-                cat.slug === "all"
+                cat.slug === category || (cat.slug === "all" && !category)
                   ? "bg-accent text-white border-accent"
                   : "bg-white/5 text-gray-custom border-white/10 hover:border-accent/50 hover:text-white"
               }`}
@@ -79,15 +100,23 @@ export default async function BlogPage() {
         </div>
 
         {/* صفحه‌بندی */}
-        <div className="flex justify-center gap-2 mt-12">
-          <span className="px-4 py-2 gradient-primary text-white rounded-lg text-sm">۱</span>
-          <button className="px-4 py-2 bg-white/5 text-gray-custom border border-white/10 rounded-lg text-sm hover:text-white hover:border-accent/50 transition-colors">
-            ۲
-          </button>
-          <button className="px-4 py-2 bg-white/5 text-gray-custom border border-white/10 rounded-lg text-sm hover:text-white hover:border-accent/50 transition-colors">
-            ۳
-          </button>
-        </div>
+        {totalPages > 1 && (
+          <div className="flex justify-center gap-2 mt-12">
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
+              <Link
+                key={p}
+                href={buildHref(p)}
+                className={`px-4 py-2 rounded-lg text-sm border transition-colors ${
+                  p === page
+                    ? "gradient-primary text-white border-transparent"
+                    : "bg-white/5 text-gray-custom border-white/10 hover:text-white hover:border-accent/50"
+                }`}
+              >
+                {p}
+              </Link>
+            ))}
+          </div>
+        )}
       </section>
     </>
   );

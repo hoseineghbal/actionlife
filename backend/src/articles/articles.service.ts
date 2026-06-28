@@ -2,12 +2,14 @@ import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/commo
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Article, ArticleDocument, ArticleSection, ArticleStatus } from './schemas/article.schema';
+import { Category, CategoryDocument } from '../categories/schemas/category.schema';
 import { CreateArticleDto } from './dto/create-article.dto';
 
 @Injectable()
 export class ArticlesService {
   constructor(
     @InjectModel(Article.name) private articleModel: Model<ArticleDocument>,
+    @InjectModel(Category.name) private categoryModel: Model<CategoryDocument>,
   ) {}
 
   async create(createArticleDto: CreateArticleDto, authorId: string): Promise<ArticleDocument> {
@@ -25,8 +27,9 @@ export class ArticlesService {
     limit?: number;
     featured?: boolean;
     all?: boolean;
+    category?: string;
   }): Promise<{ articles: ArticleDocument[]; total: number }> {
-    const { section, status: rawStatus, page = 1, limit = 10, featured, all } = query;
+    const { section, status: rawStatus, page = 1, limit = 10, featured, all, category } = query;
     const filter: Record<string, unknown> = {};
     if (!all) {
       filter.status = rawStatus || ArticleStatus.PUBLISHED;
@@ -35,6 +38,12 @@ export class ArticlesService {
     }
     if (section) filter.section = section;
     if (featured !== undefined) filter.isFeatured = featured;
+    if (category) {
+      const cat = await this.categoryModel.findOne({ slug: category });
+      if (cat) {
+        filter.categories = cat._id;
+      }
+    }
 
     const [articles, total] = await Promise.all([
       this.articleModel
