@@ -159,6 +159,13 @@ export class StoreController {
     );
   }
 
+  @Get('admin/products/:id')
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles(UserRole.ADMIN)
+  async adminFindById(@Param('id') id: string) {
+    return this.storeService.adminFindById(id);
+  }
+
   @Put('admin/products/:id/status')
   @UseGuards(AuthGuard('jwt'), RolesGuard)
   @Roles(UserRole.ADMIN)

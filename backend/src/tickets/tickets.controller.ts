@@ -3,8 +3,11 @@ import {
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { TicketsService } from './tickets.service';
-import { CreateTicketDto, AddMessageDto, UpdateTicketStatusDto } from './dto/ticket.dto';
+import { CreateTicketDto, AddMessageDto, UpdateTicketStatusDto, AdminCreateTicketDto } from './dto/ticket.dto';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
+import { RolesGuard } from '../common/guards/roles.guard';
+import { Roles } from '../common/decorators/roles.decorator';
+import { UserRole } from '../users/schemas/user.schema';
 
 @ApiTags('tickets')
 @Controller('tickets')
@@ -60,5 +63,17 @@ export class TicketsController {
   @ApiBearerAuth()
   updateStatus(@Param('id') id: string, @Body() dto: UpdateTicketStatusDto) {
     return this.ticketsService.updateStatus(id, dto.status);
+  }
+
+  @Post('admin/create')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
+  @ApiBearerAuth()
+  adminCreateTicket(@Request() req: any, @Body() dto: AdminCreateTicketDto) {
+    return this.ticketsService.adminCreateTicket(
+      dto,
+      req.user.userId,
+      req.user.fullName || 'ادمین',
+    );
   }
 }

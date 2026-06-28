@@ -1,13 +1,15 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Ticket, TicketDocument } from './schemas/ticket.schema';
-import { CreateTicketDto, AddMessageDto } from './dto/ticket.dto';
+import { CreateTicketDto, AddMessageDto, AdminCreateTicketDto } from './dto/ticket.dto';
+import { User, UserDocument } from '../users/schemas/user.schema';
 
 @Injectable()
 export class TicketsService {
   constructor(
     @InjectModel(Ticket.name) private ticketModel: Model<TicketDocument>,
+    @InjectModel(User.name) private userModel: Model<UserDocument>,
   ) {}
 
   async create(
@@ -80,5 +82,28 @@ export class TicketsService {
 
   async countOpen(): Promise<number> {
     return this.ticketModel.countDocuments({ status: { $ne: 'closed' } });
+  }
+
+  async adminCreateTicket(dto: AdminCreateTicketDto, adminId: string, adminName: string): Promise<TicketDocument> {
+    const targetUser = await this.userModel.findById(dto.userId);
+    if (!targetUser) throw new NotFoundException('کاربر مورد نظر یافت نشد');
+
+    const ticket = new this.ticketModel({
+      userId: dto.userId,
+      userName: targetUser.fullName || targetUser.mobile,
+      userEmail: targetUser.email || targetUser.mobile,
+      subject: dto.subject,
+      priority: dto.priority || 'medium',
+      status: 'pending',
+      messages: [
+        {
+          senderId: adminId,
+          senderRole: 'admin',
+          senderName: adminName,
+          message: dto.message,
+        },
+      ],
+    });
+    return ticket.save();
   }
 }

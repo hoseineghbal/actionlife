@@ -233,7 +233,7 @@ export interface StoreProduct {
   category?: string | { _id: string; name: string; slug: string } | null;
   tags: string[];
   status: string;
-  seller: { _id: string; fullName: string; mobile?: string };
+  seller: { _id: string; fullName: string; mobile?: string; avatar?: string };
   salesCount: number;
   views: number;
   createdAt: string;

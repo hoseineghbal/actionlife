@@ -16,6 +16,25 @@ export class CreateTicketDto {
   priority?: string;
 }
 
+export class AdminCreateTicketDto {
+  @ApiProperty()
+  @IsString()
+  userId: string;
+
+  @ApiProperty()
+  @IsString()
+  subject: string;
+
+  @ApiProperty()
+  @IsString()
+  message: string;
+
+  @ApiPropertyOptional({ enum: ['low', 'medium', 'high'] })
+  @IsOptional()
+  @IsEnum(['low', 'medium', 'high'])
+  priority?: string;
+}
+
 export class AddMessageDto {
   @ApiProperty()
   @IsString()

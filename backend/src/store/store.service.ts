@@ -352,6 +352,16 @@ export class StoreService {
     return { products, total };
   }
 
+  async adminFindById(id: string) {
+    const product = await this.productModel
+      .findById(id)
+      .populate('seller', 'fullName mobile avatar')
+      .populate('category', 'name slug');
+
+    if (!product) throw new NotFoundException('محصول یافت نشد');
+    return product;
+  }
+
   async adminUpdateStatus(id: string, status: string) {
     const product = await this.productModel.findByIdAndUpdate(
       id,
