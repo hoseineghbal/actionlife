@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.19.0] - 2026-06-28
+
+### Features
+- add marketplace fee system and admin settings
+
 ## [0.18.0] - 2026-06-28
 
 ### Features
