@@ -336,17 +336,53 @@ export class StoreService {
     return { orders, total };
   }
 
-  async adminFindAll(page = 1, limit = 20) {
+  async adminFindAll(options: {
+    page?: number;
+    limit?: number;
+    search?: string;
+    status?: string;
+    sort?: string;
+  } = {}) {
+    const page = options.page || 1;
+    const limit = options.limit || 20;
     const skip = (page - 1) * limit;
+
+    const filter: MongoFilter = {};
+    if (options.status && options.status !== 'all') {
+      filter.status = options.status;
+    }
+    if (options.search) {
+      filter.$or = [
+        { title: { $regex: options.search, $options: 'i' } },
+        { slug: { $regex: options.search, $options: 'i' } },
+        { description: { $regex: options.search, $options: 'i' } },
+      ];
+    }
+
+    // Build sort
+    let sortObj: Record<string, 1 | -1> = { createdAt: -1 };
+    if (options.sort) {
+      switch (options.sort) {
+        case 'newest': sortObj = { createdAt: -1 }; break;
+        case 'oldest': sortObj = { createdAt: 1 }; break;
+        case 'price_asc': sortObj = { price: 1 }; break;
+        case 'price_desc': sortObj = { price: -1 }; break;
+        case 'sales_asc': sortObj = { salesCount: 1 }; break;
+        case 'sales_desc': sortObj = { salesCount: -1 }; break;
+        case 'title_asc': sortObj = { title: 1 }; break;
+        case 'title_desc': sortObj = { title: -1 }; break;
+      }
+    }
+
     const [products, total] = await Promise.all([
       this.productModel
-        .find()
+        .find(filter)
         .populate('seller', 'fullName mobile')
         .populate('category', 'name')
-        .sort({ createdAt: -1 })
+        .sort(sortObj)
         .skip(skip)
         .limit(limit),
-      this.productModel.countDocuments(),
+      this.productModel.countDocuments(filter),
     ]);
 
     return { products, total };

@@ -15,12 +15,22 @@ export default function StoreProducts() {
   const [messageText, setMessageText] = useState('');
   const [sending, setSending] = useState(false);
   const [messageSent, setMessageSent] = useState(false);
+  const [search, setSearch] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [sort, setSort] = useState('newest');
   const limit = 20;
 
   useEffect(() => {
     setLoading(true);
+    const params = new URLSearchParams();
+    params.set('page', String(page));
+    params.set('limit', String(limit));
+    if (search) params.set('search', search);
+    if (statusFilter !== 'all') params.set('status', statusFilter);
+    if (sort) params.set('sort', sort);
+
     api
-      .get(`/store/admin/products?page=${page}&limit=${limit}`)
+      .get(`/store/admin/products?${params.toString()}`)
       .then((res) => {
         setProducts(res.data.products);
         setTotal(res.data.total);
@@ -30,7 +40,7 @@ export default function StoreProducts() {
         setTotal(0);
       })
       .finally(() => setLoading(false));
-  }, [page]);
+  }, [page, search, statusFilter, sort]);
 
   const handleStatusChange = async (id: string, status: string) => {
     try {
@@ -111,9 +121,56 @@ export default function StoreProducts() {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between mb-4">
         <h1 className="text-2xl font-bold text-gray-800">محصولات فروشگاه</h1>
         <span className="text-sm text-gray-500">{total} محصول</span>
+      </div>
+
+      {/* Filters */}
+      <div className="bg-white rounded-xl shadow-sm p-4 mb-4 flex flex-wrap items-center gap-3">
+        {/* Search */}
+        <div className="relative flex-1 min-w-[200px]">
+          <svg className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+            placeholder="جستجو در عنوان، اسلاگ یا توضیحات..."
+            className="w-full pr-10 pl-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/20"
+          />
+        </div>
+
+        {/* Status Filter */}
+        <select
+          value={statusFilter}
+          onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}
+          className="px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/20 bg-white"
+        >
+          <option value="all">همه وضعیت‌ها</option>
+          <option value="pending">در انتظار تایید</option>
+          <option value="published">منتشر شده</option>
+          <option value="draft">پیش‌نویس</option>
+          <option value="rejected">رد شده</option>
+          <option value="archived">آرشیو</option>
+        </select>
+
+        {/* Sort */}
+        <select
+          value={sort}
+          onChange={(e) => { setSort(e.target.value); setPage(1); }}
+          className="px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/20 bg-white"
+        >
+          <option value="newest">جدیدترین</option>
+          <option value="oldest">قدیمی‌ترین</option>
+          <option value="price_asc">قیمت: کم به زیاد</option>
+          <option value="price_desc">قیمت: زیاد به کم</option>
+          <option value="sales_asc">فروش: کم به زیاد</option>
+          <option value="sales_desc">فروش: زیاد به کم</option>
+          <option value="title_asc">عنوان: الف تا ی</option>
+          <option value="title_desc">عنوان: ی تا الف</option>
+        </select>
       </div>
 
       {loading ? (

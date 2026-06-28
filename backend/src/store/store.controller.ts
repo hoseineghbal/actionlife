@@ -152,11 +152,17 @@ export class StoreController {
   async adminFindAll(
     @Query('page') page?: number,
     @Query('limit') limit?: number,
+    @Query('search') search?: string,
+    @Query('status') status?: string,
+    @Query('sort') sort?: string,
   ) {
-    return this.storeService.adminFindAll(
-      page ? Number(page) : undefined,
-      limit ? Number(limit) : undefined,
-    );
+    return this.storeService.adminFindAll({
+      page: page ? Number(page) : undefined,
+      limit: limit ? Number(limit) : undefined,
+      search,
+      status,
+      sort,
+    });
   }
 
   @Get('admin/products/:id')
