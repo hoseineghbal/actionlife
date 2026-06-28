@@ -4,8 +4,8 @@ import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/lib/auth-context";
-import { createStoreProduct, updateStoreProduct, getCategories } from "@/lib/api";
-import type { Category, ProductFile, StoreProduct } from "@/types";
+import { createStoreProduct, updateStoreProduct, getCategories, getStudioFiles } from "@/lib/api";
+import type { Category, ProductFile, StoreProduct, StudioFile } from "@/types";
 
 function AddProductForm() {
   const { user } = useAuth();
@@ -32,6 +32,39 @@ function AddProductForm() {
   });
 
   const [files, setFiles] = useState<ProductFile[]>([]);
+
+  // Studio library picker
+  const [showStudioPicker, setShowStudioPicker] = useState(false);
+  const [studioFiles, setStudioFiles] = useState<StudioFile[]>([]);
+  const [loadingStudio, setLoadingStudio] = useState(false);
+
+  const openStudioPicker = async () => {
+    const token = localStorage.getItem("access_token");
+    if (!token) return;
+    setShowStudioPicker(true);
+    setLoadingStudio(true);
+    try {
+      const files = await getStudioFiles(token);
+      setStudioFiles(files);
+    } catch {
+      // ignore
+    } finally {
+      setLoadingStudio(false);
+    }
+  };
+
+  const selectStudioFile = (sf: StudioFile) => {
+    setFiles([
+      ...files,
+      {
+        url: sf.url,
+        title: sf.title,
+        fileType: sf.type,
+        order: files.length,
+      },
+    ]);
+    setShowStudioPicker(false);
+  };
 
   useEffect(() => {
     getCategories().then(setCategories).catch(() => {});
@@ -305,13 +338,22 @@ function AddProductForm() {
           <div className="bg-dark-light border border-white/5 rounded-2xl p-6">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-bold text-white">فایل‌های محصول</h2>
-              <button
-                type="button"
-                onClick={addFile}
-                className="px-4 py-2 bg-primary hover:bg-primary/90 text-white text-sm rounded-xl transition-colors"
-              >
-                + افزودن فایل
-              </button>
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={openStudioPicker}
+                  className="px-4 py-2 bg-accent/20 border border-accent/30 text-accent hover:bg-accent hover:text-white text-sm rounded-xl transition-colors"
+                >
+                  📂 استودیو من
+                </button>
+                <button
+                  type="button"
+                  onClick={addFile}
+                  className="px-4 py-2 bg-primary hover:bg-primary/90 text-white text-sm rounded-xl transition-colors"
+                >
+                  + افزودن فایل با لینک
+                </button>
+              </div>
             </div>
 
             {files.length === 0 && (
@@ -399,6 +441,52 @@ function AddProductForm() {
             </Link>
           </div>
         </form>
+
+        {/* Studio Picker Modal */}
+        {showStudioPicker && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <div className="absolute inset-0 bg-black/60" onClick={() => setShowStudioPicker(false)} />
+            <div className="relative bg-dark-light border border-white/10 rounded-2xl w-full max-w-2xl max-h-[80vh] flex flex-col">
+              <div className="flex items-center justify-between p-6 border-b border-white/5">
+                <h3 className="text-lg font-bold text-white">انتخاب از استودیو</h3>
+                <button onClick={() => setShowStudioPicker(false)} className="text-gray-custom hover:text-white text-xl">&times;</button>
+              </div>
+              <div className="p-6 overflow-y-auto flex-1">
+                {loadingStudio ? (
+                  <div className="flex justify-center py-8"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-accent" /></div>
+                ) : studioFiles.length === 0 ? (
+                  <div className="text-center py-8">
+                    <p className="text-gray-custom mb-4">هنوز فایلی در استودیو ندارید</p>
+                    <Link href="/studio" className="text-accent hover:underline text-sm">رفتن به استودیو</Link>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 gap-4">
+                    {studioFiles.map((sf) => (
+                      <button
+                        key={sf._id}
+                        type="button"
+                        onClick={() => selectStudioFile(sf)}
+                        className="flex items-center gap-4 bg-dark hover:bg-dark-light rounded-xl p-4 border border-white/5 hover:border-accent/30 transition-all text-left"
+                      >
+                        <span className="text-3xl">{sf.type === "video" ? "🎥" : "🎙️"}</span>
+                        <div className="flex-1 min-w-0">
+                          <h4 className="text-white text-sm font-medium line-clamp-1">{sf.title}</h4>
+                          <p className="text-gray-custom text-xs mt-1">
+                            {sf.type === "video" ? "ویدیو" : "صدا"}
+                            {sf.isEdited && " (ویرایش شده)"}
+                            {" · "}
+                            {new Date(sf.createdAt).toLocaleDateString("fa-IR")}
+                          </p>
+                        </div>
+                        <span className="text-accent text-sm whitespace-nowrap">انتخاب ←</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

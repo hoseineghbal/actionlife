@@ -13,6 +13,7 @@ import { OtpModule } from './otp/otp.module';
 import { WalletModule } from './wallet/wallet.module';
 import { NewsletterModule } from './newsletter/newsletter.module';
 import { StoreModule } from './store/store.module';
+import { StudioModule } from './studio/studio.module';
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import { StoreModule } from './store/store.module';
     WalletModule,
     NewsletterModule,
     StoreModule,
+    StudioModule,
   ],
 })
 export class AppModule {}

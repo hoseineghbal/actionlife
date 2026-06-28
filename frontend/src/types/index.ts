@@ -267,3 +267,20 @@ export interface CartItem {
   discountPrice: number;
   sellerName: string;
 }
+
+// Studio types
+export interface StudioFile {
+  _id: string;
+  user: string;
+  url: string;
+  title: string;
+  type: 'video' | 'audio';
+  mimeType: string;
+  size: number;
+  duration: number;
+  thumbnail?: string;
+  isEdited: boolean;
+  originalUrl?: string;
+  createdAt: string;
+  updatedAt: string;
+}

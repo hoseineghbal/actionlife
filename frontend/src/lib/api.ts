@@ -307,3 +307,70 @@ export async function getSellerOrders(token: string, page = 1, limit = 20) {
     { headers: { Authorization: `Bearer ${token}` } },
   );
 }
+
+// Studio APIs
+export async function getStudioFiles(token: string, type?: string) {
+  const query = type ? `?type=${type}` : '';
+  return fetchAPI<import('@/types').StudioFile[]>(`/studio${query}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+}
+
+export async function createStudioFile(token: string, data: {
+  url: string;
+  title: string;
+  type: 'video' | 'audio';
+  mimeType?: string;
+  size?: number;
+  duration?: number;
+  thumbnail?: string;
+}) {
+  return fetchAPI<import('@/types').StudioFile>('/studio', {
+    method: 'POST',
+    body: JSON.stringify(data),
+    headers: { Authorization: `Bearer ${token}` },
+  });
+}
+
+export async function updateStudioFile(token: string, id: string, data: {
+  title?: string;
+  url?: string;
+  thumbnail?: string;
+  duration?: number;
+  size?: number;
+}) {
+  return fetchAPI<import('@/types').StudioFile>(`/studio/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(data),
+    headers: { Authorization: `Bearer ${token}` },
+  });
+}
+
+export async function deleteStudioFile(token: string, id: string) {
+  return fetchAPI<{ message: string }>(`/studio/${id}`, {
+    method: 'DELETE',
+    headers: { Authorization: `Bearer ${token}` },
+  });
+}
+
+export async function uploadFile(token: string, file: File, folder = 'studio') {
+  const formData = new FormData();
+  formData.append('file', file);
+  formData.append('folder', folder);
+
+  const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001/api';
+  const res = await fetch(`${API_BASE}/upload/file`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}` },
+    body: formData,
+  });
+  if (!res.ok) {
+    let msg = `خطای آپلود (${res.status})`;
+    try {
+      const body = await res.json();
+      if (body.message) msg = body.message;
+    } catch {}
+    throw new Error(msg);
+  }
+  return res.json() as Promise<{ url: string; filename: string; mimeType: string; size: number }>;
+}
