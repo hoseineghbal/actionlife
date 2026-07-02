@@ -9,6 +9,7 @@ All notable changes to this project will be documented in this file.
 
 
 ### Bug Fixes
+- **scripts**: remove local keyword from script body for bash 3.x compat
 - **scripts**: use file-based storage for macOS bash 3.x compatibility
 ## [0.25.0] - 2026-06-28
 
