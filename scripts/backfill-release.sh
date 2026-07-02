@@ -165,7 +165,7 @@ while IFS=$'\t' read -r sha epoch msg body; do
   desc="$(echo "$msg" | sed -E 's/^[a-zA-Z_]+(\([^)]*\))?!?:[[:space:]]*//')"
 
   # Build bullet line
-  local bullet=""
+  bullet=""
   if $is_breaking; then
     bc_line="$(printf "%s\n%s" "$msg" "$body" | grep -i "BREAKING CHANGE" | head -1 | sed 's/^BREAKING CHANGE:[[:space:]]*//I')"
     if [[ -n "$scope" ]]; then
@@ -197,7 +197,6 @@ while IFS=$'\t' read -r sha epoch msg body; do
     echo "$date_fmt" >> "$TMPDIR/dates"
   else
     # Update max bump for the day
-    local current_max
     current_max="$(cat "$TMPDIR/by-date/$date_fmt/bump")"
     max_bump "$current_max" "$bump_type" > "$TMPDIR/by-date/$date_fmt/bump"
   fi
