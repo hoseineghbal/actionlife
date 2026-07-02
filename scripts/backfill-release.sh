@@ -23,6 +23,7 @@ PACKAGE_JSONS=(
 )
 CHANGELOG="$REPO_ROOT/CHANGELOG.md"
 TAG_PREFIX="v"
+TMPDIR="${TMPDIR:-/tmp}/backfill-release-$$"
 
 # Ensure we're on main/master
 BRANCH="$(git -C "$REPO_ROOT" rev-parse --abbrev-ref HEAD)"
@@ -40,6 +41,13 @@ fi
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo "  Backfill Release — daily grouping, full history"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+
+# Cleanup on exit
+cleanup() {
+  rm -rf "$TMPDIR"
+}
+trap cleanup EXIT
+mkdir -p "$TMPDIR"
 
 # --- Helper: semver bump ---------------------------------------------------
 semver_bump() {
@@ -89,25 +97,21 @@ done
 echo "  Starting version: $START_VERSION"
 echo ""
 
-SKIP_COMMIT="0784e6a"  # the "feat: add automated release scripts and git hooks" commit
+SKIP_COMMIT="0784e6a"
 
 # =============================================================================
-# PHASE 1: Collect all relevant commits grouped by date
+# PHASE 1: Collect all commits, write per-day bullet files
 # =============================================================================
-# For each day, we accumulate all changes into arrays.
-# We use an associative array keyed by date, storing:
-#   - max_bump type for the day
-#   - list of changes grouped by section (breaking, feat, fix, refactor)
+# Structure:
+#   $TMPDIR/dates           — sorted list of unique dates (YYYY-MM-DD)
+#   $TMPDIR/by-date/<date>/bump       — max bump type for the day
+#   $TMPDIR/by-date/<date>/sha        — first commit sha for the day
+#   $TMPDIR/by-date/<date>/breaking   — bullet lines
+#   $TMPDIR/by-date/<date>/features   — bullet lines
+#   $TMPDIR/by-date/<date>/fixes      — bullet lines
+#   $TMPDIR/by-date/<date>/refactors  — bullet lines
 
-declare -A DAY_BUMPS=()           # date → bump_type
-declare -A DAY_BREAKING=()        # date → bullet lines (newline separated)
-declare -A DAY_FEATURES=()        # date → bullet lines
-declare -A DAY_FIXES=()           # date → bullet lines
-declare -A DAY_REFACTORS=()       # date → bullet lines
-declare -a SORTED_DATES=()        # sorted list of unique dates
-declare -A DAY_FIRST_SHA=()       # date → first commit sha for tagging
-
-while IFS=$'\t' read -r sha date msg body; do
+while IFS=$'\t' read -r sha epoch msg body; do
   # Skip the release scripts commit
   if echo "$sha" | grep -q "^${SKIP_COMMIT}"; then
     echo "  (skipping self: ${sha:0:7} — $msg)"
@@ -115,7 +119,7 @@ while IFS=$'\t' read -r sha date msg body; do
   fi
 
   # Determine date string YYYY-MM-DD
-  date_fmt="$(date -r "$date" '+%Y-%m-%d' 2>/dev/null || date -j -f "%s" "$date" '+%Y-%m-%d' 2>/dev/null || echo "$(date '+%Y-%m-%d')")"
+  date_fmt="$(date -r "$epoch" '+%Y-%m-%d' 2>/dev/null || date -j -f "%s" "$epoch" '+%Y-%m-%d' 2>/dev/null || echo "$(date '+%Y-%m-%d')")"
 
   # Determine bump type and category
   bump_type="none"
@@ -123,6 +127,12 @@ while IFS=$'\t' read -r sha date msg body; do
   is_fix=false
   is_refactor=false
   is_breaking=false
+
+  # Also skip release commits
+  if echo "$msg" | grep -qE "^chore\(release\):"; then
+    echo "  ⏭  ${sha:0:7}  release commit: $msg"
+    continue
+  fi
 
   if printf "%s\n%s" "$msg" "$body" | grep -qi "BREAKING CHANGE"; then
     is_breaking=true
@@ -173,35 +183,39 @@ while IFS=$'\t' read -r sha date msg body; do
 
   echo "  ✅ ${sha:0:7}  ($date_fmt)  $bump_type  $msg"
 
-  # Track first SHA for this date
-  if [[ -z "${DAY_FIRST_SHA[$date_fmt]:-}" ]]; then
-    DAY_FIRST_SHA[$date_fmt]="$sha"
+  # Ensure date directory exists
+  mkdir -p "$TMPDIR/by-date/$date_fmt"
+
+  # Track first SHA for this date (first commit seen wins since processed oldest-first)
+  if [[ ! -f "$TMPDIR/by-date/$date_fmt/sha" ]]; then
+    echo "$sha" > "$TMPDIR/by-date/$date_fmt/sha"
   fi
 
-  # Initialize day if new
-  if [[ -z "${DAY_BUMPS[$date_fmt]:-}" ]]; then
-    DAY_BUMPS[$date_fmt]="$bump_type"
-    SORTED_DATES+=("$date_fmt")
+  # Register this date in the master date list (only first time)
+  if [[ ! -f "$TMPDIR/by-date/$date_fmt/bump" ]]; then
+    echo "$bump_type" > "$TMPDIR/by-date/$date_fmt/bump"
+    echo "$date_fmt" >> "$TMPDIR/dates"
   else
     # Update max bump for the day
-    local current_max="${DAY_BUMPS[$date_fmt]}"
-    DAY_BUMPS[$date_fmt]="$(max_bump "$current_max" "$bump_type")"
+    local current_max
+    current_max="$(cat "$TMPDIR/by-date/$date_fmt/bump")"
+    max_bump "$current_max" "$bump_type" > "$TMPDIR/by-date/$date_fmt/bump"
   fi
 
-  # Append bullet to the right section
+  # Append bullet to the right section file
   if $is_breaking; then
-    DAY_BREAKING[$date_fmt]="${DAY_BREAKING[$date_fmt]:-}${bullet}\n"
+    echo "$bullet" >> "$TMPDIR/by-date/$date_fmt/breaking"
   elif $is_feat; then
-    DAY_FEATURES[$date_fmt]="${DAY_FEATURES[$date_fmt]:-}${bullet}\n"
+    echo "$bullet" >> "$TMPDIR/by-date/$date_fmt/features"
   elif $is_fix; then
-    DAY_FIXES[$date_fmt]="${DAY_FIXES[$date_fmt]:-}${bullet}\n"
+    echo "$bullet" >> "$TMPDIR/by-date/$date_fmt/fixes"
   elif $is_refactor; then
-    DAY_REFACTORS[$date_fmt]="${DAY_REFACTORS[$date_fmt]:-}${bullet}\n"
+    echo "$bullet" >> "$TMPDIR/by-date/$date_fmt/refactors"
   fi
 
 done < <(git -C "$REPO_ROOT" log --reverse --format="%H%x09%ct%x09%s%x09%b")
 
-if [[ ${#SORTED_DATES[@]} -eq 0 ]]; then
+if [[ ! -f "$TMPDIR/dates" ]]; then
   echo ""
   echo "❌ No relevant commits found in history."
   exit 0
@@ -211,76 +225,75 @@ fi
 # PHASE 2: Build CHANGELOG entries and tags (one per day)
 # =============================================================================
 CURRENT_VERSION="$START_VERSION"
-declare -a CHANGELOG_ENTRIES=()
-declare -a RELEASES=()  # "version|sha|date|bump_type"
+CHANGELOG_ENTRIES_FILE="$TMPDIR/changelog-entries"
 
 echo ""
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo "  Building releases (one per day)..."
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
-for date_fmt in "${SORTED_DATES[@]}"; do
-  local_bump="${DAY_BUMPS[$date_fmt]}"
-  local_sha="${DAY_FIRST_SHA[$date_fmt]}"
-  local_breaking="${DAY_BREAKING[$date_fmt]:-}"
-  local_features="${DAY_FEATURES[$date_fmt]:-}"
-  local_fixes="${DAY_FIXES[$date_fmt]:-}"
-  local_refactors="${DAY_REFACTORS[$date_fmt]:-}"
+# Track releases for tagging
+RELEASES_FILE="$TMPDIR/releases"
+: > "$RELEASES_FILE"
+
+while read -r date_fmt; do
+  local_bump="$(cat "$TMPDIR/by-date/$date_fmt/bump")"
+  local_sha="$(cat "$TMPDIR/by-date/$date_fmt/sha")"
 
   NEW_VERSION="$(semver_bump "$CURRENT_VERSION" "$local_bump")"
 
   echo "  📅 $date_fmt: v${CURRENT_VERSION} → v${NEW_VERSION} ($local_bump)"
 
-  RELEASES+=("${NEW_VERSION}|${local_sha}|${date_fmt}|${local_bump}")
+  echo "${NEW_VERSION}|${local_sha}|${date_fmt}|${local_bump}" >> "$RELEASES_FILE"
 
   # Build CHANGELOG entry for this day
-  entry="## [${NEW_VERSION}] - ${date_fmt}\n\n"
+  echo "## [${NEW_VERSION}] - ${date_fmt}" >> "$CHANGELOG_ENTRIES_FILE"
+  echo "" >> "$CHANGELOG_ENTRIES_FILE"
 
-  if [[ -n "$local_breaking" ]]; then
-    entry+="### BREAKING CHANGES\n"
-    entry+="${local_breaking}"
-    entry+="\n"
+  # Breaking changes
+  if [[ -f "$TMPDIR/by-date/$date_fmt/breaking" ]]; then
+    echo "### BREAKING CHANGES" >> "$CHANGELOG_ENTRIES_FILE"
+    cat "$TMPDIR/by-date/$date_fmt/breaking" >> "$CHANGELOG_ENTRIES_FILE"
+    echo "" >> "$CHANGELOG_ENTRIES_FILE"
   fi
 
-  if [[ -n "$local_features" ]]; then
-    entry+="### Features\n"
-    entry+="${local_features}"
-    entry+="\n"
+  # Features
+  if [[ -f "$TMPDIR/by-date/$date_fmt/features" ]]; then
+    echo "### Features" >> "$CHANGELOG_ENTRIES_FILE"
+    cat "$TMPDIR/by-date/$date_fmt/features" >> "$CHANGELOG_ENTRIES_FILE"
+    echo "" >> "$CHANGELOG_ENTRIES_FILE"
   fi
 
-  if [[ -n "$local_fixes" ]]; then
-    entry+="### Bug Fixes\n"
-    entry+="${local_fixes}"
-    entry+="\n"
+  # Bug Fixes
+  if [[ -f "$TMPDIR/by-date/$date_fmt/fixes" ]]; then
+    echo "### Bug Fixes" >> "$CHANGELOG_ENTRIES_FILE"
+    cat "$TMPDIR/by-date/$date_fmt/fixes" >> "$CHANGELOG_ENTRIES_FILE"
+    echo "" >> "$CHANGELOG_ENTRIES_FILE"
   fi
 
-  if [[ -n "$local_refactors" ]]; then
-    entry+="### Refactors\n"
-    entry+="${local_refactors}"
-    entry+="\n"
+  # Refactors
+  if [[ -f "$TMPDIR/by-date/$date_fmt/refactors" ]]; then
+    echo "### Refactors" >> "$CHANGELOG_ENTRIES_FILE"
+    cat "$TMPDIR/by-date/$date_fmt/refactors" >> "$CHANGELOG_ENTRIES_FILE"
+    echo "" >> "$CHANGELOG_ENTRIES_FILE"
   fi
 
-  CHANGELOG_ENTRIES+=("$entry")
   CURRENT_VERSION="$NEW_VERSION"
-done
+done < "$TMPDIR/dates"
 
 FINAL_VERSION="$CURRENT_VERSION"
 
 echo ""
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo "  Writing CHANGELOG.md, creating tags..."
-echo "  Total days: ${#SORTED_DATES[@]}"
 echo "  Final version: $FINAL_VERSION"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
 # --- Write CHANGELOG.md ---
 HEADER="# Changelog\n\nAll notable changes to this project will be documented in this file.\n\n"
-CHANGELOG_CONTENT="$HEADER"
-for entry in "${CHANGELOG_ENTRIES[@]}"; do
-  CHANGELOG_CONTENT+="$entry"
-done
-printf "%b" "$CHANGELOG_CONTENT" > "$CHANGELOG"
-echo "  ✓ CHANGELOG.md created (${#CHANGELOG_ENTRIES[@]} day-entries)"
+printf "%b" "$HEADER" > "$CHANGELOG"
+cat "$CHANGELOG_ENTRIES_FILE" >> "$CHANGELOG"
+echo "  ✓ CHANGELOG.md created"
 
 # --- Bump package.json files ---
 for pj in "${PACKAGE_JSONS[@]}"; do
@@ -291,17 +304,16 @@ for pj in "${PACKAGE_JSONS[@]}"; do
 done
 
 # --- Create git tags on the first commit of each day ---
-for release in "${RELEASES[@]}"; do
-  IFS='|' read -r ver sha dt bmp <<< "$release"
+while IFS='|' read -r ver sha dt bmp; do
   if git -C "$REPO_ROOT" rev-parse "${TAG_PREFIX}${ver}" >/dev/null 2>&1; then
-    echo "  ⏭  tag ${TAG_PREFIX}${ver} already exists"
-  else
-    git -C "$REPO_ROOT" tag -a "${TAG_PREFIX}${ver}" "$sha" \
-      -m "Release ${ver}" \
-      -m "Daily release: ${dt}" >/dev/null 2>&1
-    echo "  ✓ tag ${TAG_PREFIX}${ver} → ${sha:0:7} ($dt)"
+    echo "  ⏭  tag ${TAG_PREFIX}${ver} already exists, deleting and recreating"
+    git -C "$REPO_ROOT" tag -d "${TAG_PREFIX}${ver}" 2>/dev/null || true
   fi
-done
+  git -C "$REPO_ROOT" tag -a "${TAG_PREFIX}${ver}" "$sha" \
+    -m "Release ${ver}" \
+    -m "Daily release: ${dt}" >/dev/null 2>&1
+  echo "  ✓ tag ${TAG_PREFIX}${ver} → ${sha:0:7} ($dt)"
+done < "$RELEASES_FILE"
 
 # --- Create final release commit ---
 git -C "$REPO_ROOT" add "${PACKAGE_JSONS[@]}" "$CHANGELOG"
@@ -309,25 +321,18 @@ git -C "$REPO_ROOT" add "${PACKAGE_JSONS[@]}" "$CHANGELOG"
 if git -C "$REPO_ROOT" diff --cached --quiet; then
   echo "  ⏭  nothing to commit (versions already up to date)"
 else
-  LAST_MSG="$(git -C "$REPO_ROOT" log -1 --pretty=%s 2>/dev/null || true)"
-  if echo "$LAST_MSG" | grep -qE "^chore\(release\): bump version to ${FINAL_VERSION}$"; then
-    echo "  ⏭  release commit already at HEAD"
-  else
-    git -C "$REPO_ROOT" commit --no-verify \
-      -m "chore(release): bump version to ${FINAL_VERSION}" \
-      -m "Backfill: ${#SORTED_DATES[@]} daily releases processed from history" \
-      --quiet
-    echo "  ✓ release commit created"
-  fi
+  RELEASE_COUNT="$(wc -l < "$RELEASES_FILE" | tr -d ' ')"
+  git -C "$REPO_ROOT" commit --no-verify \
+    -m "chore(release): bump version to ${FINAL_VERSION}" \
+    -m "Backfill: ${RELEASE_COUNT} daily releases processed from history" \
+    --quiet
+  echo "  ✓ release commit created"
 fi
 
 echo ""
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo "  ✅ Backfill complete!"
-echo "  Days processed:   ${#SORTED_DATES[@]}"
 echo "  Final version:    $FINAL_VERSION"
-echo "  CHANGELOG:        ${#CHANGELOG_ENTRIES[@]} daily entries"
-echo "  Tags created:     ${#RELEASES[@]}"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo ""
 echo "Run the following to push:"
