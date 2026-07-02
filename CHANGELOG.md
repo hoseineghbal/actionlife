@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.26.0] - 2026-07-02
+
+### Features
+- **scripts**: group changelog releases by day (one version per day)
+
 ## [0.25.0] - 2026-06-28
 
 ### Features
