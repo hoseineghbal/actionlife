@@ -2,14 +2,15 @@
 # =============================================================================
 # Backfill Release — process existing git history and create releases
 # =============================================================================
-# For each commit in history, identifies feat/fix/BREAKING CHANGE commits
-# and creates release tags + CHANGELOG entries as if the hook had been
-# active from day one.
+# Groups commits by day and creates one release per day. For each day,
+# determines the highest bump type (major > minor > patch) and lists all
+# changes accumulated.
 #
-# Unlike the post-commit hook, this does NOT create intermediate release
-# commits (to avoid git conflicts with package.json changes in history).
-# Instead it tags the original commits directly and creates one final
-# release commit.
+# Rules:
+#   BREAKING CHANGE (in body/footer) → major bump (day-level)
+#   feat(...)                         → minor bump (day-level)
+#   fix(...) / refactor(...)          → patch bump (day-level)
+#   other                             → skipped
 # =============================================================================
 
 set -euo pipefail
@@ -37,8 +38,42 @@ if ! git -C "$REPO_ROOT" diff --quiet; then
 fi
 
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "  Backfill Release — processing full history"
+echo "  Backfill Release — daily grouping, full history"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+
+# --- Helper: semver bump ---------------------------------------------------
+semver_bump() {
+  local v="$1" t="$2"
+  local M m p
+  IFS='.' read -r M m p <<< "$v"
+  case "$t" in
+    major) echo "$((M+1)).0.0" ;;
+    minor) echo "$M.$((m+1)).0" ;;
+    patch) echo "$M.$m.$((p+1))" ;;
+  esac
+}
+
+# --- Helper: bump priority -------------------------------------------------
+bump_priority() {
+  case "$1" in
+    major) echo 3 ;;
+    minor) echo 2 ;;
+    patch) echo 1 ;;
+    *)     echo 0 ;;
+  esac
+}
+
+# --- Helper: max of two bump types -----------------------------------------
+max_bump() {
+  local p1 p2
+  p1="$(bump_priority "$1")"
+  p2="$(bump_priority "$2")"
+  if (( p1 >= p2 )); then
+    echo "$1"
+  else
+    echo "$2"
+  fi
+}
 
 # Read starting version from the first commit's package.json
 START_VERSION="0.0.0"
@@ -54,25 +89,23 @@ done
 echo "  Starting version: $START_VERSION"
 echo ""
 
-# Process all commits oldest-first, except the last one (our own release scripts commit)
-CURRENT_VERSION="$START_VERSION"
-ALL_COMMITS=""
-declare -a RELEASES=()          # array of "version|sha|date|msg|scope|description|type"
-declare -a CHANGELOG_ENTRIES=() # array of strings (multi-line)
-
-# --- Helper: semver bump ---------------------------------------------------
-semver_bump() {
-  local v="$1" t="$2"
-  local M m p
-  IFS='.' read -r M m p <<< "$v"
-  case "$t" in
-    major) echo "$((M+1)).0.0" ;;
-    minor) echo "$M.$((m+1)).0" ;;
-    patch) echo "$M.$m.$((p+1))" ;;
-  esac
-}
-
 SKIP_COMMIT="0784e6a"  # the "feat: add automated release scripts and git hooks" commit
+
+# =============================================================================
+# PHASE 1: Collect all relevant commits grouped by date
+# =============================================================================
+# For each day, we accumulate all changes into arrays.
+# We use an associative array keyed by date, storing:
+#   - max_bump type for the day
+#   - list of changes grouped by section (breaking, feat, fix, refactor)
+
+declare -A DAY_BUMPS=()           # date → bump_type
+declare -A DAY_BREAKING=()        # date → bullet lines (newline separated)
+declare -A DAY_FEATURES=()        # date → bullet lines
+declare -A DAY_FIXES=()           # date → bullet lines
+declare -A DAY_REFACTORS=()       # date → bullet lines
+declare -a SORTED_DATES=()        # sorted list of unique dates
+declare -A DAY_FIRST_SHA=()       # date → first commit sha for tagging
 
 while IFS=$'\t' read -r sha date msg body; do
   # Skip the release scripts commit
@@ -81,19 +114,21 @@ while IFS=$'\t' read -r sha date msg body; do
     continue
   fi
 
+  # Determine date string YYYY-MM-DD
+  date_fmt="$(date -r "$date" '+%Y-%m-%d' 2>/dev/null || date -j -f "%s" "$date" '+%Y-%m-%d' 2>/dev/null || echo "$(date '+%Y-%m-%d')")"
+
+  # Determine bump type and category
   bump_type="none"
   is_feat=false
   is_fix=false
   is_refactor=false
   is_breaking=false
 
-  # Check BREAKING CHANGE
   if printf "%s\n%s" "$msg" "$body" | grep -qi "BREAKING CHANGE"; then
     is_breaking=true
     bump_type="major"
   fi
 
-  # Check conventional commit type
   if echo "$msg" | grep -qE "^feat(\(.*\))?!?:"; then
     is_feat=true
     [[ "$bump_type" == "none" ]] && bump_type="minor"
@@ -110,8 +145,7 @@ while IFS=$'\t' read -r sha date msg body; do
     continue
   fi
 
-  NEW_VERSION="$(semver_bump "$CURRENT_VERSION" "$bump_type")"
-
+  # Extract scope and description
   scope=""
   sc_regex='^[a-zA-Z_]+\(([^)]+)\)'
   if [[ "$msg" =~ $sc_regex ]]; then
@@ -119,78 +153,134 @@ while IFS=$'\t' read -r sha date msg body; do
   fi
 
   desc="$(echo "$msg" | sed -E 's/^[a-zA-Z_]+(\([^)]*\))?!?:[[:space:]]*//')"
-  date_fmt="$(date -r "$date" '+%Y-%m-%d' 2>/dev/null || date -j -f "%s" "$date" '+%Y-%m-%d' 2>/dev/null || echo "$(date '+%Y-%m-%d')")"
 
-  echo "  ✅ ${sha:0:7}  v${CURRENT_VERSION} → v${NEW_VERSION}  ($bump_type)  $msg"
-
-  RELEASES+=("${NEW_VERSION}|${sha}|${date_fmt}|${msg}|${scope}|${desc}|${bump_type}")
-
-  # Build CHANGELOG entry
-  entry="## [${NEW_VERSION}] - ${date_fmt}\n\n"
+  # Build bullet line
+  local bullet=""
   if $is_breaking; then
-    entry+="### BREAKING CHANGES\n"
     bc_line="$(printf "%s\n%s" "$msg" "$body" | grep -i "BREAKING CHANGE" | head -1 | sed 's/^BREAKING CHANGE:[[:space:]]*//I')"
     if [[ -n "$scope" ]]; then
-      entry+="- **${scope}**: ${bc_line:-$desc}\n"
+      bullet="- **${scope}**: ${bc_line:-$desc}"
     else
-      entry+="- ${bc_line:-$desc}\n"
+      bullet="- ${bc_line:-$desc}"
     fi
-    entry+="\n"
-  fi
-  if $is_feat; then
-    entry+="### Features\n"
+  else
     if [[ -n "$scope" ]]; then
-      entry+="- **${scope}**: ${desc}\n"
+      bullet="- **${scope}**: ${desc}"
     else
-      entry+="- ${desc}\n"
+      bullet="- ${desc}"
     fi
-    entry+="\n"
-  fi
-  if $is_fix; then
-    entry+="### Bug Fixes\n"
-    if [[ -n "$scope" ]]; then
-      entry+="- **${scope}**: ${desc}\n"
-    else
-      entry+="- ${desc}\n"
-    fi
-    entry+="\n"
-  fi
-  if $is_refactor; then
-    entry+="### Refactors\n"
-    if [[ -n "$scope" ]]; then
-      entry+="- **${scope}**: ${desc}\n"
-    else
-      entry+="- ${desc}\n"
-    fi
-    entry+="\n"
   fi
 
-  CHANGELOG_ENTRIES+=("$entry")
-  CURRENT_VERSION="$NEW_VERSION"
+  echo "  ✅ ${sha:0:7}  ($date_fmt)  $bump_type  $msg"
+
+  # Track first SHA for this date
+  if [[ -z "${DAY_FIRST_SHA[$date_fmt]:-}" ]]; then
+    DAY_FIRST_SHA[$date_fmt]="$sha"
+  fi
+
+  # Initialize day if new
+  if [[ -z "${DAY_BUMPS[$date_fmt]:-}" ]]; then
+    DAY_BUMPS[$date_fmt]="$bump_type"
+    SORTED_DATES+=("$date_fmt")
+  else
+    # Update max bump for the day
+    local current_max="${DAY_BUMPS[$date_fmt]}"
+    DAY_BUMPS[$date_fmt]="$(max_bump "$current_max" "$bump_type")"
+  fi
+
+  # Append bullet to the right section
+  if $is_breaking; then
+    DAY_BREAKING[$date_fmt]="${DAY_BREAKING[$date_fmt]:-}${bullet}\n"
+  elif $is_feat; then
+    DAY_FEATURES[$date_fmt]="${DAY_FEATURES[$date_fmt]:-}${bullet}\n"
+  elif $is_fix; then
+    DAY_FIXES[$date_fmt]="${DAY_FIXES[$date_fmt]:-}${bullet}\n"
+  elif $is_refactor; then
+    DAY_REFACTORS[$date_fmt]="${DAY_REFACTORS[$date_fmt]:-}${bullet}\n"
+  fi
+
 done < <(git -C "$REPO_ROOT" log --reverse --format="%H%x09%ct%x09%s%x09%b")
 
-if [[ ${#RELEASES[@]} -eq 0 ]]; then
+if [[ ${#SORTED_DATES[@]} -eq 0 ]]; then
   echo ""
   echo "❌ No relevant commits found in history."
   exit 0
 fi
 
+# =============================================================================
+# PHASE 2: Build CHANGELOG entries and tags (one per day)
+# =============================================================================
+CURRENT_VERSION="$START_VERSION"
+declare -a CHANGELOG_ENTRIES=()
+declare -a RELEASES=()  # "version|sha|date|bump_type"
+
+echo ""
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "  Building releases (one per day)..."
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+
+for date_fmt in "${SORTED_DATES[@]}"; do
+  local_bump="${DAY_BUMPS[$date_fmt]}"
+  local_sha="${DAY_FIRST_SHA[$date_fmt]}"
+  local_breaking="${DAY_BREAKING[$date_fmt]:-}"
+  local_features="${DAY_FEATURES[$date_fmt]:-}"
+  local_fixes="${DAY_FIXES[$date_fmt]:-}"
+  local_refactors="${DAY_REFACTORS[$date_fmt]:-}"
+
+  NEW_VERSION="$(semver_bump "$CURRENT_VERSION" "$local_bump")"
+
+  echo "  📅 $date_fmt: v${CURRENT_VERSION} → v${NEW_VERSION} ($local_bump)"
+
+  RELEASES+=("${NEW_VERSION}|${local_sha}|${date_fmt}|${local_bump}")
+
+  # Build CHANGELOG entry for this day
+  entry="## [${NEW_VERSION}] - ${date_fmt}\n\n"
+
+  if [[ -n "$local_breaking" ]]; then
+    entry+="### BREAKING CHANGES\n"
+    entry+="${local_breaking}"
+    entry+="\n"
+  fi
+
+  if [[ -n "$local_features" ]]; then
+    entry+="### Features\n"
+    entry+="${local_features}"
+    entry+="\n"
+  fi
+
+  if [[ -n "$local_fixes" ]]; then
+    entry+="### Bug Fixes\n"
+    entry+="${local_fixes}"
+    entry+="\n"
+  fi
+
+  if [[ -n "$local_refactors" ]]; then
+    entry+="### Refactors\n"
+    entry+="${local_refactors}"
+    entry+="\n"
+  fi
+
+  CHANGELOG_ENTRIES+=("$entry")
+  CURRENT_VERSION="$NEW_VERSION"
+done
+
 FINAL_VERSION="$CURRENT_VERSION"
 
 echo ""
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "  Creating CHANGELOG.md, tags, and bump..."
+echo "  Writing CHANGELOG.md, creating tags..."
+echo "  Total days: ${#SORTED_DATES[@]}"
 echo "  Final version: $FINAL_VERSION"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
-# --- Create CHANGELOG.md ---
+# --- Write CHANGELOG.md ---
 HEADER="# Changelog\n\nAll notable changes to this project will be documented in this file.\n\n"
 CHANGELOG_CONTENT="$HEADER"
 for entry in "${CHANGELOG_ENTRIES[@]}"; do
   CHANGELOG_CONTENT+="$entry"
 done
 printf "%b" "$CHANGELOG_CONTENT" > "$CHANGELOG"
-echo "  ✓ CHANGELOG.md created (${#RELEASES[@]} entries)"
+echo "  ✓ CHANGELOG.md created (${#CHANGELOG_ENTRIES[@]} day-entries)"
 
 # --- Bump package.json files ---
 for pj in "${PACKAGE_JSONS[@]}"; do
@@ -200,14 +290,16 @@ for pj in "${PACKAGE_JSONS[@]}"; do
   fi
 done
 
-# --- Create git tags on original commits ---
+# --- Create git tags on the first commit of each day ---
 for release in "${RELEASES[@]}"; do
-  IFS='|' read -r ver sha dt msg scp dsc typ <<< "$release"
+  IFS='|' read -r ver sha dt bmp <<< "$release"
   if git -C "$REPO_ROOT" rev-parse "${TAG_PREFIX}${ver}" >/dev/null 2>&1; then
     echo "  ⏭  tag ${TAG_PREFIX}${ver} already exists"
   else
-    git -C "$REPO_ROOT" tag -a "${TAG_PREFIX}${ver}" "$sha" -m "Release ${ver}" -m "Based on: ${msg}" >/dev/null 2>&1
-    echo "  ✓ tag ${TAG_PREFIX}${ver} → ${sha:0:7}"
+    git -C "$REPO_ROOT" tag -a "${TAG_PREFIX}${ver}" "$sha" \
+      -m "Release ${ver}" \
+      -m "Daily release: ${dt}" >/dev/null 2>&1
+    echo "  ✓ tag ${TAG_PREFIX}${ver} → ${sha:0:7} ($dt)"
   fi
 done
 
@@ -217,14 +309,13 @@ git -C "$REPO_ROOT" add "${PACKAGE_JSONS[@]}" "$CHANGELOG"
 if git -C "$REPO_ROOT" diff --cached --quiet; then
   echo "  ⏭  nothing to commit (versions already up to date)"
 else
-  # Check if last commit is already a release commit for this version
   LAST_MSG="$(git -C "$REPO_ROOT" log -1 --pretty=%s 2>/dev/null || true)"
   if echo "$LAST_MSG" | grep -qE "^chore\(release\): bump version to ${FINAL_VERSION}$"; then
     echo "  ⏭  release commit already at HEAD"
   else
     git -C "$REPO_ROOT" commit --no-verify \
       -m "chore(release): bump version to ${FINAL_VERSION}" \
-      -m "Backfill: ${#RELEASES[@]} releases processed from history" \
+      -m "Backfill: ${#SORTED_DATES[@]} daily releases processed from history" \
       --quiet
     echo "  ✓ release commit created"
   fi
@@ -233,10 +324,10 @@ fi
 echo ""
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo "  ✅ Backfill complete!"
-echo "  Commits processed: ${#RELEASES[@]}"
-echo "  Final version:     $FINAL_VERSION"
-echo "  CHANGELOG:         ${#CHANGELOG_ENTRIES[@]} entries"
-echo "  Tags created:      ${#RELEASES[@]}"
+echo "  Days processed:   ${#SORTED_DATES[@]}"
+echo "  Final version:    $FINAL_VERSION"
+echo "  CHANGELOG:        ${#CHANGELOG_ENTRIES[@]} daily entries"
+echo "  Tags created:     ${#RELEASES[@]}"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo ""
 echo "Run the following to push:"
