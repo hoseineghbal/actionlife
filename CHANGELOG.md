@@ -7,6 +7,9 @@ All notable changes to this project will be documented in this file.
 ### Features
 - **scripts**: group changelog releases by day (one version per day)
 
+
+### Bug Fixes
+- **scripts**: use file-based storage for macOS bash 3.x compatibility
 ## [0.25.0] - 2026-06-28
 
 ### Features
