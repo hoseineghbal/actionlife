@@ -1,4 +1,12 @@
-import { IsString, IsNumber, IsOptional, IsArray, IsEnum, ValidateNested, Min } from 'class-validator';
+import {
+  IsString,
+  IsNumber,
+  IsOptional,
+  IsArray,
+  IsEnum,
+  ValidateNested,
+  Min,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class ProductFileDto {
@@ -104,6 +112,12 @@ export class UpdateProductDto {
   @IsOptional()
   @IsArray()
   @ValidateNested({ each: true })
+  @Type(() => ProductDiscountDto)
+  discounts: ProductDiscountDto[];
+
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
   @Type(() => ProductFileDto)
   files: ProductFileDto[];
 
@@ -120,6 +134,25 @@ export class UpdateProductDto {
   @IsString()
   @IsEnum(['draft', 'pending', 'published', 'rejected', 'archived'])
   status: string;
+}
+
+export class ProductDiscountDto {
+  @IsNumber()
+  @Min(1)
+  discountPrice: number;
+
+  @IsString()
+  startDate: string;
+
+  @IsString()
+  endDate: string;
+}
+
+export class SetDiscountsDto {
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => ProductDiscountDto)
+  discounts: ProductDiscountDto[];
 }
 
 export class PurchaseProductDto {

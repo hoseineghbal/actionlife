@@ -1,6 +1,10 @@
 "use client";
 
 import { useState, useEffect } from 'react';
+import DatePicker, { DateObject } from 'react-multi-date-picker';
+import persian from 'react-date-object/calendars/persian';
+import persian_fa from 'react-date-object/locales/persian_fa';
+import TimePicker from 'react-multi-date-picker/plugins/time_picker';
 import api from '../lib/api';
 import type { StoreProduct } from '../types';
 
@@ -19,6 +23,15 @@ export default function StoreProducts() {
   const [statusFilter, setStatusFilter] = useState('all');
   const [sort, setSort] = useState('newest');
   const limit = 20;
+
+  // Discount management state
+  const [discountForm, setDiscountForm] = useState<{
+    discountPrice: string;
+    startDateObj: DateObject | null;
+    endDateObj: DateObject | null;
+  }>({ discountPrice: '', startDateObj: null, endDateObj: null });
+  const [savingDiscount, setSavingDiscount] = useState(false);
+  const [discountSuccess, setDiscountSuccess] = useState(false);
 
   useEffect(() => {
     setLoading(true);
@@ -88,6 +101,66 @@ export default function StoreProducts() {
     } finally {
       setSending(false);
     }
+  };
+
+  const handleSaveDiscounts = async () => {
+    if (!detailProduct) return;
+    if (!discountForm.discountPrice || !discountForm.startDateObj || !discountForm.endDateObj) {
+      alert('لطفا قیمت تخفیف، تاریخ شروع و تاریخ پایان را وارد کنید');
+      return;
+    }
+    const price = Number(discountForm.discountPrice);
+    if (isNaN(price) || price <= 0 || price >= detailProduct.price) {
+      alert('قیمت تخفیف باید عددی مثبت و کمتر از قیمت اصلی باشد');
+      return;
+    }
+
+    setSavingDiscount(true);
+    setDiscountSuccess(false);
+    try {
+      const startGregorian = discountForm.startDateObj.toDate();
+      const endGregorian = discountForm.endDateObj.toDate();
+
+      const currentDiscounts = detailProduct.discounts || [];
+      const newDiscounts = [
+        ...currentDiscounts,
+        { discountPrice: price, startDate: startGregorian.toISOString(), endDate: endGregorian.toISOString() },
+      ];
+
+      const res = await api.put(`/store/products/${detailProduct._id}/discounts`, {
+        discounts: newDiscounts,
+      });
+      setDetailProduct(res.data);
+      setDiscountSuccess(true);
+      setDiscountForm({ discountPrice: '', startDateObj: null, endDateObj: null });
+      setTimeout(() => setDiscountSuccess(false), 3000);
+    } catch (err: any) {
+      alert(err.response?.data?.message || 'خطا در ذخیره تخفیف');
+    } finally {
+      setSavingDiscount(false);
+    }
+  };
+
+  const handleRemoveDiscount = async (index: number) => {
+    if (!detailProduct) return;
+    if (!confirm('آیا از حذف این تخفیف اطمینان دارید؟')) return;
+
+    const updatedDiscounts = (detailProduct.discounts || []).filter((_, i) => i !== index);
+    try {
+      const res = await api.put(`/store/products/${detailProduct._id}/discounts`, {
+        discounts: updatedDiscounts,
+      });
+      setDetailProduct(res.data);
+    } catch (err: any) {
+      alert(err.response?.data?.message || 'خطا در حذف تخفیف');
+    }
+  };
+
+  const formatJalaliDateTime = (isoString: string) => {
+    const d = new Date(isoString);
+    const jalali = new DateObject({ date: d, calendar: persian });
+    const time = d.toLocaleTimeString('fa-IR', { hour: '2-digit', minute: '2-digit' });
+    return `${jalali.format('YYYY/MM/DD')} ${time}`;
   };
 
   const totalPages = Math.ceil(total / limit);
@@ -531,6 +604,102 @@ export default function StoreProducts() {
                     </button>
                   </div>
                 )}
+              </div>
+
+              {/* Discount Management */}
+              <div>
+                <h4 className="text-sm font-medium text-gray-600 mb-3">مدیریت تخفیف‌های زمان‌دار</h4>
+                
+                {/* Active Discounts List */}
+                {(detailProduct.discounts && detailProduct.discounts.length > 0) && (
+                  <div className="mb-4 space-y-2">
+                    <p className="text-xs text-gray-500">تخفیف‌های ثبت شده:</p>
+                    {detailProduct.discounts.map((d, i) => {
+                      const now = new Date();
+                      const isActive = now >= new Date(d.startDate) && now <= new Date(d.endDate);
+                      return (
+                        <div key={i} className={`flex items-center justify-between p-3 rounded-lg text-sm ${isActive ? 'bg-green-50 border border-green-200' : 'bg-gray-50 border border-gray-200'}`}>
+                          <div>
+                            <span className="font-bold text-green-600">{formatPrice(d.discountPrice)} توکن</span>
+                            <span className="text-gray-500 mr-3 text-xs">
+                              {formatJalaliDateTime(d.startDate)} تا {formatJalaliDateTime(d.endDate)}
+                            </span>
+                            {isActive && <span className="mr-2 text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded">فعال</span>}
+                          </div>
+                          <button
+                            onClick={() => handleRemoveDiscount(i)}
+                            className="text-red-500 hover:text-red-700 text-xs shrink-0"
+                          >
+                            حذف
+                          </button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+
+                {/* Add New Discount Form */}
+                <div className="p-4 bg-accent/5 border border-accent/20 rounded-xl space-y-3">
+                  <p className="text-xs font-medium text-accent mb-2">افزودن تخفیف جدید</p>
+                  
+                  <div>
+                    <label className="block text-xs text-gray-600 mb-1">قیمت با تخفیف (توکن)</label>
+                    <input
+                      type="number"
+                      value={discountForm.discountPrice}
+                      onChange={(e) => setDiscountForm((prev) => ({ ...prev, discountPrice: e.target.value }))}
+                      placeholder={`کمتر از ${formatPrice(detailProduct.price)}`}
+                      className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/20"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-xs text-gray-600 mb-1">تاریخ و ساعت شروع</label>
+                      <DatePicker
+                        calendar={persian}
+                        locale={persian_fa}
+                        value={discountForm.startDateObj}
+                        onChange={(val: DateObject | null) =>
+                          setDiscountForm((prev) => ({ ...prev, startDateObj: val }))
+                        }
+                        format="YYYY/MM/DD HH:mm"
+                        plugins={[<TimePicker position="bottom" key="start-time" />]}
+                        inputClass="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/20 text-right"
+                        placeholder="انتخاب تاریخ و ساعت"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs text-gray-600 mb-1">تاریخ و ساعت پایان</label>
+                      <DatePicker
+                        calendar={persian}
+                        locale={persian_fa}
+                        value={discountForm.endDateObj}
+                        onChange={(val: DateObject | null) =>
+                          setDiscountForm((prev) => ({ ...prev, endDateObj: val }))
+                        }
+                        format="YYYY/MM/DD HH:mm"
+                        plugins={[<TimePicker position="bottom" key="end-time" />]}
+                        inputClass="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/20 text-right"
+                        placeholder="انتخاب تاریخ و ساعت"
+                      />
+                    </div>
+                  </div>
+
+                  {discountSuccess && (
+                    <div className="p-2 bg-green-50 border border-green-200 rounded-lg text-xs text-green-700 text-center">
+                      تخفیف با موفقیت ثبت شد
+                    </div>
+                  )}
+
+                  <button
+                    onClick={handleSaveDiscounts}
+                    disabled={savingDiscount}
+                    className="w-full px-4 py-2 bg-accent hover:bg-accent/90 text-white rounded-lg text-sm font-medium disabled:opacity-50 transition-colors"
+                  >
+                    {savingDiscount ? 'در حال ذخیره...' : 'ثبت تخفیف'}
+                  </button>
+                </div>
               </div>
 
               {/* Stats */}

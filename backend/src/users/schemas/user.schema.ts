@@ -92,6 +92,13 @@ export class User {
   @Prop({ default: false })
   hasStore: boolean;
 
+  @Prop({
+    type: String,
+    enum: ['none', 'pending', 'approved', 'rejected'],
+    default: 'none',
+  })
+  storeRequestStatus: string;
+
   @Prop({ default: true })
   isActive: boolean;
 }

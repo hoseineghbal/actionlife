@@ -5,6 +5,7 @@ import Link from "next/link";
 import { getStoreProducts, getCategories } from "@/lib/api";
 import { useAuth } from "@/lib/auth-context";
 import type { StoreProduct, Category } from "@/types";
+import { getEffectivePrice, hasActiveDiscount } from "@/types";
 
 export default function StorePage() {
   const { user } = useAuth();
@@ -192,6 +193,10 @@ function ProductCard({
   product: StoreProduct;
   formatPrice: (p: number) => string;
 }) {
+  const effPrice = getEffectivePrice(product);
+  const onSale = hasActiveDiscount(product);
+  const discountPercent = onSale ? Math.round(((product.price - effPrice) / product.price) * 100) : 0;
+
   return (
     <Link
       href={`/store/${product.slug}`}
@@ -212,9 +217,9 @@ function ProductCard({
             </svg>
           </div>
         )}
-        {product.discountPrice > 0 && (
+        {onSale && (
           <span className="absolute top-3 right-3 px-3 py-1 bg-red-500/90 text-white text-xs font-bold rounded-lg backdrop-blur-sm">
-            {Math.round(((product.price - product.discountPrice) / product.price) * 100)}% تخفیف
+            {discountPercent}% تخفیف
           </span>
         )}
         {/* File count badge */}
@@ -236,9 +241,9 @@ function ProductCard({
 
         <div className="flex items-center justify-between mt-3 pt-3 border-t border-white/5">
           <div>
-            {product.discountPrice > 0 ? (
+            {onSale ? (
               <div className="flex items-center gap-2">
-                <span className="text-accent font-bold">{formatPrice(product.discountPrice)}</span>
+                <span className="text-accent font-bold">{formatPrice(effPrice)}</span>
                 <span className="text-gray-custom text-sm line-through">{formatPrice(product.price)}</span>
               </div>
             ) : (

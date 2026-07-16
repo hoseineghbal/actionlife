@@ -99,6 +99,7 @@ export interface User {
   shebaNumber?: string;
   points?: number;
   hasStore?: boolean;
+  storeRequestStatus?: string;
 }
 
 export interface AuthResponse {
@@ -216,6 +217,12 @@ export interface ProductFile {
   order: number;
 }
 
+export interface ProductDiscount {
+  discountPrice: number;
+  startDate: string;
+  endDate: string;
+}
+
 export interface StoreProduct {
   _id: string;
   title: string;
@@ -225,6 +232,7 @@ export interface StoreProduct {
   coverImage?: string;
   price: number;
   discountPrice: number;
+  discounts?: ProductDiscount[];
   files: ProductFile[];
   category?: Category | null;
   tags: string[];
@@ -239,8 +247,36 @@ export interface StoreProduct {
   salesCount: number;
   views: number;
   hasPurchased?: boolean;
+  effectivePrice?: number;
+  currentDiscount?: ProductDiscount | null;
   createdAt: string;
   updatedAt: string;
+}
+
+export function getEffectivePrice(product: StoreProduct): number {
+  // Check time-based discounts
+  if (product.discounts?.length) {
+    const now = new Date();
+    const active = product.discounts.find(
+      (d) => now >= new Date(d.startDate) && now <= new Date(d.endDate),
+    );
+    if (active) return active.discountPrice;
+  }
+  // API may provide pre-computed effectivePrice
+  if (product.effectivePrice) return product.effectivePrice;
+  // Fallback to legacy discountPrice
+  if (product.discountPrice > 0) return product.discountPrice;
+  return product.price;
+}
+
+export function hasActiveDiscount(product: StoreProduct): boolean {
+  if (product.discounts?.length) {
+    const now = new Date();
+    return product.discounts.some(
+      (d) => now >= new Date(d.startDate) && now <= new Date(d.endDate),
+    );
+  }
+  return product.discountPrice > 0;
 }
 
 export interface StoreOrder {

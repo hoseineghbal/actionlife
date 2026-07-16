@@ -23,6 +23,20 @@ export class ProductFile {
 
 export const ProductFileSchema = SchemaFactory.createForClass(ProductFile);
 
+@Schema({ _id: false })
+export class ProductDiscount {
+  @Prop({ required: true, min: 0 })
+  discountPrice: number;
+
+  @Prop({ required: true, type: Date })
+  startDate: Date;
+
+  @Prop({ required: true, type: Date })
+  endDate: Date;
+}
+
+export const ProductDiscountSchema = SchemaFactory.createForClass(ProductDiscount);
+
 @Schema({ timestamps: true })
 export class Product {
   @Prop({ required: true })
@@ -45,6 +59,9 @@ export class Product {
 
   @Prop({ default: 0 })
   discountPrice: number;
+
+  @Prop({ type: [ProductDiscountSchema], default: [] })
+  discounts: ProductDiscount[];
 
   @Prop({ type: [ProductFileSchema], default: [] })
   files: ProductFile[];

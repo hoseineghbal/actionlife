@@ -28,8 +28,9 @@ export class ArticlesService {
     featured?: boolean;
     all?: boolean;
     category?: string;
+    search?: string;
   }): Promise<{ articles: ArticleDocument[]; total: number }> {
-    const { section, status: rawStatus, page = 1, limit = 10, featured, all, category } = query;
+    const { section, status: rawStatus, page = 1, limit = 10, featured, all, category, search } = query;
     const filter: Record<string, unknown> = {};
     if (!all) {
       filter.status = rawStatus || ArticleStatus.PUBLISHED;
@@ -43,6 +44,13 @@ export class ArticlesService {
       if (cat) {
         filter.categories = cat._id;
       }
+    }
+    if (search) {
+      filter.$or = [
+        { title: { $regex: search, $options: 'i' } },
+        { excerpt: { $regex: search, $options: 'i' } },
+        { tags: { $regex: search, $options: 'i' } },
+      ];
     }
 
     const [articles, total] = await Promise.all([

@@ -17,7 +17,7 @@ import {
   TransactionStatus,
 } from '../wallet/schemas/transaction.schema';
 import { User, UserDocument } from '../users/schemas/user.schema';
-import { CreateProductDto, UpdateProductDto } from './dto/store.dto';
+import { CreateProductDto, UpdateProductDto, SetDiscountsDto } from './dto/store.dto';
 
 type MongoFilter = Record<string, unknown>;
 
@@ -85,7 +85,12 @@ export class StoreService {
       .populate('category', 'name slug');
 
     if (!product) throw new NotFoundException('محصول یافت نشد');
-    return product;
+    const now = new Date();
+    const effectivePrice = this.getEffectivePrice(product);
+    const currentDiscount = product.discounts?.find(
+      (d) => now >= d.startDate && now <= d.endDate,
+    ) || null;
+    return { ...product.toObject(), effectivePrice, currentDiscount };
   }
 
   async findById(id: string) {
@@ -131,19 +136,35 @@ export class StoreService {
       throw new ForbiddenException('شما دسترسی به ویرایش این محصول ندارید');
     }
 
-    // Only admin can edit published products
-    if (product.status === 'published' && user.role !== 'admin') {
-      throw new ForbiddenException('محصول منتشر شده توسط ادمین قابل ویرایش نیست');
-    }
+    const isOwner = product.seller.toString() === sellerId;
+    const isPublished = product.status === 'published';
 
-    if (dto.slug && dto.slug !== product.slug) {
-      const existing = await this.productModel.findOne({ slug: dto.slug });
-      if (existing) throw new BadRequestException('این اسلاگ قبلا استفاده شده');
+    // Owners of published products can only edit limited fields
+    if (isPublished && isOwner && user.role !== 'admin') {
+      const rawDto = dto as unknown as Record<string, unknown>;
+      for (const key of Object.keys(rawDto)) {
+        if (!['price', 'discountPrice', 'discounts', 'status'].includes(key)) {
+          delete rawDto[key];
+        }
+      }
+      // Only allow stopping sales (draft or archived), not re-publishing
+      if (rawDto.status && !['draft', 'archived'].includes(rawDto.status as string)) {
+        delete rawDto.status;
+      }
+    } else if (isPublished && !isOwner && user.role !== 'admin') {
+      throw new ForbiddenException('محصول منتشر شده توسط ادمین قابل ویرایش نیست');
+    } else if (!isPublished) {
+      // Non-published products: full edit for owner/admin
+      if (dto.slug && dto.slug !== product.slug) {
+        const existing = await this.productModel.findOne({ slug: dto.slug });
+        if (existing) throw new BadRequestException('این اسلاگ قبلا استفاده شده');
+      }
     }
 
     // Only assign defined (non-undefined) fields to avoid overwriting with undefined
-    for (const key of Object.keys(dto) as (keyof UpdateProductDto)[]) {
-      const val = dto[key];
+    const rawDto2 = dto as unknown as Record<string, unknown>;
+    for (const key of Object.keys(rawDto2)) {
+      const val = rawDto2[key];
       if (val !== undefined) {
         // Users setting status to "published" get "pending" instead; admins skip this
         if (key === 'status' && val === 'published' && user.role !== 'admin') {
@@ -194,7 +215,7 @@ export class StoreService {
       throw new BadRequestException('شما قبلا این محصول را خریداری کرده‌اید');
     }
 
-    const finalPrice = product.discountPrice > 0 ? product.discountPrice : product.price;
+    const finalPrice = this.getEffectivePrice(product);
 
     const buyerWallet = await this.walletModel.findOne({ user: buyerId } as MongoFilter);
     if (!buyerWallet || buyerWallet.balance < finalPrice) {
@@ -406,5 +427,54 @@ export class StoreService {
     );
     if (!product) throw new NotFoundException('محصول یافت نشد');
     return product;
+  }
+
+  async setDiscounts(id: string, dto: SetDiscountsDto, userId: string) {
+    const product = await this.productModel.findById(id);
+    if (!product) throw new NotFoundException('محصول یافت نشد');
+
+    if (product.seller.toString() !== userId) {
+      throw new ForbiddenException('فقط فروشنده می‌تواند تخفیف تنظیم کند');
+    }
+
+    const discounts = dto.discounts.map((d) => ({
+      discountPrice: d.discountPrice,
+      startDate: new Date(d.startDate),
+      endDate: new Date(d.endDate),
+    }));
+
+    product.discounts = discounts as any;
+    const saved = await product.save();
+    return saved;
+  }
+
+  async getActiveDiscount(id: string) {
+    const product = await this.productModel.findById(id);
+    if (!product) throw new NotFoundException('محصول یافت نشد');
+
+    const now = new Date();
+    const activeDiscount = product.discounts?.find(
+      (d) => now >= d.startDate && now <= d.endDate,
+    );
+
+    return { activeDiscount: activeDiscount || null };
+  }
+
+  getEffectivePrice(product: ProductDocument): number {
+    const now = new Date();
+    // Check time-based discounts first
+    if (product.discounts?.length) {
+      const activeDiscount = product.discounts.find(
+        (d) => now >= d.startDate && now <= d.endDate,
+      );
+      if (activeDiscount) {
+        return activeDiscount.discountPrice;
+      }
+    }
+    // Fallback to legacy discountPrice
+    if (product.discountPrice > 0) {
+      return product.discountPrice;
+    }
+    return product.price;
   }
 }

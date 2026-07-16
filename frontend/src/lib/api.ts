@@ -115,6 +115,13 @@ export async function updateProfile(token: string, data: Partial<import('@/types
   });
 }
 
+export async function requestStore(token: string) {
+  return fetchAPI<{ message: string }>('/users/request-store', {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}` },
+  });
+}
+
 export async function getUserArticles(token: string, userId: string, page = 1, limit = 20) {
   return fetchAPI<{ articles: import('@/types').Article[]; total: number }>(`/articles/user/${userId}?page=${page}&limit=${limit}`, {
     headers: { Authorization: `Bearer ${token}` },
@@ -310,6 +317,18 @@ export async function getSellerOrders(token: string, page = 1, limit = 20) {
     `/store/seller-orders?page=${page}&limit=${limit}`,
     { headers: { Authorization: `Bearer ${token}` } },
   );
+}
+
+export async function setProductDiscounts(
+  token: string,
+  productId: string,
+  discounts: { discountPrice: number; startDate: string; endDate: string }[],
+) {
+  return fetchAPI<import('@/types').StoreProduct>(`/store/products/${productId}/discounts`, {
+    method: 'PUT',
+    body: JSON.stringify({ discounts }),
+    headers: { Authorization: `Bearer ${token}` },
+  });
 }
 
 // Studio APIs

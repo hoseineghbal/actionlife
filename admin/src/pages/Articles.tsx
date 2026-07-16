@@ -25,16 +25,22 @@ export default function Articles() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [filter, setFilter] = useState('');
+  const [search, setSearch] = useState('');
+  const [sectionFilter, setSectionFilter] = useState('');
 
   const loadArticles = async () => {
     try {
-      let query = '';
+      const params = new URLSearchParams();
       if (filter === 'all' || !filter) {
-        query = '?all=true';
+        params.set('all', 'true');
       } else {
-        query = `?status=${filter}`;
+        params.set('status', filter);
       }
-      const res = await api.get<{ articles: Article[]; total: number }>(`/articles${query}`);
+      if (search) params.set('search', search);
+      if (sectionFilter) params.set('section', sectionFilter);
+      if (!filter) params.set('limit', '100');
+      
+      const res = await api.get<{ articles: Article[]; total: number }>(`/articles?${params.toString()}`);
       setArticles(res.data.articles);
     } catch {
       setError('خطا در دریافت مقالات');
@@ -45,7 +51,7 @@ export default function Articles() {
 
   useEffect(() => {
     loadArticles();
-  }, [filter]);
+  }, [filter, search, sectionFilter]);
 
   const handleDelete = async (id: string) => {
     if (!window.confirm('آیا از حذف این مقاله اطمینان دارید؟')) return;
@@ -121,6 +127,32 @@ export default function Articles() {
             {f.label}
           </button>
         ))}
+      </div>
+
+      {/* Search & Section Filter */}
+      <div className="bg-white rounded-xl shadow-sm p-4 mb-4 flex flex-wrap items-center gap-3">
+        <div className="relative flex-1 min-w-[200px]">
+          <svg className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => { setSearch(e.target.value); }}
+            placeholder="جستجو در عنوان، خلاصه یا برچسب‌ها..."
+            className="w-full pr-10 pl-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/20"
+          />
+        </div>
+        <select
+          value={sectionFilter}
+          onChange={(e) => setSectionFilter(e.target.value)}
+          className="px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/20 bg-white"
+        >
+          <option value="">همه بخش‌ها</option>
+          {Object.entries(SECTION_LABELS).map(([value, label]) => (
+            <option key={value} value={value}>{label}</option>
+          ))}
+        </select>
       </div>
 
       {articles.length === 0 ? (

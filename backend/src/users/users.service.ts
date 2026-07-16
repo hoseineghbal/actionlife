@@ -1,4 +1,4 @@
-import { Injectable, ConflictException } from '@nestjs/common';
+import { Injectable, ConflictException, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import * as bcrypt from 'bcrypt';
@@ -71,5 +71,33 @@ export class UsersService {
 
   async update(id: string, updateUserDto: UpdateUserDto): Promise<UserDocument | null> {
     return this.userModel.findByIdAndUpdate(id, updateUserDto, { returnDocument: 'after' }).select('-password');
+  }
+
+  async requestStore(userId: string) {
+    const user = await this.userModel.findById(userId);
+    if (!user) throw new NotFoundException('کاربر یافت نشد');
+    if (user.hasStore) throw new BadRequestException('شما قبلا فروشگاه دارید');
+    if (user.storeRequestStatus === 'pending') throw new BadRequestException('درخواست شما در انتظار بررسی است');
+
+    user.storeRequestStatus = 'pending';
+    await user.save();
+    return { message: 'درخواست فروشگاه با موفقیت ثبت شد' };
+  }
+
+  async handleStoreRequest(userId: string, action: string) {
+    const user = await this.userModel.findById(userId);
+    if (!user) throw new NotFoundException('کاربر یافت نشد');
+
+    if (action === 'approve') {
+      user.storeRequestStatus = 'approved';
+      user.hasStore = true;
+    } else if (action === 'reject') {
+      user.storeRequestStatus = 'rejected';
+    } else {
+      throw new BadRequestException('عملیات نامعتبر');
+    }
+
+    await user.save();
+    return user;
   }
 }

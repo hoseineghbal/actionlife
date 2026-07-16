@@ -197,6 +197,7 @@ export default function Users() {
                   <th className="text-right px-5 py-3 font-medium">امتیاز</th>
                   <th className="text-right px-5 py-3 font-medium">وضعیت</th>
                   <th className="text-right px-5 py-3 font-medium">فروشگاه</th>
+                  <th className="text-right px-5 py-3 font-medium">درخواست فروشگاه</th>
                   <th className="text-right px-5 py-3 font-medium">تاریخ عضویت</th>
                 </tr>
               </thead>
@@ -250,6 +251,57 @@ export default function Users() {
                         {user.hasStore ? 'فعال' : 'غیرفعال'}
                       </button>
                     </td>
+                    <td className="px-5 py-4" onClick={(e) => e.stopPropagation()}>
+                      {user.storeRequestStatus === 'pending' ? (
+                        <div className="flex items-center gap-1">
+                          <span className="text-yellow-600 text-xs">در انتظار</span>
+                          <button
+                            onClick={async () => {
+                              try {
+                                const res = await api.put(`/users/${user._id}/store-request`, { action: 'approve' });
+                                setUsers((prev) =>
+                                  prev.map((u) =>
+                                    u._id === user._id
+                                      ? { ...u, hasStore: true, storeRequestStatus: 'approved' }
+                                      : u,
+                                  ),
+                                );
+                              } catch (err: any) {
+                                alert(err.response?.data?.message || 'خطا');
+                              }
+                            }}
+                            className="px-2 py-0.5 bg-green-100 text-green-700 rounded text-xs hover:bg-green-200"
+                          >
+                            تایید
+                          </button>
+                          <button
+                            onClick={async () => {
+                              try {
+                                await api.put(`/users/${user._id}/store-request`, { action: 'reject' });
+                                setUsers((prev) =>
+                                  prev.map((u) =>
+                                    u._id === user._id
+                                      ? { ...u, storeRequestStatus: 'rejected' }
+                                      : u,
+                                  ),
+                                );
+                              } catch (err: any) {
+                                alert(err.response?.data?.message || 'خطا');
+                              }
+                            }}
+                            className="px-2 py-0.5 bg-red-100 text-red-700 rounded text-xs hover:bg-red-200"
+                          >
+                            رد
+                          </button>
+                        </div>
+                      ) : user.storeRequestStatus === 'approved' ? (
+                        <span className="text-green-600 text-xs">تایید شده</span>
+                      ) : user.storeRequestStatus === 'rejected' ? (
+                        <span className="text-red-500 text-xs">رد شده</span>
+                      ) : (
+                        <span className="text-gray-400 text-xs">—</span>
+                      )}
+                    </td>
                     <td className="px-5 py-4 text-gray-500 text-xs">
                       {new Date(user.createdAt).toLocaleDateString('fa-IR')}
                     </td>
@@ -257,7 +309,7 @@ export default function Users() {
                 ))}
                 {filtered.length === 0 && (
                   <tr>
-                    <td colSpan={8} className="text-center py-10 text-gray-400">
+                    <td colSpan={9} className="text-center py-10 text-gray-400">
                       کاربری یافت نشد
                     </td>
                   </tr>

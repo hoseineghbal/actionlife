@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { getStoreProductBySlug, purchaseProduct } from "@/lib/api";
 import { useAuth } from "@/lib/auth-context";
 import type { StoreProduct } from "@/types";
+import { getEffectivePrice, hasActiveDiscount } from "@/types";
 
 // Simple cart hook using localStorage
 function useCart() {
@@ -90,7 +91,7 @@ export default function ProductDetailPage({
         slug: product.slug,
         coverImage: product.coverImage,
         price: product.price,
-        discountPrice: product.discountPrice,
+        discountPrice: finalPrice,
         sellerName: product.seller?.fullName ?? "",
       });
       setInCart(true);
@@ -195,7 +196,7 @@ export default function ProductDetailPage({
     );
   }
 
-  const finalPrice = product.discountPrice > 0 ? product.discountPrice : product.price;
+  const finalPrice = getEffectivePrice(product);
   const isOwner = user && product.seller?._id === user.id;
 
   return (
@@ -233,9 +234,9 @@ export default function ProductDetailPage({
               )}
             </div>
 
-            {product.discountPrice > 0 && (
+            {hasActiveDiscount(product) && (
               <span className="absolute top-4 right-4 px-4 py-2 bg-red-500 text-white text-sm font-bold rounded-xl">
-                {Math.round(((product.price - product.discountPrice) / product.price) * 100)}% تخفیف
+                {Math.round(((product.price - finalPrice) / product.price) * 100)}% تخفیف
               </span>
             )}
           </div>
@@ -273,9 +274,9 @@ export default function ProductDetailPage({
             <div className="bg-dark-light rounded-2xl p-6 border border-white/5 mb-6">
               <p className="text-gray-custom text-sm mb-2">قیمت:</p>
               <div className="flex items-baseline gap-3">
-                {product.discountPrice > 0 ? (
+                {finalPrice < product.price ? (
                   <>
-                    <span className="text-3xl font-black text-accent">{formatPrice(product.discountPrice)}</span>
+                    <span className="text-3xl font-black text-accent">{formatPrice(finalPrice)}</span>
                     <span className="text-xl text-gray-custom line-through">{formatPrice(product.price)}</span>
                   </>
                 ) : (

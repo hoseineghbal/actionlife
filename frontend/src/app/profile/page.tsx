@@ -3,7 +3,7 @@
 import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
-import { getProfile, updateProfile, uploadFile } from "@/lib/api";
+import { getProfile, updateProfile, uploadFile, requestStore } from "@/lib/api";
 import type { User } from "@/types";
 
 const educationOptions = [
@@ -45,6 +45,8 @@ export default function ProfilePage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
+  const [storeReqLoading, setStoreReqLoading] = useState(false);
+  const [storeReqMsg, setStoreReqMsg] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<ActiveTab>("basic");
   const [showUsernameConfirm, setShowUsernameConfirm] = useState(false);
   const [usernameConfirmInput, setUsernameConfirmInput] = useState('');
@@ -190,6 +192,22 @@ export default function ProfilePage() {
     doSave();
   };
 
+  const handleRequestStore = async () => {
+    const token = localStorage.getItem("access_token");
+    if (!token) return;
+    setStoreReqLoading(true);
+    setStoreReqMsg(null);
+    try {
+      const res = await requestStore(token);
+      setStoreReqMsg(res.message);
+      setProfile((prev) => prev ? { ...prev, storeRequestStatus: 'pending' } : null);
+    } catch (err: any) {
+      setStoreReqMsg(err.message ?? "خطا در ثبت درخواست");
+    } finally {
+      setStoreReqLoading(false);
+    }
+  };
+
   if (!user) return null;
 
   const tabs: { key: ActiveTab; label: string; icon: React.ReactNode }[] = [
@@ -257,6 +275,46 @@ export default function ProfilePage() {
               <p className="text-gray-custom">{profile?.email || user.email}</p>
             </div>
           </div>
+
+          {/* Store Request */}
+          {(!profile?.hasStore && profile?.storeRequestStatus !== 'approved') && (
+            <div className="mt-6 p-4 bg-dark border border-white/10 rounded-xl">
+              <div className="flex items-center justify-between flex-wrap gap-3">
+                <div>
+                  <h3 className="text-white font-bold text-sm mb-1">فروشگاه شخصی</h3>
+                  <p className="text-gray-custom text-xs">
+                    {profile?.storeRequestStatus === 'pending'
+                      ? 'درخواست شما در انتظار بررسی توسط ادمین است.'
+                      : profile?.storeRequestStatus === 'rejected'
+                      ? 'درخواست قبلی شما رد شده است. می‌توانید مجددا درخواست دهید.'
+                      : 'محصولات دیجیتال خود را بفروشید و کسب درآمد کنید.'}
+                  </p>
+                </div>
+                <button
+                  onClick={handleRequestStore}
+                  disabled={storeReqLoading || profile?.storeRequestStatus === 'pending'}
+                  className={`px-5 py-2.5 rounded-lg text-sm font-bold transition-colors ${
+                    profile?.storeRequestStatus === 'pending'
+                      ? 'bg-yellow-500/10 text-yellow-400 cursor-not-allowed'
+                      : 'bg-accent hover:bg-accent/90 text-white disabled:opacity-50'
+                  }`}
+                >
+                  {storeReqLoading
+                    ? 'در حال ثبت...'
+                    : profile?.storeRequestStatus === 'pending'
+                    ? 'در انتظار تایید'
+                    : profile?.storeRequestStatus === 'rejected'
+                    ? 'درخواست مجدد فروشگاه'
+                    : 'درخواست فروشگاه'}
+                </button>
+              </div>
+              {storeReqMsg && (
+                <p className={`mt-2 text-xs ${storeReqMsg.includes('موفقیت') ? 'text-green-400' : 'text-red-400'}`}>
+                  {storeReqMsg}
+                </p>
+              )}
+            </div>
+          )}
         </div>
       </section>
 

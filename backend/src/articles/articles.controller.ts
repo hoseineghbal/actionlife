@@ -32,6 +32,7 @@ export class ArticlesController {
   @ApiQuery({ name: 'featured', required: false })
   @ApiQuery({ name: 'all', required: false })
   @ApiQuery({ name: 'category', required: false })
+  @ApiQuery({ name: 'search', required: false })
   findAll(
     @Query('section') section?: ArticleSection,
     @Query('status') status?: ArticleStatus,
@@ -40,6 +41,7 @@ export class ArticlesController {
     @Query('featured') featured?: string,
     @Query('all') all?: string,
     @Query('category') category?: string,
+    @Query('search') search?: string,
   ) {
     return this.articlesService.findAll({
       section,
@@ -49,6 +51,7 @@ export class ArticlesController {
       featured: featured ? featured === 'true' : undefined,
       all: all === 'true',
       category,
+      search,
     });
   }
 

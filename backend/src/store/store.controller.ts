@@ -18,7 +18,11 @@ import { OptionalJwtAuthGuard } from '../common/guards/optional-jwt-auth.guard';
 import { Roles } from '../common/decorators/roles.decorator';
 import { UserRole } from '../users/schemas/user.schema';
 import { StoreService } from './store.service';
-import { CreateProductDto, UpdateProductDto } from './dto/store.dto';
+import {
+  CreateProductDto,
+  UpdateProductDto,
+  SetDiscountsDto,
+} from './dto/store.dto';
 
 @Controller('store')
 export class StoreController {
@@ -57,7 +61,7 @@ export class StoreController {
         user.userId,
       );
     }
-    return { ...product.toObject(), hasPurchased };
+    return { ...product, hasPurchased };
   }
 
   @Post('products')
@@ -185,5 +189,21 @@ export class StoreController {
   @Get('product/:id')
   async findById(@Param('id') id: string) {
     return this.storeService.findById(id);
+  }
+
+  // Discount management (product owner)
+  @Put('products/:id/discounts')
+  @UseGuards(AuthGuard('jwt'))
+  async setDiscounts(
+    @Param('id') id: string,
+    @Body() dto: SetDiscountsDto,
+    @Req() req: any,
+  ) {
+    return this.storeService.setDiscounts(id, dto, req.user.userId);
+  }
+
+  @Get('products/:id/active-discount')
+  async getActiveDiscount(@Param('id') id: string) {
+    return this.storeService.getActiveDiscount(id);
   }
 }

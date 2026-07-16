@@ -21,6 +21,7 @@ export interface User {
   twitter?: string;
   points: number;
   hasStore: boolean;
+  storeRequestStatus?: string;
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
@@ -220,6 +221,12 @@ export interface Wallet {
 }
 
 // Store types
+export interface ProductDiscount {
+  discountPrice: number;
+  startDate: string;
+  endDate: string;
+}
+
 export interface StoreProduct {
   _id: string;
   title: string;
@@ -229,6 +236,7 @@ export interface StoreProduct {
   coverImage?: string;
   price: number;
   discountPrice: number;
+  discounts: ProductDiscount[];
   files: { url: string; title: string; description?: string; fileType: string; order: number }[];
   category?: string | { _id: string; name: string; slug: string } | null;
   tags: string[];
