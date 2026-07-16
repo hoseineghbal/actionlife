@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.6.0] - 2026-07-16
+
+### Features
+- add store management, discounts, and search features
+
 ## [0.1.0] - 2026-06-18
 
 ### Features
