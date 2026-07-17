@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.6.1] - 2026-07-17
+
+### Refactors
+- restructure homepage layout with home shell
+
 ## [0.6.0] - 2026-07-16
 
 ### Features
