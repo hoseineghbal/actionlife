@@ -31,7 +31,7 @@ export default function HeroCta() {
   };
 
   return (
-    <div className="absolute bottom-24 left-4 md:left-8 z-20 animate-fade-in-up flex flex-col gap-2">
+    <div className="z-20 animate-fade-in-up inline-flex flex-col items-start gap-2">
       {/* باکس دکمه‌ها */}
       <div className="inline-flex flex-wrap items-center gap-2 bg-dark/60 backdrop-blur-md border border-white/10 rounded-xl p-2.5">
         <Link
@@ -64,7 +64,7 @@ export default function HeroCta() {
           <form onSubmit={handleSubmit} className="flex items-center gap-1.5">
             <input
               type="email"
-              placeholder="ایمیل خود را وارد کنید"
+              placeholder="عضویت در خبرنامه"
               className="flex-1 min-w-0 px-3 py-2 md:px-4 md:py-2.5 rounded-lg bg-white/10 border border-white/20 text-white text-[11px] md:text-sm focus:outline-none focus:ring-2 focus:ring-accent/50 placeholder:text-white/40"
               value={email}
               onChange={(e) => setEmail(e.target.value)}

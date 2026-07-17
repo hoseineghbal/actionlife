@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
 import { getWallet } from "@/lib/api";
 
@@ -19,6 +19,7 @@ const navItems = [
 
 export default function Header() {
   const router = useRouter();
+  const pathname = usePathname();
   const { user, logout } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
@@ -55,6 +56,9 @@ export default function Header() {
     setProfileMenuOpen(false);
     router.push("/");
   };
+
+  // صفحه اصلی هدر ندارد
+  if (pathname === "/") return null;
 
   return (
     <header className="sticky top-0 z-50 bg-dark-light/95 backdrop-blur-md border-b border-white/10">

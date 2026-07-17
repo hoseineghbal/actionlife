@@ -120,6 +120,15 @@ a {
   background: #8B7D4A;
 }
 
+/* مخفی‌سازی اسکرول‌بار افقی (ردیف‌های اسکرول‌شونده صفحه اصلی) */
+.scrollbar-hide {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
 /* انیمیشن‌ها */
 @keyframes fadeInUp {
   from {
