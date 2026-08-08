@@ -5,6 +5,7 @@ All notable changes to this project will be documented in this file.
 ## [0.7.0] - 2026-08-08
 
 ### Features
+- **articles, admin**: add ArticleSection enum and fix admin issues
 - **sections**: add dynamic article sections
 - add admin analytics dashboard
 
