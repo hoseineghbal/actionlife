@@ -3,6 +3,14 @@ import { HydratedDocument, Types } from 'mongoose';
 
 export type ArticleDocument = HydratedDocument<Article>;
 
+export enum ArticleSection {
+  BLOG = 'blog',
+  ACTION_CINEMA = 'action_cinema',
+  ACTION_GAME = 'action_game',
+  ACTION_TRIP = 'action_trip',
+  ACTION_FIT = 'action_fit',
+}
+
 export enum ArticleStatus {
   DRAFT = 'draft',
   PENDING_REVIEW = 'pending_review',

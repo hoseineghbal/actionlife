@@ -258,7 +258,7 @@ export default function Users() {
                           <button
                             onClick={async () => {
                               try {
-                                const res = await api.put(`/users/${user._id}/store-request`, { action: 'approve' });
+                                await api.put(`/users/${user._id}/store-request`, { action: 'approve' });
                                 setUsers((prev) =>
                                   prev.map((u) =>
                                     u._id === user._id

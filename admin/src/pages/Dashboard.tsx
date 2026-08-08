@@ -400,7 +400,7 @@ function EcosystemTab({ data }: { data: AdminDashboard }) {
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis dataKey="name" fontSize={12} />
             <YAxis fontSize={12} />
-            <Tooltip formatter={(val: number) => val.toLocaleString('fa-IR')} />
+            <Tooltip formatter={(val) => Number(val).toLocaleString('fa-IR')} />
             <Bar dataKey="value" fill="#8B7D4A" name="مقدار" radius={[4, 4, 0, 0]} />
           </BarChart>
         </ResponsiveContainer>
@@ -500,7 +500,7 @@ function StoreTab({ data }: { data: AdminDashboard }) {
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis type="number" fontSize={12} />
               <YAxis type="category" dataKey="name" fontSize={12} width={120} />
-              <Tooltip formatter={(val: number) => val.toLocaleString('fa-IR')} />
+              <Tooltip formatter={(val) => Number(val).toLocaleString('fa-IR')} />
               <Bar dataKey="salesCount" fill="#8B7D4A" name="تعداد فروش" radius={[0, 4, 4, 0]} />
             </BarChart>
           </ResponsiveContainer>
