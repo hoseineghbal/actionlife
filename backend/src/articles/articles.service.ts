@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { Article, ArticleDocument, ArticleSection, ArticleStatus } from './schemas/article.schema';
+import { Article, ArticleDocument, ArticleStatus } from './schemas/article.schema';
 import { Category, CategoryDocument } from '../categories/schemas/category.schema';
 import { CreateArticleDto } from './dto/create-article.dto';
 
@@ -21,7 +21,7 @@ export class ArticlesService {
   }
 
   async findAll(query: {
-    section?: ArticleSection;
+    section?: string;
     status?: ArticleStatus;
     page?: number;
     limit?: number;

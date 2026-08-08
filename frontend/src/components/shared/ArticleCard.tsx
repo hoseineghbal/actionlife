@@ -1,3 +1,6 @@
+"use client";
+
+import { useState, useEffect } from "react";
 import Link from "next/link";
 
 interface ArticleCardProps {
@@ -11,14 +14,34 @@ interface ArticleCardProps {
   createdAt?: string;
 }
 
-const sectionLabels: Record<string, string> = {
-  blog: "وبلاگ",
-  "action-cinema": "اکشن نما",
-  "action-game": "اکشن گیم",
-  "action-trip": "اکشن تریپ",
-  "action-fit": "اکشن فیت",
-  "action-media": "اکشن مدیا",
-};
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
+
+const sectionLabelCache: Record<string, string> = {};
+let sectionLabelsFetched = false;
+let sectionLabelsPromise: Promise<void> | null = null;
+
+function useSectionLabels() {
+  const [labels, setLabels] = useState<Record<string, string>>(sectionLabelCache);
+
+  useEffect(() => {
+    if (sectionLabelsFetched) {
+      setLabels({ ...sectionLabelCache });
+      return;
+    }
+    if (!sectionLabelsPromise) {
+      sectionLabelsPromise = fetch(`${API_BASE}/article-sections/active`)
+        .then((res) => res.json())
+        .then((data: { name: string; slug: string }[]) => {
+          data.forEach((s) => { sectionLabelCache[s.slug] = s.name; });
+          sectionLabelsFetched = true;
+        })
+        .catch(() => {});
+    }
+    sectionLabelsPromise.then(() => setLabels({ ...sectionLabelCache }));
+  }, []);
+
+  return labels;
+}
 
 export default function ArticleCard({
   title,
@@ -29,6 +52,7 @@ export default function ArticleCard({
   author,
   createdAt,
 }: ArticleCardProps) {
+  const sectionLabels = useSectionLabels();
   const sectionPath =
     section === "blog" ? "/blog" : `/${section}`;
 

@@ -13,7 +13,7 @@ import {
 import { ApiBearerAuth, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { ArticlesService } from './articles.service';
 import { CreateArticleDto } from './dto/create-article.dto';
-import { ArticleSection, ArticleStatus } from './schemas/article.schema';
+import { ArticleStatus } from './schemas/article.schema';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
@@ -25,7 +25,7 @@ export class ArticlesController {
   constructor(private readonly articlesService: ArticlesService) {}
 
   @Get()
-  @ApiQuery({ name: 'section', required: false, enum: ArticleSection })
+  @ApiQuery({ name: 'section', required: false })
   @ApiQuery({ name: 'status', required: false, enum: ArticleStatus })
   @ApiQuery({ name: 'page', required: false })
   @ApiQuery({ name: 'limit', required: false })
@@ -34,7 +34,7 @@ export class ArticlesController {
   @ApiQuery({ name: 'category', required: false })
   @ApiQuery({ name: 'search', required: false })
   findAll(
-    @Query('section') section?: ArticleSection,
+    @Query('section') section?: string,
     @Query('status') status?: ArticleStatus,
     @Query('page') page?: string,
     @Query('limit') limit?: string,

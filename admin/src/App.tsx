@@ -15,6 +15,7 @@ import SellRequests from './pages/SellRequests';
 import TransactionsAdmin from './pages/TransactionsAdmin';
 import GiftCardsAdmin from './pages/GiftCardsAdmin';
 import StoreProducts from './pages/StoreProducts';
+import Sections from './pages/Sections';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, isLoading } = useAuth();
@@ -66,6 +67,7 @@ function AppRoutes() {
         <Route path="/transactions" element={<TransactionsAdmin />} />
         <Route path="/gift-cards" element={<GiftCardsAdmin />} />
         <Route path="/store-products" element={<StoreProducts />} />
+        <Route path="/sections" element={<Sections />} />
       </Route>
     </Routes>
   );

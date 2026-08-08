@@ -1,19 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import type { Article } from "@/types";
 
-const sectionLabels: Record<string, string> = {
-  blog: "وبلاگ",
-  "action-cinema": "اکشن نما",
-  "action-game": "اکشن گیم",
-  "action-trip": "اکشن تریپ",
-  "action-fit": "اکشن فیت",
-  "action-media": "اکشن مدیا",
-};
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
 
-function SidebarCard({ article }: { article: Article }) {
+function SidebarCard({ article, sectionLabels }: { article: Article; sectionLabels: Record<string, string> }) {
   const href = `/${article.section === "blog" ? "blog" : article.section}/${article.slug}`;
   return (
     <Link
@@ -56,7 +49,19 @@ export default function HomeShell({
   children: React.ReactNode;
 }) {
   const [open, setOpen] = useState(true);
+  const [sectionLabels, setSectionLabels] = useState<Record<string, string>>({});
   const hasLatest = latest.length > 0;
+
+  useEffect(() => {
+    fetch(`${API_BASE}/article-sections/active`)
+      .then((res) => res.json())
+      .then((data: { name: string; slug: string }[]) => {
+        const labels: Record<string, string> = {};
+        data.forEach((s) => { labels[s.slug] = s.name; });
+        setSectionLabels(labels);
+      })
+      .catch(() => {});
+  }, []);
 
   return (
     <>
@@ -94,7 +99,7 @@ export default function HomeShell({
             </div>
             <div className="flex-1 overflow-y-auto scrollbar-hide p-3 space-y-2.5">
               {latest.map((article) => (
-                <SidebarCard key={article._id} article={article} />
+                <SidebarCard key={article._id} article={article} sectionLabels={sectionLabels} />
               ))}
               <Link
                 href="/blog"

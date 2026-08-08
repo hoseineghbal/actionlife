@@ -62,6 +62,10 @@ export async function getCategories() {
   return fetchAPI<import('@/types').Category[]>('/categories');
 }
 
+export async function getArticleSections() {
+  return fetchAPI<{ _id: string; name: string; slug: string; isActive: boolean }[]>('/article-sections/active');
+}
+
 export async function submitContact(data: import('@/types').ContactForm) {
   return fetchAPI<{ message: string }>('/contact', {
     method: 'POST',

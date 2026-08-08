@@ -4,20 +4,11 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 import { useAuth } from "@/lib/auth-context";
-import { getCategories } from "@/lib/api";
+import { getCategories, getArticleSections } from "@/lib/api";
 import type { GalleryImage, VideoEmbed, ArticleAttachment, Category } from "@/types";
 
 // Dynamically import TipTap RichTextEditor (client-only)
 const RichTextEditor = dynamic(() => import("@/components/shared/RichTextEditor"), { ssr: false });
-
-const SECTIONS = [
-  { value: 'blog', label: 'وبلاگ' },
-  { value: 'action-cinema', label: 'سینمای اکشن' },
-  { value: 'action-game', label: 'بازی اکشن' },
-  { value: 'action-trip', label: 'سفر اکشن' },
-  { value: 'action-fit', label: 'تناسب اندام' },
-  { value: 'action-media', label: 'رسانه اکشن' },
-];
 
 function generateSlug(title: string): string {
   return title.trim().toLowerCase().replace(/[^a-z0-9\u0600-\u06FF\s-]/g, '').replace(/\s+/g, '-').replace(/-+/g, '-').slice(0, 100);
@@ -40,6 +31,7 @@ export default function SubmitArticlePage() {
   const router = useRouter();
 
   const [categories, setCategories] = useState<Category[]>([]);
+  const [sections, setSections] = useState<{ _id: string; name: string; slug: string }[]>([]);
   const [saving, setSaving] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
@@ -71,6 +63,10 @@ export default function SubmitArticlePage() {
   useEffect(() => {
     if (!user) { router.push('/auth/login'); return; }
     getCategories().then(setCategories).catch(() => {});
+    getArticleSections().then((res) => {
+      setSections(res);
+      if (res.length > 0) setSection(res[0].slug);
+    }).catch(() => {});
   }, [user]);
 
   const handleTitleChange = (val: string) => {
@@ -217,7 +213,7 @@ export default function SubmitArticlePage() {
               <label className="block text-sm text-gray-custom mb-1">بخش</label>
               <select value={section} onChange={e => setSection(e.target.value)}
                 className="w-full px-4 py-3 bg-dark border border-white/10 rounded-lg text-white focus:border-accent/50 outline-none">
-                {SECTIONS.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
+                {sections.map(s => <option key={s._id} value={s.slug}>{s.name}</option>)}
               </select>
             </div>
           </div>

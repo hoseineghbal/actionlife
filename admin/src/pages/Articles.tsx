@@ -3,15 +3,6 @@ import { Link } from 'react-router-dom';
 import api from '../lib/api';
 import type { Article } from '../types';
 
-const SECTION_LABELS: Record<string, string> = {
-  blog: 'وبلاگ',
-  'action-cinema': 'سینمای اکشن',
-  'action-game': 'بازی اکشن',
-  'action-trip': 'سفر اکشن',
-  'action-fit': 'تناسب اندام',
-  'action-media': 'رسانه اکشن',
-};
-
 const STATUS_LABELS: Record<string, { label: string; color: string }> = {
   draft: { label: 'پیش‌نویس', color: 'bg-yellow-100 text-yellow-800' },
   pending_review: { label: 'در انتظار تایید', color: 'bg-blue-100 text-blue-800' },
@@ -27,6 +18,7 @@ export default function Articles() {
   const [filter, setFilter] = useState('');
   const [search, setSearch] = useState('');
   const [sectionFilter, setSectionFilter] = useState('');
+  const [sections, setSections] = useState<{ _id: string; name: string; slug: string }[]>([]);
 
   const loadArticles = async () => {
     try {
@@ -50,6 +42,9 @@ export default function Articles() {
   };
 
   useEffect(() => {
+    api.get<{ _id: string; name: string; slug: string }[]>('/article-sections/active')
+      .then((res) => setSections(res.data))
+      .catch(() => {});
     loadArticles();
   }, [filter, search, sectionFilter]);
 
@@ -149,8 +144,8 @@ export default function Articles() {
           className="px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/20 bg-white"
         >
           <option value="">همه بخش‌ها</option>
-          {Object.entries(SECTION_LABELS).map(([value, label]) => (
-            <option key={value} value={value}>{label}</option>
+          {sections.map((s) => (
+            <option key={s.slug} value={s.slug}>{s.name}</option>
           ))}
         </select>
       </div>
@@ -195,7 +190,7 @@ export default function Articles() {
                       {article.author?.fullName || '—'}
                     </td>
                     <td className="px-4 py-3 text-sm text-gray-600">
-                      {SECTION_LABELS[article.section] || article.section}
+                      {sections.find((s) => s.slug === article.section)?.name || article.section}
                     </td>
                     <td className="px-4 py-3">
                       <span className={`px-2 py-1 rounded-full text-xs font-medium ${STATUS_LABELS[article.status]?.color || ''}`}>

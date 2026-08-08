@@ -3,15 +3,6 @@ import { HydratedDocument, Types } from 'mongoose';
 
 export type ArticleDocument = HydratedDocument<Article>;
 
-export enum ArticleSection {
-  BLOG = 'blog',
-  ACTION_CINEMA = 'action-cinema',
-  ACTION_GAME = 'action-game',
-  ACTION_TRIP = 'action-trip',
-  ACTION_FIT = 'action-fit',
-  ACTION_MEDIA = 'action-media',
-}
-
 export enum ArticleStatus {
   DRAFT = 'draft',
   PENDING_REVIEW = 'pending_review',
@@ -97,8 +88,8 @@ export class Article {
   @Prop({ type: [ArticleAttachment], default: [] })
   attachments: ArticleAttachment[];
 
-  @Prop({ type: String, enum: ArticleSection, required: true })
-  section: ArticleSection;
+  @Prop({ type: String, required: true })
+  section: string;
 
   @Prop({ type: [{ type: Types.ObjectId, ref: 'Category' }] })
   categories: Types.ObjectId[];

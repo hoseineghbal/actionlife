@@ -5,19 +5,17 @@ import RichTextEditor from '../components/RichTextEditor';
 import CategorySelector from '../components/CategorySelector';
 import type { Article, GalleryImage, VideoEmbed, ArticleAttachment } from '../types';
 
-const SECTIONS = [
-  { value: 'blog', label: 'وبلاگ' },
-  { value: 'action-cinema', label: 'سینمای اکشن' },
-  { value: 'action-game', label: 'بازی اکشن' },
-  { value: 'action-trip', label: 'سفر اکشن' },
-  { value: 'action-fit', label: 'تناسب اندام' },
-  { value: 'action-media', label: 'رسانه اکشن' },
-];
-
 interface Category {
   _id: string;
   name: string;
   slug: string;
+}
+
+interface Section {
+  _id: string;
+  name: string;
+  slug: string;
+  isActive: boolean;
 }
 
 function generateSlug(title: string): string {
@@ -38,6 +36,7 @@ export default function ArticleForm() {
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [categories, setCategories] = useState<Category[]>([]);
+  const [sections, setSections] = useState<Section[]>([]);
   const [slugManual, setSlugManual] = useState(false);
 
   // Form fields
@@ -72,6 +71,10 @@ export default function ArticleForm() {
 
   useEffect(() => {
     api.get<Category[]>('/categories').then((res) => setCategories(res.data)).catch(() => {});
+    api.get<Section[]>('/article-sections/active').then((res) => {
+      setSections(res.data);
+      if (res.data.length > 0 && !id) setSection(res.data[0].slug);
+    }).catch(() => {});
     if (id) {
       setLoading(true);
       api.get<Article>(`/articles/by-id/${id}`).then((res) => {
@@ -312,6 +315,10 @@ export default function ArticleForm() {
                 className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-accent focus:border-accent"
                 required
               />
+              <p className="text-xs text-gray-500 mt-1">
+                اسلاگ همان آدرس یکتای مقاله در مرورگر است که به صورت خودکار از عنوان ساخته می‌شود.
+                مثال: my-article-title
+              </p>
             </div>
           </div>
 
@@ -323,8 +330,8 @@ export default function ArticleForm() {
                 onChange={(e) => setSection(e.target.value)}
                 className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-accent focus:border-accent"
               >
-                {SECTIONS.map((s) => (
-                  <option key={s.value} value={s.value}>{s.label}</option>
+                {sections.map((s) => (
+                  <option key={s._id} value={s.slug}>{s.name}</option>
                 ))}
               </select>
             </div>
@@ -583,22 +590,30 @@ export default function ArticleForm() {
         {/* SEO */}
         <div className="bg-white rounded-xl shadow-sm p-6 space-y-4">
           <h2 className="text-lg font-semibold text-gray-800 border-b pb-2">تنظیمات SEO</h2>
+          <p className="text-sm text-gray-500 bg-blue-50 border border-blue-100 rounded-lg p-3">
+            این تنظیمات برای بهبود نمایش مقاله در موتورهای جستجو (مانند گوگل) استفاده می‌شود.
+            عنوان SEO در نتایج جستجو و تب مرورگر نمایش داده می‌شود.
+            توضیحات SEO خلاصه‌ای است که زیر عنوان در نتایج جستجو نشان داده می‌شود.
+            اگر این فیلدها را خالی بگذارید، به صورت خودکار از عنوان و خلاصه مقاله استفاده خواهد شد.
+          </p>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">عنوان SEO</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">عنوان SEO (Meta Title)</label>
               <input
                 type="text"
                 value={metaTitle}
                 onChange={(e) => setMetaTitle(e.target.value)}
+                placeholder="حداکثر ۶۰ کاراکتر توصیه می‌شود"
                 className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-accent focus:border-accent"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">توضیحات SEO</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">توضیحات SEO (Meta Description)</label>
               <input
                 type="text"
                 value={metaDescription}
                 onChange={(e) => setMetaDescription(e.target.value)}
+                placeholder="حداکثر ۱۶۰ کاراکتر توصیه می‌شود"
                 className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-accent focus:border-accent"
               />
             </div>

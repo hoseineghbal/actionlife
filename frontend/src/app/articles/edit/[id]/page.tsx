@@ -4,16 +4,10 @@ import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import dynamic from "next/dynamic";
 import { useAuth } from "@/lib/auth-context";
-import { getCategories } from "@/lib/api";
+import { getCategories, getArticleSections } from "@/lib/api";
 import type { GalleryImage, VideoEmbed, ArticleAttachment, Category } from "@/types";
 
 const RichTextEditor = dynamic(() => import("@/components/shared/RichTextEditor"), { ssr: false });
-
-const SECTIONS = [
-  { value: 'blog', label: 'وبلاگ' }, { value: 'action-cinema', label: 'سینمای اکشن' },
-  { value: 'action-game', label: 'بازی اکشن' }, { value: 'action-trip', label: 'سفر اکشن' },
-  { value: 'action-fit', label: 'تناسب اندام' }, { value: 'action-media', label: 'رسانه اکشن' },
-];
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
 
@@ -27,6 +21,7 @@ export default function EditArticlePage() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [categories, setCategories] = useState<Category[]>([]);
+  const [sections, setSections] = useState<{ _id: string; name: string; slug: string }[]>([]);
 
   const [title, setTitle] = useState('');
   const [slug, setSlug] = useState('');
@@ -47,6 +42,7 @@ export default function EditArticlePage() {
   useEffect(() => {
     if (!user) { router.push('/auth/login'); return; }
     getCategories().then(setCategories).catch(() => {});
+    getArticleSections().then(setSections).catch(() => {});
     loadArticle();
   }, [user]);
 
@@ -157,7 +153,7 @@ export default function EditArticlePage() {
             <div>
               <label className="block text-sm text-gray-custom mb-1">بخش</label>
               <select value={section} onChange={e => setSection(e.target.value)} className="w-full px-4 py-3 bg-dark border border-white/10 rounded-lg text-white focus:border-accent/50 outline-none">
-                {SECTIONS.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
+                {sections.map(s => <option key={s._id} value={s.slug}>{s.name}</option>)}
               </select>
             </div>
           </div>

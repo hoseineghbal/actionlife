@@ -9,7 +9,7 @@ import {
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { ArticleSection, ArticleStatus } from '../schemas/article.schema';
+import { ArticleStatus } from '../schemas/article.schema';
 
 export class GalleryImageDto {
   @ApiProperty()
@@ -131,9 +131,9 @@ export class CreateArticleDto {
   @Type(() => ArticleAttachmentDto)
   attachments?: ArticleAttachmentDto[];
 
-  @ApiProperty({ enum: ArticleSection })
-  @IsEnum(ArticleSection)
-  section: ArticleSection;
+  @ApiProperty({ description: 'اسلاگ بخش مقاله' })
+  @IsString()
+  section: string;
 
   @ApiPropertyOptional()
   @IsOptional()
