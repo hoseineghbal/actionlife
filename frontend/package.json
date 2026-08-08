@@ -22,7 +22,8 @@
     "react": "19.2.4",
     "react-dom": "19.2.4",
     "react-multi-date-picker": "^4.5.2",
-    "react-player": "^3.4.0"
+    "react-player": "^3.4.0",
+    "recharts": "^3.10.1"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",

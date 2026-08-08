@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, UseGuards, Request, Ip, Headers } from '@nestjs/common';
+import { Controller, Get, Post, Body, Query, UseGuards, Request, Ip, Headers } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { AnalyticsService } from './analytics.service';
 import { CreatePageViewDto } from './dto/pageview.dto';
@@ -40,5 +40,26 @@ export class AnalyticsController {
       contacts.length,
       openTickets,
     );
+  }
+
+  @Get('admin-dashboard')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  async getAdminDashboard(
+    @Query('from') from?: string,
+    @Query('to') to?: string,
+  ) {
+    const [overview, dashboard] = await Promise.all([
+      (async () => {
+        const [users, contacts, openTickets] = await Promise.all([
+          this.usersService.findAll(),
+          this.contactService.findAll(),
+          this.ticketsService.countOpen(),
+        ]);
+        return this.analyticsService.getOverview(users.length, contacts.length, openTickets);
+      })(),
+      this.analyticsService.getAdminDashboard(from, to),
+    ]);
+    return { ...overview, ...dashboard };
   }
 }

@@ -81,6 +81,30 @@ export interface AnalyticsOverview {
   dailyViews: { date: string; count: number }[];
 }
 
+export interface EcosystemStats {
+  totalCoinsPurchased: number;
+  totalRialValue: number;
+  tomanPerToken: number;
+  coinBuyAmount: number;
+  coinBuyCount: number;
+  coinSellAmount: number;
+  coinSellCount: number;
+}
+
+export interface StoreStats {
+  totalOrders: number;
+  totalSalesAmount: number;
+  newProductsCount: number;
+  productsBySales: { title: string; salesCount: number }[];
+}
+
+export interface AdminDashboard extends AnalyticsOverview {
+  ecosystem: EcosystemStats;
+  store: StoreStats;
+  dailyCoinTransactions: { date: string; buy: number; sell: number }[];
+  dailyStoreSales: { date: string; count: number; totalAmount: number }[];
+}
+
 export interface AuthResponse {
   access_token: string;
   user: {
