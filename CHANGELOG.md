@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.7.0] - 2026-08-08
+
+### Features
+- add admin analytics dashboard
+
 ## [0.6.1] - 2026-07-17
 
 ### Refactors
