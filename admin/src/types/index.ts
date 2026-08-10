@@ -406,6 +406,7 @@ export interface Category {
   parent?: string | { _id: string; name: string; slug: string };
   order: number;
   isActive: boolean;
+  children?: Category[];
   createdAt: string;
   updatedAt: string;
 }
@@ -534,6 +535,30 @@ export interface ProductDiscount {
   endDate: string;
 }
 
+export type ProductCondition = 'new' | 'used' | 'clearance';
+
+export const PRODUCT_CONDITION_OPTIONS: { value: ProductCondition; label: string; color: string; bg: string }[] = [
+  { value: 'new', label: 'نو', color: 'text-green-700', bg: 'bg-green-100' },
+  { value: 'used', label: 'استفاده شده', color: 'text-yellow-700', bg: 'bg-yellow-100' },
+  { value: 'clearance', label: 'استوک / پاکسازی', color: 'text-red-700', bg: 'bg-red-100' },
+];
+
+export type ProductType = 'physical' | 'digital';
+
+export const PRODUCT_TYPE_OPTIONS: { value: ProductType; label: string }[] = [
+  { value: 'physical', label: 'محصول فیزیکی' },
+  { value: 'digital', label: 'محصول دیجیتال / فایل' },
+];
+
+export interface ProductVariant {
+  variantId: string;
+  name: string;
+  values: string[];
+  quantity: number;
+  priceDiff?: number;
+  isActive: boolean;
+}
+
 export interface StoreProduct {
   _id: string;
   title: string;
@@ -551,6 +576,13 @@ export interface StoreProduct {
   seller: { _id: string; fullName: string; mobile?: string; avatar?: string };
   salesCount: number;
   views: number;
+  condition: ProductCondition;
+  productType: ProductType;
+  variants: ProductVariant[];
+  stockQuantity: number;
+  sku?: string;
+  weight?: number;
+  trackInventory: boolean;
   createdAt: string;
   updatedAt: string;
 }

@@ -1,12 +1,9 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import DatePicker, { DateObject } from 'react-multi-date-picker';
-import persian from 'react-date-object/calendars/persian';
-import persian_fa from 'react-date-object/locales/persian_fa';
-import TimePicker from 'react-multi-date-picker/plugins/time_picker';
 import api from '../lib/api';
-import type { StoreProduct } from '../types';
+import type { StoreProduct, ProductCondition, ProductVariant, ProductType } from '../types';
+import { PRODUCT_CONDITION_OPTIONS, PRODUCT_TYPE_OPTIONS } from '../types';
 
 export default function StoreProducts() {
   const [products, setProducts] = useState<StoreProduct[]>([]);
@@ -21,17 +18,69 @@ export default function StoreProducts() {
   const [messageSent, setMessageSent] = useState(false);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [conditionFilter, setConditionFilter] = useState<string>('all');
   const [sort, setSort] = useState('newest');
   const limit = 20;
+
+  // Inventory & Condition edit state
+  const [invForm, setInvForm] = useState<{
+    condition: ProductCondition;
+    productType: ProductType;
+    stockQuantity: string;
+    sku: string;
+    weight: string;
+    trackInventory: boolean;
+  }>({ condition: 'new', productType: 'physical', stockQuantity: '0', sku: '', weight: '', trackInventory: true });
+  const [savingInventory, setSavingInventory] = useState(false);
+  const [inventorySaved, setInventorySaved] = useState(false);
+
+  // Variant management state
+  const [variantsDraft, setVariantsDraft] = useState<ProductVariant[]>([]);
+  const [newVariant, setNewVariant] = useState<{
+    variantId: string;
+    name: string;
+    valuesStr: string;
+    quantity: string;
+    priceDiff: string;
+    isActive: boolean;
+  }>({ variantId: '', name: '', valuesStr: '', quantity: '0', priceDiff: '0', isActive: true });
+  const [savingVariants, setSavingVariants] = useState(false);
+  const [variantsSaved, setVariantsSaved] = useState(false);
 
   // Discount management state
   const [discountForm, setDiscountForm] = useState<{
     discountPrice: string;
-    startDateObj: DateObject | null;
-    endDateObj: DateObject | null;
-  }>({ discountPrice: '', startDateObj: null, endDateObj: null });
+    startDate: string;
+    endDate: string;
+  }>({ discountPrice: '', startDate: '', endDate: '' });
   const [savingDiscount, setSavingDiscount] = useState(false);
   const [discountSuccess, setDiscountSuccess] = useState(false);
+
+  // Create product state
+  const [showCreate, setShowCreate] = useState(false);
+  const [createForm, setCreateForm] = useState({
+    title: '',
+    slug: '',
+    description: '',
+    price: '',
+    category: '',
+    productType: 'physical' as ProductType,
+    condition: 'new' as ProductCondition,
+    stockQuantity: '',
+    sku: '',
+    weight: '',
+  });
+  const [creating, setCreating] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [createVariants, setCreateVariants] = useState<ProductVariant[]>([]);
+  const [newCreateVariant, setNewCreateVariant] = useState({
+    variantId: '',
+    name: '',
+    valuesStr: '',
+    quantity: '0',
+    priceDiff: '0',
+    isActive: true,
+  });
 
   useEffect(() => {
     setLoading(true);
@@ -40,6 +89,7 @@ export default function StoreProducts() {
     params.set('limit', String(limit));
     if (search) params.set('search', search);
     if (statusFilter !== 'all') params.set('status', statusFilter);
+    if (conditionFilter !== 'all') params.set('condition', conditionFilter);
     if (sort) params.set('sort', sort);
 
     api
@@ -53,7 +103,7 @@ export default function StoreProducts() {
         setTotal(0);
       })
       .finally(() => setLoading(false));
-  }, [page, search, statusFilter, sort]);
+  }, [page, search, statusFilter, conditionFilter, sort]);
 
   const handleStatusChange = async (id: string, status: string) => {
     try {
@@ -73,13 +123,138 @@ export default function StoreProducts() {
     setDetailLoading(true);
     setMessageText('');
     setMessageSent(false);
+    setInventorySaved(false);
+    setVariantsSaved(false);
     try {
       const res = await api.get(`/store/admin/products/${id}`);
-      setDetailProduct(res.data);
+      const pd: StoreProduct = res.data;
+      setDetailProduct(pd);
+      setInvForm({
+        condition: pd.condition || 'new',
+        productType: pd.productType || 'physical',
+        stockQuantity: String(pd.stockQuantity ?? 0),
+        sku: pd.sku ?? '',
+        weight: pd.weight != null ? String(pd.weight) : '',
+        trackInventory: pd.trackInventory !== false,
+      });
+      setVariantsDraft(Array.isArray(pd.variants) ? pd.variants.map((v) => ({ ...v })) : []);
+      setNewVariant({ variantId: '', name: '', valuesStr: '', quantity: '0', priceDiff: '0', isActive: true });
     } catch {
       alert('خطا در دریافت جزییات محصول');
     } finally {
       setDetailLoading(false);
+    }
+  };
+
+  const handleSaveInventory = async () => {
+    if (!detailProduct) return;
+    setSavingInventory(true);
+    setInventorySaved(false);
+    try {
+      const stockQty = Number(invForm.stockQuantity);
+      const payload = {
+        condition: invForm.condition,
+        productType: invForm.productType,
+        stockQuantity: isNaN(stockQty) ? 0 : Math.max(0, stockQty),
+        sku: invForm.sku.trim() || undefined,
+        weight: invForm.weight !== '' && !isNaN(Number(invForm.weight)) ? Number(invForm.weight) : undefined,
+        trackInventory: invForm.trackInventory,
+      };
+      const res = await api.put(`/store/products/${detailProduct._id}`, payload);
+      setDetailProduct(res.data);
+      setProducts((prev) => prev.map((p) => (p._id === detailProduct._id ? { ...p, ...payload } : p)));
+      setInventorySaved(true);
+      setTimeout(() => setInventorySaved(false), 3000);
+    } catch (err: any) {
+      alert(err.response?.data?.message || 'خطا در ذخیره اطلاعات محصول');
+    } finally {
+      setSavingInventory(false);
+    }
+  };
+
+  const handleAddVariant = () => {
+    if (!newVariant.variantId.trim() || !newVariant.name.trim()) {
+      alert('شناسه و نام گزینه را وارد کنید');
+      return;
+    }
+    const qty = Number(newVariant.quantity);
+    const priceDiff = Number(newVariant.priceDiff);
+    const variant: ProductVariant = {
+      variantId: newVariant.variantId.trim(),
+      name: newVariant.name.trim(),
+      values: newVariant.valuesStr
+        .split(/[,،]/)
+        .map((s) => s.trim())
+        .filter(Boolean),
+      quantity: isNaN(qty) ? 0 : Math.max(0, qty),
+      priceDiff: isNaN(priceDiff) ? 0 : priceDiff,
+      isActive: newVariant.isActive,
+    };
+    setVariantsDraft((prev) => [...prev, variant]);
+    setNewVariant({ variantId: '', name: '', valuesStr: '', quantity: '0', priceDiff: '0', isActive: true });
+  };
+
+  const handleRemoveVariant = (idx: number) => {
+    if (!confirm('حذف این گزینه؟')) return;
+    setVariantsDraft((prev) => prev.filter((_, i) => i !== idx));
+  };
+
+  // Create variant helpers
+  const handleAddCreateVariant = () => {
+    if (!newCreateVariant.variantId.trim() || !newCreateVariant.name.trim()) {
+      alert('شناسه و نام گزینه را وارد کنید');
+      return;
+    }
+    const qty = Number(newCreateVariant.quantity);
+    const priceDiff = Number(newCreateVariant.priceDiff);
+    const variant: ProductVariant = {
+      variantId: newCreateVariant.variantId.trim(),
+      name: newCreateVariant.name.trim(),
+      values: newCreateVariant.valuesStr
+        .split(/[,،]/)
+        .map((s) => s.trim())
+        .filter(Boolean),
+      quantity: isNaN(qty) ? 0 : Math.max(0, qty),
+      priceDiff: isNaN(priceDiff) ? 0 : priceDiff,
+      isActive: newCreateVariant.isActive,
+    };
+    setCreateVariants((prev) => [...prev, variant]);
+    setNewCreateVariant({ variantId: '', name: '', valuesStr: '', quantity: '0', priceDiff: '0', isActive: true });
+  };
+
+  const handleRemoveCreateVariant = (idx: number) => {
+    setCreateVariants((prev) => prev.filter((_, i) => i !== idx));
+  };
+
+  const handleUpdateVariantField = (idx: number, field: keyof ProductVariant, value: any) => {
+    setVariantsDraft((prev) => {
+      const next = prev.map((v, i) => (i === idx ? { ...v } : v));
+      (next[idx] as any)[field] = value;
+      return next;
+    });
+  };
+
+  const handleSaveVariants = async () => {
+    if (!detailProduct) return;
+    setSavingVariants(true);
+    setVariantsSaved(false);
+    try {
+      const variants = variantsDraft.map((v) => ({
+        variantId: v.variantId,
+        name: v.name,
+        values: v.values,
+        quantity: Number(v.quantity) || 0,
+        priceDiff: Number(v.priceDiff) || 0,
+        isActive: v.isActive !== false,
+      }));
+      const res = await api.put(`/store/products/${detailProduct._id}`, { variants });
+      setDetailProduct(res.data);
+      setVariantsSaved(true);
+      setTimeout(() => setVariantsSaved(false), 3000);
+    } catch (err: any) {
+      alert(err.response?.data?.message || 'خطا در ذخیره گزینه‌ها');
+    } finally {
+      setSavingVariants(false);
     }
   };
 
@@ -105,7 +280,7 @@ export default function StoreProducts() {
 
   const handleSaveDiscounts = async () => {
     if (!detailProduct) return;
-    if (!discountForm.discountPrice || !discountForm.startDateObj || !discountForm.endDateObj) {
+    if (!discountForm.discountPrice || !discountForm.startDate || !discountForm.endDate) {
       alert('لطفا قیمت تخفیف، تاریخ شروع و تاریخ پایان را وارد کنید');
       return;
     }
@@ -118,13 +293,13 @@ export default function StoreProducts() {
     setSavingDiscount(true);
     setDiscountSuccess(false);
     try {
-      const startGregorian = discountForm.startDateObj.toDate();
-      const endGregorian = discountForm.endDateObj.toDate();
+      const startDate = new Date(discountForm.startDate).toISOString();
+      const endDate = new Date(discountForm.endDate).toISOString();
 
       const currentDiscounts = detailProduct.discounts || [];
       const newDiscounts = [
         ...currentDiscounts,
-        { discountPrice: price, startDate: startGregorian.toISOString(), endDate: endGregorian.toISOString() },
+        { discountPrice: price, startDate, endDate },
       ];
 
       const res = await api.put(`/store/products/${detailProduct._id}/discounts`, {
@@ -132,7 +307,7 @@ export default function StoreProducts() {
       });
       setDetailProduct(res.data);
       setDiscountSuccess(true);
-      setDiscountForm({ discountPrice: '', startDateObj: null, endDateObj: null });
+      setDiscountForm({ discountPrice: '', startDate: '', endDate: '' });
       setTimeout(() => setDiscountSuccess(false), 3000);
     } catch (err: any) {
       alert(err.response?.data?.message || 'خطا در ذخیره تخفیف');
@@ -156,11 +331,101 @@ export default function StoreProducts() {
     }
   };
 
+  const handleEdit = async (id: string) => {
+    try {
+      const res = await api.get(`/store/admin/products/${id}`);
+      const pd: StoreProduct = res.data;
+      setCreateForm({
+        title: pd.title,
+        slug: pd.slug,
+        description: pd.description || '',
+        price: String(pd.price),
+        category: (typeof pd.category === 'object' && pd.category ? (pd.category as { _id: string })._id : (pd.category as string)) || '',
+        productType: pd.productType || 'physical',
+        condition: pd.condition || 'new',
+        stockQuantity: String(pd.stockQuantity ?? 0),
+        sku: pd.sku ?? '',
+        weight: pd.weight != null ? String(pd.weight) : '',
+      });
+      setCreateVariants(Array.isArray(pd.variants) ? pd.variants.map((v) => ({ ...v })) : []);
+      setNewCreateVariant({ variantId: '', name: '', valuesStr: '', quantity: '0', priceDiff: '0', isActive: true });
+      setEditingId(id);
+      setShowCreate(true);
+    } catch {
+      alert('خطا در دریافت اطلاعات محصول');
+    }
+  };
+
+  const handleCreateProduct = async () => {
+    if (!createForm.title.trim() || !createForm.slug.trim() || !createForm.price) {
+      alert('عنوان، اسلاگ و قیمت الزامی هستند');
+      return;
+    }
+    setCreating(true);
+    try {
+      const payload: Record<string, unknown> = {
+        title: createForm.title.trim(),
+        slug: createForm.slug.trim(),
+        description: createForm.description.trim() || undefined,
+        price: Number(createForm.price),
+        category: createForm.category || undefined,
+        productType: createForm.productType,
+        condition: createForm.condition,
+      };
+      if (!editingId) {
+        payload.status = 'published';
+      }
+      if (createForm.productType === 'physical') {
+        payload.stockQuantity = createForm.stockQuantity ? Number(createForm.stockQuantity) : 0;
+        payload.sku = createForm.sku.trim() || undefined;
+        payload.weight = createForm.weight ? Number(createForm.weight) : undefined;
+        if (createVariants.length > 0) {
+          payload.variants = createVariants.map((v) => ({
+            variantId: v.variantId,
+            name: v.name,
+            values: v.values,
+            quantity: Number(v.quantity) || 0,
+            priceDiff: Number(v.priceDiff) || 0,
+            isActive: v.isActive !== false,
+          }));
+        } else {
+          payload.variants = [];
+        }
+      }
+      if (editingId) {
+        await api.put(`/store/products/${editingId}`, payload);
+      } else {
+        await api.post('/store/products', payload);
+      }
+      // Reset
+      setShowCreate(false);
+      setEditingId(null);
+      setCreateForm({ title: '', slug: '', description: '', price: '', category: '', productType: 'physical', condition: 'new', stockQuantity: '', sku: '', weight: '' });
+      setCreateVariants([]);
+      setNewCreateVariant({ variantId: '', name: '', valuesStr: '', quantity: '0', priceDiff: '0', isActive: true });
+      // Refresh list
+      const refreshParams = new URLSearchParams();
+      refreshParams.set('page', String(page));
+      refreshParams.set('limit', String(limit));
+      if (search) refreshParams.set('search', search);
+      if (statusFilter !== 'all') refreshParams.set('status', statusFilter);
+      if (conditionFilter !== 'all') refreshParams.set('condition', conditionFilter);
+      if (sort) refreshParams.set('sort', sort);
+      const res = await api.get(`/store/admin/products?${refreshParams.toString()}`);
+      setProducts(res.data.products);
+      setTotal(res.data.total);
+    } catch (err: any) {
+      alert(err.response?.data?.message || (editingId ? 'خطا در ویرایش محصول' : 'خطا در ساخت محصول'));
+    } finally {
+      setCreating(false);
+    }
+  };
+
   const formatJalaliDateTime = (isoString: string) => {
     const d = new Date(isoString);
-    const jalali = new DateObject({ date: d, calendar: persian });
-    const time = d.toLocaleTimeString('fa-IR', { hour: '2-digit', minute: '2-digit' });
-    return `${jalali.format('YYYY/MM/DD')} ${time}`;
+    const datePart = d.toLocaleDateString('fa-IR', { year: 'numeric', month: '2-digit', day: '2-digit' });
+    const timePart = d.toLocaleTimeString('fa-IR', { hour: '2-digit', minute: '2-digit' });
+    return `${datePart} ${timePart}`;
   };
 
   const totalPages = Math.ceil(total / limit);
@@ -196,7 +461,18 @@ export default function StoreProducts() {
     <div>
       <div className="flex items-center justify-between mb-4">
         <h1 className="text-2xl font-bold text-gray-800">محصولات فروشگاه</h1>
-        <span className="text-sm text-gray-500">{total} محصول</span>
+        <div className="flex items-center gap-3">
+          <span className="text-sm text-gray-500">{total} محصول</span>
+          <button
+            onClick={() => setShowCreate(true)}
+            className="px-4 py-2 bg-accent hover:bg-accent/90 text-white rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+            </svg>
+            محصول جدید
+          </button>
+        </div>
       </div>
 
       {/* Filters */}
@@ -210,7 +486,7 @@ export default function StoreProducts() {
             type="text"
             value={search}
             onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-            placeholder="جستجو در عنوان، اسلاگ یا توضیحات..."
+            placeholder="جستجو در عنوان، اسلاگ، توضیحات یا کد محصول..."
             className="w-full pr-10 pl-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/20"
           />
         </div>
@@ -227,6 +503,18 @@ export default function StoreProducts() {
           <option value="draft">پیش‌نویس</option>
           <option value="rejected">رد شده</option>
           <option value="archived">آرشیو</option>
+        </select>
+
+        {/* Condition Filter */}
+        <select
+          value={conditionFilter}
+          onChange={(e) => { setConditionFilter(e.target.value); setPage(1); }}
+          className="px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/20 bg-white"
+        >
+          <option value="all">همه وضعیت‌های محصول</option>
+          {PRODUCT_CONDITION_OPTIONS.map((opt) => (
+            <option key={opt.value} value={opt.value}>{opt.label}</option>
+          ))}
         </select>
 
         {/* Sort */}
@@ -258,6 +546,8 @@ export default function StoreProducts() {
                 <tr>
                   <th className="px-4 py-3 text-right text-sm font-medium text-gray-600">محصول</th>
                   <th className="px-4 py-3 text-right text-sm font-medium text-gray-600">فروشنده</th>
+                  <th className="px-4 py-3 text-right text-sm font-medium text-gray-600">وضعیت کالا</th>
+                  <th className="px-4 py-3 text-right text-sm font-medium text-gray-600">موجودی</th>
                   <th className="px-4 py-3 text-right text-sm font-medium text-gray-600">قیمت</th>
                   <th className="px-4 py-3 text-right text-sm font-medium text-gray-600">فروش</th>
                   <th className="px-4 py-3 text-right text-sm font-medium text-gray-600">وضعیت</th>
@@ -265,7 +555,13 @@ export default function StoreProducts() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
-                {products.map((product) => (
+                {products.map((product) => {
+                  const conditionMeta = PRODUCT_CONDITION_OPTIONS.find((o) => o.value === (product.condition || 'new'));
+                  const variantStock = Array.isArray(product.variants) && product.variants.length > 0
+                    ? product.variants.reduce((sum, v) => sum + (v.quantity || 0), 0)
+                    : null;
+                  const totalStock = variantStock != null ? variantStock : (product.stockQuantity ?? 0);
+                  return (
                   <tr key={product._id} className="hover:bg-gray-50">
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-3">
@@ -282,7 +578,12 @@ export default function StoreProducts() {
                         </div>
                         <div className="min-w-0">
                           <p className="text-sm font-medium text-gray-800 truncate max-w-xs">{product.title}</p>
-                          <p className="text-xs text-gray-400" dir="ltr">/{product.slug}</p>
+                          <div className="flex items-center gap-2 mt-0.5">
+                            <span className="text-xs text-gray-400" dir="ltr">/{product.slug}</span>
+                            {product.sku && (
+                              <span className="text-[10px] px-1.5 py-0.5 bg-gray-100 text-gray-500 rounded" dir="ltr">{product.sku}</span>
+                            )}
+                          </div>
                         </div>
                       </div>
                     </td>
@@ -290,6 +591,29 @@ export default function StoreProducts() {
                       <p className="text-sm text-gray-700">
                         {typeof product.seller === 'object' ? product.seller?.fullName : '---'}
                       </p>
+                    </td>
+                    <td className="px-4 py-3">
+                      {conditionMeta && (
+                        <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${conditionMeta.bg} ${conditionMeta.color} border`}>
+                          {conditionMeta.label}
+                        </span>
+                      )}
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="text-sm">
+                        {variantStock != null ? (
+                          <div>
+                            <p className={`font-medium ${totalStock === 0 ? 'text-red-500' : totalStock <= 5 ? 'text-orange-500' : 'text-gray-800'}`}>
+                              {totalStock} عدد
+                            </p>
+                            <p className="text-[10px] text-gray-400">{Array.isArray(product.variants) ? product.variants.length : 0} گزینه</p>
+                          </div>
+                        ) : (
+                          <p className={`font-medium ${totalStock === 0 ? 'text-red-500' : totalStock <= 5 ? 'text-orange-500' : 'text-gray-800'}`}>
+                            {totalStock === 0 ? 'ناموجود' : `${totalStock} عدد`}
+                          </p>
+                        )}
+                      </div>
                     </td>
                     <td className="px-4 py-3">
                       <div className="text-sm">
@@ -308,6 +632,12 @@ export default function StoreProducts() {
                     <td className="px-4 py-3">{statusBadge(product.status)}</td>
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-2 flex-wrap">
+                        <button
+                          onClick={() => handleEdit(product._id)}
+                          className="px-3 py-1 text-xs bg-blue-100 text-blue-700 hover:bg-blue-200 rounded-lg transition-colors"
+                        >
+                          ویرایش
+                        </button>
                         <button
                           onClick={() => handleViewDetail(product._id)}
                           className="px-3 py-1 text-xs bg-accent/10 text-accent hover:bg-accent/20 rounded-lg transition-colors"
@@ -357,7 +687,7 @@ export default function StoreProducts() {
                       </div>
                     </td>
                   </tr>
-                ))}
+                );})}
               </tbody>
             </table>
           </div>
@@ -552,6 +882,303 @@ export default function StoreProducts() {
                 </div>
               )}
 
+              {/* Inventory & Condition Management */}
+              <div className="border border-gray-200 rounded-xl p-4 space-y-3 bg-gray-50/50">
+                <div className="flex items-center justify-between">
+                  <h4 className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                    <svg className="w-4 h-4 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                    </svg>
+                    موجودی و وضعیت محصول
+                  </h4>
+                  {inventorySaved && (
+                    <span className="text-xs text-green-600 flex items-center gap-1">
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                      ذخیره شد
+                    </span>
+                  )}
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs text-gray-600 mb-1">وضعیت کالا</label>
+                    <select
+                      value={invForm.condition}
+                      onChange={(e) => setInvForm((f) => ({ ...f, condition: e.target.value as ProductCondition }))}
+                      className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-accent bg-white"
+                    >
+                      {PRODUCT_CONDITION_OPTIONS.map((opt) => (
+                        <option key={opt.value} value={opt.value}>{opt.label}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs text-gray-600 mb-1">نوع محصول</label>
+                    <select
+                      value={invForm.productType}
+                      onChange={(e) => setInvForm((f) => ({ ...f, productType: e.target.value as ProductType }))}
+                      className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-accent bg-white"
+                    >
+                      {PRODUCT_TYPE_OPTIONS.map((opt) => (
+                        <option key={opt.value} value={opt.value}>{opt.label}</option>
+                      ))}
+                    </select>
+                  </div>
+                  {invForm.productType === 'physical' && (
+                  <>
+                  <div>
+                    <label className="block text-xs text-gray-600 mb-1">موجودی کلی (عدد)</label>
+                    <input
+                      type="number"
+                      min="0"
+                      value={invForm.stockQuantity}
+                      onChange={(e) => setInvForm((f) => ({ ...f, stockQuantity: e.target.value }))}
+                      className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-accent bg-white dir-ltr text-left"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs text-gray-600 mb-1">کد محصول (SKU)</label>
+                    <input
+                      type="text"
+                      value={invForm.sku}
+                      onChange={(e) => setInvForm((f) => ({ ...f, sku: e.target.value }))}
+                      placeholder="مثل SKU-001"
+                      className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-accent bg-white dir-ltr text-left"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs text-gray-600 mb-1">وزن (کیلوگرم)</label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      value={invForm.weight}
+                      onChange={(e) => setInvForm((f) => ({ ...f, weight: e.target.value }))}
+                      placeholder="مثل 1.5"
+                      className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-accent bg-white dir-ltr text-left"
+                    />
+                  </div>
+                  </>
+                  )}
+                </div>
+                {invForm.productType === 'physical' && (
+                <label className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    checked={invForm.trackInventory}
+                    onChange={(e) => setInvForm((f) => ({ ...f, trackInventory: e.target.checked }))}
+                    className="w-4 h-4 rounded border-gray-300 text-accent focus:ring-accent"
+                  />
+                  پیگیری موجودی در سفارشات فعال باشد
+                </label>
+                )}
+                <div className="pt-1 flex justify-start">
+                  <button
+                    onClick={handleSaveInventory}
+                    disabled={savingInventory}
+                    className="px-4 py-2 bg-accent hover:bg-accent/90 text-white rounded-lg text-sm font-medium disabled:opacity-50 transition-colors"
+                  >
+                    {savingInventory ? 'در حال ذخیره...' : 'ذخیره اطلاعات محصول'}
+                  </button>
+                </div>
+              </div>
+
+              {/* Variants Management - only for physical products */}
+              {invForm.productType === 'physical' && (
+              <div className="border border-gray-200 rounded-xl p-4 space-y-4 bg-gray-50/50">
+                <div className="flex items-center justify-between">
+                  <h4 className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                    <svg className="w-4 h-4 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                    </svg>
+                    گزینه‌های محصول (رنگ، سایز، مدل و...)
+                  </h4>
+                  {variantsSaved && (
+                    <span className="text-xs text-green-600 flex items-center gap-1">
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                      ذخیره شد
+                    </span>
+                  )}
+                </div>
+
+                {/* Add new variant row */}
+                <div className="p-3 border border-dashed border-gray-300 rounded-lg bg-white space-y-3">
+                  <p className="text-xs text-gray-500">افزودن گزینه جدید:</p>
+                  <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
+                    <div>
+                      <label className="block text-[10px] text-gray-500 mb-1">شناسه (انگلیسی)</label>
+                      <input
+                        type="text"
+                        value={newVariant.variantId}
+                        onChange={(e) => setNewVariant((v) => ({ ...v, variantId: e.target.value }))}
+                        placeholder="مثل color"
+                        className="w-full px-2 py-1.5 border border-gray-200 rounded text-xs focus:outline-none focus:border-accent dir-ltr text-left"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] text-gray-500 mb-1">نام گزینه</label>
+                      <input
+                        type="text"
+                        value={newVariant.name}
+                        onChange={(e) => setNewVariant((v) => ({ ...v, name: e.target.value }))}
+                        placeholder="مثل رنگ"
+                        className="w-full px-2 py-1.5 border border-gray-200 rounded text-xs focus:outline-none focus:border-accent"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] text-gray-500 mb-1">مقادیر (با ویرگول)</label>
+                      <input
+                        type="text"
+                        value={newVariant.valuesStr}
+                        onChange={(e) => setNewVariant((v) => ({ ...v, valuesStr: e.target.value }))}
+                        placeholder="مثل قرمز,آبی"
+                        className="w-full px-2 py-1.5 border border-gray-200 rounded text-xs focus:outline-none focus:border-accent"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] text-gray-500 mb-1">تعداد</label>
+                      <input
+                        type="number"
+                        min="0"
+                        value={newVariant.quantity}
+                        onChange={(e) => setNewVariant((v) => ({ ...v, quantity: e.target.value }))}
+                        className="w-full px-2 py-1.5 border border-gray-200 rounded text-xs focus:outline-none focus:border-accent dir-ltr text-left"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] text-gray-500 mb-1">تفاوت قیمت (توکن)</label>
+                      <input
+                        type="number"
+                        value={newVariant.priceDiff}
+                        onChange={(e) => setNewVariant((v) => ({ ...v, priceDiff: e.target.value }))}
+                        placeholder="0=بدون تغییر"
+                        className="w-full px-2 py-1.5 border border-gray-200 rounded text-xs focus:outline-none focus:border-accent dir-ltr text-left"
+                      />
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between gap-2">
+                    <label className="flex items-center gap-2 text-xs text-gray-600 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={newVariant.isActive}
+                        onChange={(e) => setNewVariant((v) => ({ ...v, isActive: e.target.checked }))}
+                        className="w-3.5 h-3.5 rounded border-gray-300 text-accent focus:ring-accent"
+                      />
+                      فعال
+                    </label>
+                    <button
+                      onClick={handleAddVariant}
+                      className="px-3 py-1.5 bg-gray-800 hover:bg-gray-900 text-white rounded text-xs font-medium transition-colors"
+                    >
+                      + افزودن به لیست
+                    </button>
+                  </div>
+                </div>
+
+                {/* Existing variants list */}
+                {variantsDraft.length === 0 ? (
+                  <div className="text-center py-6 text-xs text-gray-400 bg-white rounded-lg border border-gray-100">
+                    هنوز گزینه‌ای تعریف نشده است.
+                  </div>
+                ) : (
+                  <div className="bg-white border border-gray-100 rounded-lg overflow-hidden">
+                    <table className="w-full text-xs">
+                      <thead className="bg-gray-50">
+                        <tr>
+                          <th className="px-3 py-2 text-right text-gray-600 font-medium">شناسه / نام</th>
+                          <th className="px-3 py-2 text-right text-gray-600 font-medium">مقادیر</th>
+                          <th className="px-3 py-2 text-right text-gray-600 font-medium">تعداد</th>
+                          <th className="px-3 py-2 text-right text-gray-600 font-medium">تفاوت قیمت</th>
+                          <th className="px-3 py-2 text-right text-gray-600 font-medium">وضعیت</th>
+                          <th className="px-3 py-2"></th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-100">
+                        {variantsDraft.map((v, idx) => (
+                          <tr key={`${v.variantId}-${idx}`}>
+                            <td className="px-3 py-2">
+                              <input
+                                type="text"
+                                value={v.variantId}
+                                onChange={(e) => handleUpdateVariantField(idx, 'variantId', e.target.value)}
+                                className="w-full px-2 py-1 border border-gray-200 rounded text-[11px] dir-ltr text-left focus:outline-none focus:border-accent"
+                              />
+                              <input
+                                type="text"
+                                value={v.name}
+                                onChange={(e) => handleUpdateVariantField(idx, 'name', e.target.value)}
+                                className="w-full px-2 py-1 border border-gray-200 rounded text-[11px] mt-1 focus:outline-none focus:border-accent"
+                              />
+                            </td>
+                            <td className="px-3 py-2">
+                              <input
+                                type="text"
+                                value={v.values.join(', ')}
+                                onChange={(e) => handleUpdateVariantField(
+                                  idx,
+                                  'values',
+                                  e.target.value.split(/[,،]/).map((s) => s.trim()).filter(Boolean)
+                                )}
+                                className="w-full px-2 py-1 border border-gray-200 rounded text-[11px] focus:outline-none focus:border-accent"
+                              />
+                            </td>
+                            <td className="px-3 py-2 w-20">
+                              <input
+                                type="number"
+                                min="0"
+                                value={String(v.quantity)}
+                                onChange={(e) => handleUpdateVariantField(idx, 'quantity', Number(e.target.value) || 0)}
+                                className="w-full px-2 py-1 border border-gray-200 rounded text-[11px] dir-ltr text-left focus:outline-none focus:border-accent"
+                              />
+                            </td>
+                            <td className="px-3 py-2 w-24">
+                              <input
+                                type="number"
+                                value={String(v.priceDiff ?? 0)}
+                                onChange={(e) => handleUpdateVariantField(idx, 'priceDiff', Number(e.target.value) || 0)}
+                                className="w-full px-2 py-1 border border-gray-200 rounded text-[11px] dir-ltr text-left focus:outline-none focus:border-accent"
+                              />
+                            </td>
+                            <td className="px-3 py-2 w-20">
+                              <label className="flex items-center gap-1 text-[11px] text-gray-600 cursor-pointer">
+                                <input
+                                  type="checkbox"
+                                  checked={v.isActive !== false}
+                                  onChange={(e) => handleUpdateVariantField(idx, 'isActive', e.target.checked)}
+                                  className="w-3.5 h-3.5 rounded border-gray-300 text-accent focus:ring-accent"
+                                />
+                                {v.isActive !== false ? 'فعال' : 'غیرفعال'}
+                              </label>
+                            </td>
+                            <td className="px-3 py-2 w-12">
+                              <button
+                                onClick={() => handleRemoveVariant(idx)}
+                                className="w-7 h-7 flex items-center justify-center rounded bg-red-50 hover:bg-red-100 text-red-500 transition-colors"
+                                title="حذف"
+                              >
+                                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M1 7h22M9 7V4a1 1 0 011-1h4a1 1 0 011 1v3" />
+                                </svg>
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+
+                <div className="pt-1 flex justify-start">
+                  <button
+                    onClick={handleSaveVariants}
+                    disabled={savingVariants}
+                    className="px-4 py-2 bg-accent hover:bg-accent/90 text-white rounded-lg text-sm font-medium disabled:opacity-50 transition-colors"
+                  >
+                    {savingVariants ? 'در حال ذخیره...' : 'ذخیره گزینه‌ها'}
+                  </button>
+                </div>
+              </div>
+              )}
+
               {/* Seller Info */}
               <div>
                 <h4 className="text-sm font-medium text-gray-600 mb-2">فروشنده</h4>
@@ -656,32 +1283,20 @@ export default function StoreProducts() {
                   <div className="grid grid-cols-2 gap-3">
                     <div>
                       <label className="block text-xs text-gray-600 mb-1">تاریخ و ساعت شروع</label>
-                      <DatePicker
-                        calendar={persian}
-                        locale={persian_fa}
-                        value={discountForm.startDateObj}
-                        onChange={(val: DateObject | null) =>
-                          setDiscountForm((prev) => ({ ...prev, startDateObj: val }))
-                        }
-                        format="YYYY/MM/DD HH:mm"
-                        plugins={[<TimePicker position="bottom" key="start-time" />]}
-                        inputClass="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/20 text-right"
-                        placeholder="انتخاب تاریخ و ساعت"
+                      <input
+                        type="datetime-local"
+                        value={discountForm.startDate}
+                        onChange={(e) => setDiscountForm((prev) => ({ ...prev, startDate: e.target.value }))}
+                        className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/20"
                       />
                     </div>
                     <div>
                       <label className="block text-xs text-gray-600 mb-1">تاریخ و ساعت پایان</label>
-                      <DatePicker
-                        calendar={persian}
-                        locale={persian_fa}
-                        value={discountForm.endDateObj}
-                        onChange={(val: DateObject | null) =>
-                          setDiscountForm((prev) => ({ ...prev, endDateObj: val }))
-                        }
-                        format="YYYY/MM/DD HH:mm"
-                        plugins={[<TimePicker position="bottom" key="end-time" />]}
-                        inputClass="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/20 text-right"
-                        placeholder="انتخاب تاریخ و ساعت"
+                      <input
+                        type="datetime-local"
+                        value={discountForm.endDate}
+                        onChange={(e) => setDiscountForm((prev) => ({ ...prev, endDate: e.target.value }))}
+                        className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/20"
                       />
                     </div>
                   </div>
@@ -770,6 +1385,181 @@ export default function StoreProducts() {
                 className="px-5 py-2.5 border border-gray-200 hover:bg-gray-50 text-gray-600 rounded-xl text-sm transition-colors"
               >
                 بستن
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Create Product Modal */}
+      {showCreate && (
+        <div className="fixed inset-0 z-50 flex items-start justify-center pt-10 pb-10 px-4 overflow-y-auto">
+          <div className="absolute inset-0 bg-black/50" onClick={() => { setShowCreate(false); setEditingId(null); }} />
+          <div className="relative bg-white rounded-2xl w-full max-w-2xl shadow-2xl">
+            <div className="flex items-center justify-between p-6 border-b border-gray-100">
+              <h2 className="text-lg font-bold text-gray-800">{editingId ? 'ویرایش محصول' : 'محصول جدید'}</h2>
+              <button onClick={() => { setShowCreate(false); setEditingId(null); }} className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100 text-gray-400 hover:text-gray-600">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            <div className="p-6 space-y-4 max-h-[65vh] overflow-y-auto">
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs text-gray-600 mb-1">عنوان *</label>
+                  <input type="text" value={createForm.title} onChange={(e) => setCreateForm((f) => ({ ...f, title: e.target.value }))} className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-accent" />
+                </div>
+                <div>
+                  <label className="block text-xs text-gray-600 mb-1">اسلاگ *</label>
+                  <input type="text" value={createForm.slug} onChange={(e) => setCreateForm((f) => ({ ...f, slug: e.target.value }))} className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-accent dir-ltr text-left" />
+                </div>
+                <div className="col-span-2">
+                  <label className="block text-xs text-gray-600 mb-1">توضیحات</label>
+                  <textarea value={createForm.description} onChange={(e) => setCreateForm((f) => ({ ...f, description: e.target.value }))} rows={3} className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-accent" />
+                </div>
+                <div>
+                  <label className="block text-xs text-gray-600 mb-1">قیمت (توکن) *</label>
+                  <input type="number" value={createForm.price} onChange={(e) => setCreateForm((f) => ({ ...f, price: e.target.value }))} className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-accent dir-ltr text-left" />
+                </div>
+                <div>
+                  <label className="block text-xs text-gray-600 mb-1">نوع محصول</label>
+                  <select value={createForm.productType} onChange={(e) => setCreateForm((f) => ({ ...f, productType: e.target.value as ProductType }))} className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-accent bg-white">
+                    {PRODUCT_TYPE_OPTIONS.map((opt) => (<option key={opt.value} value={opt.value}>{opt.label}</option>))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs text-gray-600 mb-1">وضعیت کالا</label>
+                  <select value={createForm.condition} onChange={(e) => setCreateForm((f) => ({ ...f, condition: e.target.value as ProductCondition }))} className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-accent bg-white">
+                    {PRODUCT_CONDITION_OPTIONS.map((opt) => (<option key={opt.value} value={opt.value}>{opt.label}</option>))}
+                  </select>
+                </div>
+                {createForm.productType === 'physical' && (
+                  <>
+                  <div>
+                    <label className="block text-xs text-gray-600 mb-1">موجودی</label>
+                    <input type="number" value={createForm.stockQuantity} onChange={(e) => setCreateForm((f) => ({ ...f, stockQuantity: e.target.value }))} className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-accent dir-ltr text-left" />
+                  </div>
+                  <div>
+                    <label className="block text-xs text-gray-600 mb-1">کد SKU</label>
+                    <input type="text" value={createForm.sku} onChange={(e) => setCreateForm((f) => ({ ...f, sku: e.target.value }))} className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-accent dir-ltr text-left" />
+                  </div>
+                  <div>
+                    <label className="block text-xs text-gray-600 mb-1">وزن (kg)</label>
+                    <input type="number" step="0.01" value={createForm.weight} onChange={(e) => setCreateForm((f) => ({ ...f, weight: e.target.value }))} className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-accent dir-ltr text-left" />
+                  </div>
+                  </>
+                )}
+                {/* Variant Management for physical products */}
+                {createForm.productType === 'physical' && (
+                <div className="col-span-2 border border-dashed border-gray-300 rounded-xl p-4 space-y-4 bg-gray-50/50 mt-2">
+                  <h4 className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                    <svg className="w-4 h-4 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                    </svg>
+                    گزینه‌های محصول (رنگ، سایز، مدل و...)
+                  </h4>
+
+                  {/* Add new variant row */}
+                  <div className="p-3 border border-dashed border-gray-300 rounded-lg bg-white space-y-3">
+                    <p className="text-xs text-gray-500">افزودن گزینه جدید:</p>
+                    <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
+                      <div>
+                        <label className="block text-[10px] text-gray-500 mb-1">شناسه (انگلیسی)</label>
+                        <input type="text" value={newCreateVariant.variantId} onChange={(e) => setNewCreateVariant((v) => ({ ...v, variantId: e.target.value }))} placeholder="مثل color" className="w-full px-2 py-1.5 border border-gray-200 rounded text-xs focus:outline-none focus:border-accent dir-ltr text-left" />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] text-gray-500 mb-1">نام گزینه</label>
+                        <input type="text" value={newCreateVariant.name} onChange={(e) => setNewCreateVariant((v) => ({ ...v, name: e.target.value }))} placeholder="مثل رنگ" className="w-full px-2 py-1.5 border border-gray-200 rounded text-xs focus:outline-none focus:border-accent" />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] text-gray-500 mb-1">مقادیر (با ویرگول)</label>
+                        <input type="text" value={newCreateVariant.valuesStr} onChange={(e) => setNewCreateVariant((v) => ({ ...v, valuesStr: e.target.value }))} placeholder="مثل قرمز,آبی" className="w-full px-2 py-1.5 border border-gray-200 rounded text-xs focus:outline-none focus:border-accent" />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] text-gray-500 mb-1">تعداد</label>
+                        <input type="number" min="0" value={newCreateVariant.quantity} onChange={(e) => setNewCreateVariant((v) => ({ ...v, quantity: e.target.value }))} className="w-full px-2 py-1.5 border border-gray-200 rounded text-xs focus:outline-none focus:border-accent dir-ltr text-left" />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] text-gray-500 mb-1">تفاوت قیمت (توکن)</label>
+                        <input type="number" value={newCreateVariant.priceDiff} onChange={(e) => setNewCreateVariant((v) => ({ ...v, priceDiff: e.target.value }))} placeholder="0=بدون تغییر" className="w-full px-2 py-1.5 border border-gray-200 rounded text-xs focus:outline-none focus:border-accent dir-ltr text-left" />
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-between gap-2">
+                      <label className="flex items-center gap-2 text-xs text-gray-600 cursor-pointer">
+                        <input type="checkbox" checked={newCreateVariant.isActive} onChange={(e) => setNewCreateVariant((v) => ({ ...v, isActive: e.target.checked }))} className="w-3.5 h-3.5 rounded border-gray-300 text-accent focus:ring-accent" />
+                        فعال
+                      </label>
+                      <button onClick={handleAddCreateVariant} className="px-3 py-1.5 bg-gray-800 hover:bg-gray-900 text-white rounded text-xs font-medium transition-colors">
+                        + افزودن به لیست
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Existing variants list */}
+                  {createVariants.length === 0 ? (
+                    <div className="text-center py-6 text-xs text-gray-400 bg-white rounded-lg border border-gray-100">
+                      هنوز گزینه‌ای تعریف نشده است.
+                    </div>
+                  ) : (
+                    <div className="bg-white border border-gray-100 rounded-lg overflow-hidden">
+                      <table className="w-full text-xs">
+                        <thead className="bg-gray-50">
+                          <tr>
+                            <th className="px-3 py-2 text-right text-gray-600 font-medium">شناسه / نام</th>
+                            <th className="px-3 py-2 text-right text-gray-600 font-medium">مقادیر</th>
+                            <th className="px-3 py-2 text-right text-gray-600 font-medium">تعداد</th>
+                            <th className="px-3 py-2 text-right text-gray-600 font-medium">تفاوت قیمت</th>
+                            <th className="px-3 py-2 text-right text-gray-600 font-medium">وضعیت</th>
+                            <th className="px-3 py-2"></th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-100">
+                          {createVariants.map((v, idx) => (
+                            <tr key={`${v.variantId}-${idx}`}>
+                              <td className="px-3 py-2">
+                                <span className="text-[11px] font-medium text-gray-700 dir-ltr text-left block">{v.variantId}</span>
+                                <span className="text-[11px] text-gray-500">{v.name}</span>
+                              </td>
+                              <td className="px-3 py-2">
+                                <span className="text-[11px] text-gray-600">{v.values.join('، ')}</span>
+                              </td>
+                              <td className="px-3 py-2 w-20">
+                                <span className="text-[11px] text-gray-600">{v.quantity}</span>
+                              </td>
+                              <td className="px-3 py-2 w-24">
+                                <span className="text-[11px] text-gray-600">{v.priceDiff ?? 0}</span>
+                              </td>
+                              <td className="px-3 py-2 w-20">
+                                <span className={`text-[11px] ${v.isActive !== false ? 'text-green-600' : 'text-red-500'}`}>
+                                  {v.isActive !== false ? 'فعال' : 'غیرفعال'}
+                                </span>
+                              </td>
+                              <td className="px-3 py-2 w-12">
+                                <button
+                                  onClick={() => handleRemoveCreateVariant(idx)}
+                                  className="w-7 h-7 flex items-center justify-center rounded bg-red-50 hover:bg-red-100 text-red-500 transition-colors"
+                                  title="حذف"
+                                >
+                                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M1 7h22M9 7V4a1 1 0 011-1h4a1 1 0 011 1v3" />
+                                  </svg>
+                                </button>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </div>
+                )}
+              </div>
+            </div>
+            <div className="flex items-center justify-end gap-3 p-6 border-t border-gray-100">
+              <button onClick={() => { setShowCreate(false); setEditingId(null); }} className="px-5 py-2.5 border border-gray-200 hover:bg-gray-50 text-gray-600 rounded-xl text-sm transition-colors">انصراف</button>
+              <button onClick={handleCreateProduct} disabled={creating} className="px-5 py-2.5 bg-accent hover:bg-accent/90 text-white rounded-xl text-sm font-medium disabled:opacity-50 transition-colors">
+                {creating ? 'در حال ذخیره...' : (editingId ? 'ذخیره تغییرات' : 'ثبت محصول')}
               </button>
             </div>
           </div>

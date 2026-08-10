@@ -8,6 +8,7 @@ import { Wallet, WalletSchema } from '../wallet/schemas/wallet.schema';
 import { Transaction, TransactionSchema } from '../wallet/schemas/transaction.schema';
 import { User, UserSchema } from '../users/schemas/user.schema';
 import { TokenConfig, TokenConfigSchema } from '../wallet/schemas/token-config.schema';
+import { Category, CategorySchema } from '../categories/schemas/category.schema';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { TokenConfig, TokenConfigSchema } from '../wallet/schemas/token-config.s
       { name: Transaction.name, schema: TransactionSchema },
       { name: User.name, schema: UserSchema },
       { name: TokenConfig.name, schema: TokenConfigSchema },
+      { name: Category.name, schema: CategorySchema },
     ]),
   ],
   controllers: [StoreController],

@@ -240,6 +240,8 @@ export async function getStoreProducts(params?: {
   minPrice?: number;
   maxPrice?: number;
   seller?: string;
+  condition?: string;
+  conditionList?: string;
 }) {
   const searchParams = new URLSearchParams();
   if (params?.page) searchParams.set('page', params.page.toString());
@@ -249,10 +251,17 @@ export async function getStoreProducts(params?: {
   if (params?.minPrice !== undefined) searchParams.set('minPrice', params.minPrice.toString());
   if (params?.maxPrice !== undefined) searchParams.set('maxPrice', params.maxPrice.toString());
   if (params?.seller) searchParams.set('seller', params.seller);
+  if (params?.condition) searchParams.set('condition', params.condition);
+  if (params?.conditionList) searchParams.set('conditionList', params.conditionList);
   const q = searchParams.toString();
   return fetchAPI<{ products: import('@/types').StoreProduct[]; total: number }>(
     `/store/products${q ? `?${q}` : ''}`,
   );
+}
+
+export async function getCategoryTree(includeInactive = false) {
+  const q = includeInactive ? '?inactive=true' : '';
+  return fetchAPI<import('@/types').Category[]>(`/categories/tree${q}`);
 }
 
 export async function getStoreProductBySlug(slug: string, token?: string) {
@@ -284,10 +293,10 @@ export async function deleteStoreProduct(token: string, id: string) {
   });
 }
 
-export async function purchaseProduct(token: string, productId: string) {
+export async function purchaseProduct(token: string, data: { productId: string; variantId?: string; quantity?: number }) {
   return fetchAPI<{ order: any; walletBalance: number }>('/store/purchase', {
     method: 'POST',
-    body: JSON.stringify({ productId }),
+    body: JSON.stringify(data),
     headers: { Authorization: `Bearer ${token}` },
   });
 }

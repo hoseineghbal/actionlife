@@ -40,6 +40,63 @@ export class CategoriesService {
       .sort({ order: 1, createdAt: 1 });
   }
 
+  async findAllWithInactive(): Promise<CategoryDocument[]> {
+    return this.categoryModel
+      .find()
+      .populate('parent', 'name slug')
+      .sort({ order: 1, createdAt: 1 });
+  }
+
+  async getCategoryTree(includeInactive = false): Promise<any[]> {
+    const all = includeInactive
+      ? await this.categoryModel.find().sort({ order: 1, createdAt: 1 }).lean()
+      : await this.categoryModel.find({ isActive: true }).sort({ order: 1, createdAt: 1 }).lean();
+
+    const map = new Map<string, any>();
+    const roots: any[] = [];
+
+    for (const cat of all) {
+      map.set(cat._id.toString(), { ...cat, children: [] });
+    }
+
+    for (const cat of all) {
+      const node = map.get(cat._id.toString())!;
+      const parentId = cat.parent ? cat.parent.toString() : null;
+      if (parentId && map.has(parentId)) {
+        map.get(parentId)!.children.push(node);
+      } else {
+        roots.push(node);
+      }
+    }
+
+    return roots;
+  }
+
+  async getDescendantIds(categoryId: string): Promise<string[]> {
+    const all = await this.categoryModel.find().select('_id parent').lean();
+    const result: string[] = [categoryId];
+    const parentMap = new Map<string, string[]>();
+    for (const c of all) {
+      const pid = c.parent ? c.parent.toString() : null;
+      if (pid) {
+        if (!parentMap.has(pid)) parentMap.set(pid, []);
+        parentMap.get(pid)!.push(c._id.toString());
+      }
+    }
+    const queue = [categoryId];
+    while (queue.length > 0) {
+      const cur = queue.shift()!;
+      const children = parentMap.get(cur) || [];
+      for (const ch of children) {
+        if (!result.includes(ch)) {
+          result.push(ch);
+          queue.push(ch);
+        }
+      }
+    }
+    return result;
+  }
+
   async findBySlug(slug: string): Promise<CategoryDocument> {
     const category = await this.categoryModel.findOne({ slug }).populate('parent', 'name slug');
     if (!category) {

@@ -107,7 +107,7 @@ export default function ProductDetailPage({
     setBuying(true);
     try {
       const token = localStorage.getItem("access_token")!;
-      await purchaseProduct(token, product._id);
+      await purchaseProduct(token, { productId: product._id, quantity: 1 });
       setPurchased(true);
       // Always remove from cart if it's there (check localStorage, not state)
       if (cart.isInCart(product._id)) {

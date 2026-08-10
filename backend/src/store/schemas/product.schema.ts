@@ -2,6 +2,8 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Schema as MSchema } from 'mongoose';
 
 export type ProductDocument = HydratedDocument<Product>;
+export type ProductCondition = 'new' | 'used' | 'clearance';
+export type ProductType = 'physical' | 'digital';
 
 @Schema({ _id: false })
 export class ProductFile {
@@ -36,6 +38,29 @@ export class ProductDiscount {
 }
 
 export const ProductDiscountSchema = SchemaFactory.createForClass(ProductDiscount);
+
+@Schema({ _id: false })
+export class ProductVariant {
+  @Prop({ required: true })
+  variantId: string;
+
+  @Prop({ required: true })
+  name: string;
+
+  @Prop({ type: [String], default: [] })
+  values: string[];
+
+  @Prop({ required: true, min: 0, default: 0 })
+  quantity: number;
+
+  @Prop({ min: 0 })
+  priceDiff: number;
+
+  @Prop({ default: true })
+  isActive: boolean;
+}
+
+export const ProductVariantSchema = SchemaFactory.createForClass(ProductVariant);
 
 @Schema({ timestamps: true })
 export class Product {
@@ -83,6 +108,27 @@ export class Product {
 
   @Prop({ default: 0 })
   views: number;
+
+  @Prop({ type: String, enum: ['new', 'used', 'clearance'], default: 'new' })
+  condition: ProductCondition;
+
+  @Prop({ type: String, enum: ['physical', 'digital'], default: 'physical' })
+  productType: ProductType;
+
+  @Prop({ type: [ProductVariantSchema], default: [] })
+  variants: ProductVariant[];
+
+  @Prop({ required: true, min: 0, default: 0 })
+  stockQuantity: number;
+
+  @Prop()
+  sku: string;
+
+  @Prop()
+  weight: number;
+
+  @Prop({ default: true })
+  trackInventory: boolean;
 }
 
 export const ProductSchema = SchemaFactory.createForClass(Product);

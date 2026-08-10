@@ -34,6 +34,18 @@ export class Order {
 
   @Prop()
   transactionId: string;
+
+  @Prop()
+  variantId: string;
+
+  @Prop()
+  variantName: string;
+
+  @Prop({ type: [String], default: [] })
+  variantValues: string[];
+
+  @Prop({ required: true, min: 1, default: 1 })
+  quantity: number;
 }
 
 export const OrderSchema = SchemaFactory.createForClass(Order);

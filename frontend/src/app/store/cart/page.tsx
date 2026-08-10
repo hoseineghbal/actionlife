@@ -50,7 +50,7 @@ export default function CartPage() {
 
     for (const item of cart) {
       try {
-        await purchaseProduct(token, item.productId);
+        await purchaseProduct(token, { productId: item.productId, quantity: (item as any).quantity ?? 1 });
         successCount++;
       } catch (err: any) {
         const msg = err?.message ?? "";

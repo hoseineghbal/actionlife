@@ -64,6 +64,7 @@ export interface Category {
   parent?: Category;
   order: number;
   isActive: boolean;
+  children?: Category[];
 }
 
 export interface ContactForm {
@@ -324,6 +325,30 @@ export interface ProductDiscount {
   endDate: string;
 }
 
+export type ProductCondition = 'new' | 'used' | 'clearance';
+
+export const PRODUCT_CONDITION_META: Record<ProductCondition, { label: string; color: string; bg: string }> = {
+  new: { label: 'نو', color: 'text-green-700', bg: 'bg-green-100' },
+  used: { label: 'استفاده شده', color: 'text-yellow-700', bg: 'bg-yellow-100' },
+  clearance: { label: 'استوک / پاکسازی', color: 'text-red-700', bg: 'bg-red-100' },
+};
+
+export type ProductType = 'physical' | 'digital';
+
+export const PRODUCT_TYPE_META: Record<ProductType, { label: string }> = {
+  physical: { label: 'فیزیکی' },
+  digital: { label: 'دیجیتال' },
+};
+
+export interface ProductVariant {
+  variantId: string;
+  name: string;
+  values: string[];
+  quantity: number;
+  priceDiff?: number;
+  isActive: boolean;
+}
+
 export interface StoreProduct {
   _id: string;
   title: string;
@@ -350,6 +375,13 @@ export interface StoreProduct {
   hasPurchased?: boolean;
   effectivePrice?: number;
   currentDiscount?: ProductDiscount | null;
+  condition: ProductCondition;
+  productType: ProductType;
+  variants: ProductVariant[];
+  stockQuantity: number;
+  sku?: string;
+  weight?: number;
+  trackInventory: boolean;
   createdAt: string;
   updatedAt: string;
 }
@@ -395,6 +427,10 @@ export interface StoreOrder {
   finalPrice: number;
   status: 'completed' | 'refunded';
   transactionId: string;
+  variantId?: string;
+  variantName?: string;
+  variantValues?: string[];
+  quantity: number;
   createdAt: string;
 }
 

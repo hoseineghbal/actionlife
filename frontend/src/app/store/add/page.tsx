@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useAuth } from "@/lib/auth-context";
 import { createStoreProduct, updateStoreProduct, getCategories, getStudioFiles } from "@/lib/api";
 import type { Category, ProductFile, StoreProduct, StudioFile } from "@/types";
+import { PRODUCT_TYPE_META } from "@/types";
 
 function AddProductForm() {
   const { user } = useAuth();
@@ -29,6 +30,11 @@ function AddProductForm() {
     category: "",
     tags: "",
     status: "draft",
+    productType: "physical" as "physical" | "digital",
+    condition: "new" as "new" | "used" | "clearance",
+    stockQuantity: "",
+    sku: "",
+    weight: "",
   });
 
   const [files, setFiles] = useState<ProductFile[]>([]);
@@ -89,6 +95,11 @@ function AddProductForm() {
             category: typeof data.category === "object" && data.category ? data.category._id : data.category ?? "",
             tags: data.tags?.join(", ") ?? "",
             status: data.status,
+            productType: (data.productType as "physical" | "digital") || "physical",
+            condition: (data.condition as "new" | "used" | "clearance") || "new",
+            stockQuantity: data.stockQuantity ? String(data.stockQuantity) : "",
+            sku: data.sku ?? "",
+            weight: data.weight != null ? String(data.weight) : "",
           });
           setFiles(
             data.files?.map((f) => ({
@@ -139,7 +150,7 @@ function AddProductForm() {
 
     setSubmitting(true);
     try {
-      const payload = {
+      const payload: Record<string, unknown> = {
         title: form.title.trim(),
         slug: form.slug.trim(),
         description: form.description.trim() || undefined,
@@ -150,8 +161,16 @@ function AddProductForm() {
         category: form.category || undefined,
         tags: form.tags ? form.tags.split(",").map((t) => t.trim()).filter(Boolean) : [],
         status: form.status,
+        productType: form.productType,
+        condition: form.condition,
         files: files.filter((f) => f.url.trim() && f.title.trim()),
       };
+
+      if (form.productType === 'physical') {
+        payload.stockQuantity = form.stockQuantity ? Number(form.stockQuantity) : 0;
+        payload.sku = form.sku.trim() || undefined;
+        payload.weight = form.weight ? Number(form.weight) : undefined;
+      }
 
       if (isEdit && editId) {
         await updateStoreProduct(token, editId, payload);
@@ -298,6 +317,72 @@ function AddProductForm() {
                   <option value="published">ارسال برای انتشار</option>
                 </select>
               </div>
+              <div>
+                <label className="block text-sm text-gray-custom mb-2">نوع محصول</label>
+                <select
+                  name="productType"
+                  value={form.productType}
+                  onChange={handleChange}
+                  className="w-full px-4 py-3 bg-dark border border-white/10 rounded-xl text-white focus:outline-none focus:border-accent/50"
+                >
+                  {Object.entries(PRODUCT_TYPE_META).map(([val, meta]) => (
+                    <option key={val} value={val}>{meta.label}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm text-gray-custom mb-2">وضعیت کالا</label>
+                <select
+                  name="condition"
+                  value={form.condition}
+                  onChange={handleChange}
+                  className="w-full px-4 py-3 bg-dark border border-white/10 rounded-xl text-white focus:outline-none focus:border-accent/50"
+                >
+                  <option value="new">نو</option>
+                  <option value="used">استفاده شده</option>
+                  <option value="clearance">استوک / پاکسازی</option>
+                </select>
+              </div>
+              {form.productType === 'physical' && (
+                <>
+                <div>
+                  <label className="block text-sm text-gray-custom mb-2">موجودی</label>
+                  <input
+                    type="number"
+                    name="stockQuantity"
+                    value={form.stockQuantity}
+                    onChange={handleChange}
+                    className="w-full px-4 py-3 bg-dark border border-white/10 rounded-xl text-white placeholder:text-gray-custom focus:outline-none focus:border-accent/50"
+                    placeholder="تعداد موجودی"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm text-gray-custom mb-2">کد محصول (SKU)</label>
+                  <input
+                    type="text"
+                    name="sku"
+                    value={form.sku}
+                    onChange={handleChange}
+                    className="w-full px-4 py-3 bg-dark border border-white/10 rounded-xl text-white placeholder:text-gray-custom focus:outline-none focus:border-accent/50"
+                    dir="ltr"
+                    placeholder="مثل SKU-001"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm text-gray-custom mb-2">وزن (کیلوگرم)</label>
+                  <input
+                    type="number"
+                    name="weight"
+                    value={form.weight}
+                    onChange={handleChange}
+                    step="0.01"
+                    className="w-full px-4 py-3 bg-dark border border-white/10 rounded-xl text-white placeholder:text-gray-custom focus:outline-none focus:border-accent/50"
+                    dir="ltr"
+                    placeholder="مثل 1.5"
+                  />
+                </div>
+                </>
+              )}
               <div>
                 <label className="block text-sm text-gray-custom mb-2">تگ‌ها (با کاما جدا کنید)</label>
                 <input

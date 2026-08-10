@@ -6,6 +6,7 @@ import {
   IsEnum,
   ValidateNested,
   Min,
+  IsBoolean,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 
@@ -27,6 +28,31 @@ export class ProductFileDto {
   @IsOptional()
   @IsNumber()
   order: number;
+}
+
+export class ProductVariantDto {
+  @IsString()
+  variantId: string;
+
+  @IsString()
+  name: string;
+
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  values: string[];
+
+  @IsNumber()
+  @Min(0)
+  quantity: number;
+
+  @IsOptional()
+  @IsNumber()
+  priceDiff: number;
+
+  @IsOptional()
+  @IsBoolean()
+  isActive: boolean;
 }
 
 export class CreateProductDto {
@@ -76,6 +102,39 @@ export class CreateProductDto {
   @IsString()
   @IsEnum(['draft', 'pending', 'published', 'rejected', 'archived'])
   status: string;
+
+  @IsOptional()
+  @IsString()
+  @IsEnum(['new', 'used', 'clearance'])
+  condition: string;
+
+  @IsOptional()
+  @IsString()
+  @IsEnum(['physical', 'digital'])
+  productType: string;
+
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => ProductVariantDto)
+  variants: ProductVariantDto[];
+
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  stockQuantity: number;
+
+  @IsOptional()
+  @IsString()
+  sku: string;
+
+  @IsOptional()
+  @IsNumber()
+  weight: number;
+
+  @IsOptional()
+  @IsBoolean()
+  trackInventory: boolean;
 }
 
 export class UpdateProductDto {
@@ -134,6 +193,39 @@ export class UpdateProductDto {
   @IsString()
   @IsEnum(['draft', 'pending', 'published', 'rejected', 'archived'])
   status: string;
+
+  @IsOptional()
+  @IsString()
+  @IsEnum(['new', 'used', 'clearance'])
+  condition: string;
+
+  @IsOptional()
+  @IsString()
+  @IsEnum(['physical', 'digital'])
+  productType: string;
+
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => ProductVariantDto)
+  variants: ProductVariantDto[];
+
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  stockQuantity: number;
+
+  @IsOptional()
+  @IsString()
+  sku: string;
+
+  @IsOptional()
+  @IsNumber()
+  weight: number;
+
+  @IsOptional()
+  @IsBoolean()
+  trackInventory: boolean;
 }
 
 export class ProductDiscountDto {
@@ -158,4 +250,13 @@ export class SetDiscountsDto {
 export class PurchaseProductDto {
   @IsString()
   productId: string;
+
+  @IsOptional()
+  @IsString()
+  variantId: string;
+
+  @IsOptional()
+  @IsNumber()
+  @Min(1)
+  quantity: number;
 }

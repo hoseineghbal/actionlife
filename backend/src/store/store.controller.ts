@@ -22,6 +22,7 @@ import {
   CreateProductDto,
   UpdateProductDto,
   SetDiscountsDto,
+  PurchaseProductDto,
 } from './dto/store.dto';
 
 @Controller('store')
@@ -37,6 +38,8 @@ export class StoreController {
     @Query('minPrice') minPrice?: number,
     @Query('maxPrice') maxPrice?: number,
     @Query('seller') seller?: string,
+    @Query('condition') condition?: string,
+    @Query('conditionList') conditionList?: string,
   ) {
     return this.storeService.findAll({
       page: page ? Number(page) : undefined,
@@ -46,6 +49,8 @@ export class StoreController {
       minPrice: minPrice !== undefined ? Number(minPrice) : undefined,
       maxPrice: maxPrice !== undefined ? Number(maxPrice) : undefined,
       seller,
+      condition,
+      conditionList,
     });
   }
 
@@ -90,8 +95,8 @@ export class StoreController {
   @Post('purchase')
   @UseGuards(AuthGuard('jwt'))
   @HttpCode(HttpStatus.OK)
-  async purchase(@Body('productId') productId: string, @Req() req: any) {
-    return this.storeService.purchase(productId, req.user.userId);
+  async purchase(@Body() dto: PurchaseProductDto, @Req() req: any) {
+    return this.storeService.purchase(dto, req.user.userId);
   }
 
   @Get('my-purchases')

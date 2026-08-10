@@ -5,7 +5,7 @@ import {
   ForbiddenException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { Product, ProductDocument } from './schemas/product.schema';
 import { Order, OrderDocument } from './schemas/order.schema';
 import { TokenConfig, TokenConfigDocument } from '../wallet/schemas/token-config.schema';
@@ -17,7 +17,8 @@ import {
   TransactionStatus,
 } from '../wallet/schemas/transaction.schema';
 import { User, UserDocument } from '../users/schemas/user.schema';
-import { CreateProductDto, UpdateProductDto, SetDiscountsDto } from './dto/store.dto';
+import { Category, CategoryDocument } from '../categories/schemas/category.schema';
+import { CreateProductDto, UpdateProductDto, SetDiscountsDto, PurchaseProductDto } from './dto/store.dto';
 
 type MongoFilter = Record<string, unknown>;
 
@@ -30,7 +31,37 @@ export class StoreService {
     @InjectModel(Transaction.name) private transactionModel: Model<TransactionDocument>,
     @InjectModel(User.name) private userModel: Model<UserDocument>,
     @InjectModel(TokenConfig.name) private tokenConfigModel: Model<TokenConfigDocument>,
+    @InjectModel(Category.name) private categoryModel: Model<CategoryDocument>,
   ) {}
+
+  private async collectDescendantCategoryIds(categoryId: string): Promise<string[]> {
+    try {
+      const all = await this.categoryModel.find().select('_id parent').lean();
+      const result: string[] = [categoryId];
+      const parentMap = new Map<string, string[]>();
+      for (const c of all) {
+        const pid = c.parent ? c.parent.toString() : null;
+        if (pid) {
+          if (!parentMap.has(pid)) parentMap.set(pid, []);
+          parentMap.get(pid)!.push(c._id.toString());
+        }
+      }
+      const queue = [categoryId];
+      while (queue.length > 0) {
+        const cur = queue.shift()!;
+        const children = parentMap.get(cur) || [];
+        for (const ch of children) {
+          if (!result.includes(ch)) {
+            result.push(ch);
+            queue.push(ch);
+          }
+        }
+      }
+      return result;
+    } catch {
+      return [categoryId];
+    }
+  }
 
   async findAll(query: {
     page?: number;
@@ -41,14 +72,24 @@ export class StoreService {
     search?: string;
     minPrice?: number;
     maxPrice?: number;
+    condition?: string;
+    conditionList?: string;
   }) {
     const page = query.page || 1;
     const limit = Math.min(query.limit || 20, 50);
     const skip = (page - 1) * limit;
 
     const filter: MongoFilter = { status: query.status || 'published' };
-    if (query.category) filter.category = query.category;
+    if (query.category) {
+      const descendantIds = await this.collectDescendantCategoryIds(query.category);
+      filter.category = descendantIds.length === 1 ? descendantIds[0] : { $in: descendantIds };
+    }
     if (query.seller) filter.seller = query.seller;
+    if (query.condition) filter.condition = query.condition;
+    if (query.conditionList) {
+      const arr = String(query.conditionList).split(',').filter(Boolean);
+      if (arr.length > 0) filter.condition = { $in: arr };
+    }
     if (query.minPrice !== undefined || query.maxPrice !== undefined) {
       const priceFilter: MongoFilter = {};
       if (query.minPrice !== undefined) priceFilter.$gte = query.minPrice;
@@ -60,6 +101,7 @@ export class StoreService {
         { title: { $regex: query.search, $options: 'i' } },
         { description: { $regex: query.search, $options: 'i' } },
         { tags: { $regex: query.search, $options: 'i' } },
+        { sku: { $regex: query.search, $options: 'i' } },
       ];
     }
 
@@ -68,7 +110,7 @@ export class StoreService {
         .find(filter)
         .select('-files')
         .populate('seller', 'fullName avatar username')
-        .populate('category', 'name slug')
+        .populate('category', 'name slug parent')
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit),
@@ -196,7 +238,10 @@ export class StoreService {
     return { message: 'محصول با موفقیت حذف شد' };
   }
 
-  async purchase(productId: string, buyerId: string) {
+  async purchase(dto: PurchaseProductDto, buyerId: string) {
+    const { productId, variantId, quantity: qtyParam } = dto;
+    const quantity = qtyParam && qtyParam > 0 ? qtyParam : 1;
+
     const product = await this.productModel.findById(productId);
     if (!product || product.status !== 'published') {
       throw new NotFoundException('محصول یافت نشد یا در دسترس نیست');
@@ -204,6 +249,27 @@ export class StoreService {
 
     if (product.seller.toString() === buyerId) {
       throw new BadRequestException('نمی‌توانید محصول خود را خریداری کنید');
+    }
+
+    // Variant resolution
+    let selectedVariant = null;
+    let variantPriceDiff = 0;
+    if (variantId && product.variants && product.variants.length > 0) {
+      selectedVariant = product.variants.find(
+        (v) => v.variantId === variantId && v.isActive !== false,
+      );
+      if (!selectedVariant) {
+        throw new BadRequestException('گزینه مورد نظر یافت نشد');
+      }
+      variantPriceDiff = selectedVariant.priceDiff || 0;
+      if (product.trackInventory && selectedVariant.quantity < quantity) {
+        throw new BadRequestException('موجودی این گزینه کافی نیست');
+      }
+    }
+
+    // Check overall stock
+    if (!variantId && product.trackInventory && product.stockQuantity < quantity) {
+      throw new BadRequestException('موجودی محصول کافی نیست');
     }
 
     const existingOrder = await this.orderModel.findOne({
@@ -215,11 +281,23 @@ export class StoreService {
       throw new BadRequestException('شما قبلا این محصول را خریداری کرده‌اید');
     }
 
-    const finalPrice = this.getEffectivePrice(product);
+    const basePrice = this.getEffectivePrice(product);
+    const unitPrice = basePrice + variantPriceDiff;
+    const finalPrice = unitPrice * quantity;
 
     const buyerWallet = await this.walletModel.findOne({ user: buyerId } as MongoFilter);
     if (!buyerWallet || buyerWallet.balance < finalPrice) {
       throw new BadRequestException('موجودی توکن کافی نیست');
+    }
+
+    // Decrement stock
+    if (product.trackInventory) {
+      if (selectedVariant) {
+        selectedVariant.quantity -= quantity;
+      } else {
+        product.stockQuantity -= quantity;
+      }
+      product.markModified('variants');
     }
 
     // Calculate marketplace fee
@@ -239,7 +317,7 @@ export class StoreService {
       type: TransactionType.SHOP_PURCHASE,
       amount: -finalPrice,
       status: TransactionStatus.COMPLETED,
-      description: `خرید محصول: ${product.title}`,
+      description: `خرید محصول: ${product.title}${quantity > 1 ? ` (${quantity} عدد)` : ''}${selectedVariant ? ` - ${selectedVariant.name}` : ''}`,
       relatedUser: product.seller,
     } as any);
 
@@ -256,7 +334,7 @@ export class StoreService {
       type: TransactionType.SHOP_PURCHASE,
       amount: sellerAmount,
       status: TransactionStatus.COMPLETED,
-      description: `فروش محصول: ${product.title}${feeAmount > 0 ? ` (کارمزد ${feePercent}%: ${feeAmount} توکن)` : ''}`,
+      description: `فروش محصول: ${product.title}${quantity > 1 ? ` (${quantity} عدد)` : ''}${selectedVariant ? ` - ${selectedVariant.name}` : ''}${feeAmount > 0 ? ` (کارمزد ${feePercent}%: ${feeAmount} توکن)` : ''}`,
       relatedUser: buyerId,
     } as any);
 
@@ -275,7 +353,7 @@ export class StoreService {
           type: TransactionType.SHOP_PURCHASE,
           amount: feeAmount,
           status: TransactionStatus.COMPLETED,
-          description: `کارمزد فروشگاه: ${product.title} (${feePercent}%)`,
+          description: `کارمزد فروشگاه: ${product.title}${quantity > 1 ? ` (${quantity} عدد)` : ''} (${feePercent}%)`,
           relatedUser: buyerId,
         } as any);
       }
@@ -293,9 +371,13 @@ export class StoreService {
       finalPrice,
       status: 'completed',
       transactionId: buyerId,
+      variantId: selectedVariant?.variantId,
+      variantName: selectedVariant?.name,
+      variantValues: selectedVariant?.values || [],
+      quantity,
     } as any);
 
-    product.salesCount += 1;
+    product.salesCount += quantity;
     await product.save();
 
     return { order, walletBalance: buyerWallet.balance };

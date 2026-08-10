@@ -7,6 +7,7 @@ import {
   Body,
   Param,
   UseGuards,
+  Query,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { CategoriesService } from './categories.service';
@@ -19,8 +20,21 @@ export class CategoriesController {
   constructor(private readonly categoriesService: CategoriesService) {}
 
   @Get()
-  findAll() {
+  findAll(@Query('inactive') inactive?: string) {
+    if (inactive === 'true') {
+      return this.categoriesService.findAllWithInactive();
+    }
     return this.categoriesService.findAll();
+  }
+
+  @Get('tree')
+  getTree(@Query('inactive') inactive?: string) {
+    return this.categoriesService.getCategoryTree(inactive === 'true');
+  }
+
+  @Get('descendants/:id')
+  getDescendants(@Param('id') id: string) {
+    return this.categoriesService.getDescendantIds(id);
   }
 
   @Get(':slug')

@@ -4,11 +4,6 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
-import { DateObject } from "react-multi-date-picker";
-import DatePicker from "react-multi-date-picker";
-import persian from "react-date-object/calendars/persian";
-import persian_fa from "react-date-object/locales/persian_fa";
-import TimePicker from "react-multi-date-picker/plugins/time_picker";
 import {
   getMyStoreProducts,
   getSellerOrders,
@@ -35,9 +30,9 @@ export default function MyProductsPage() {
   const [savingDiscount, setSavingDiscount] = useState(false);
   const [discountForm, setDiscountForm] = useState<{
     discountPrice: string;
-    startDateObj: DateObject | null;
-    endDateObj: DateObject | null;
-  }>({ discountPrice: "", startDateObj: null, endDateObj: null });
+    startDate: string;
+    endDate: string;
+  }>({ discountPrice: "", startDate: "", endDate: "" });
   const limit = 20;
 
   useEffect(() => {
@@ -133,7 +128,7 @@ export default function MyProductsPage() {
 
   const handleSaveDiscount = async (productId: string) => {
     const price = Number(discountForm.discountPrice);
-    if (!discountForm.discountPrice || !discountForm.startDateObj || !discountForm.endDateObj) {
+    if (!discountForm.discountPrice || !discountForm.startDate || !discountForm.endDate) {
       alert("لطفا قیمت تخفیف، تاریخ شروع و تاریخ پایان را وارد کنید");
       return;
     }
@@ -147,15 +142,15 @@ export default function MyProductsPage() {
     setSavingDiscount(true);
     const token = localStorage.getItem("access_token")!;
     try {
-      const startGregorian = discountForm.startDateObj.toDate();
-      const endGregorian = discountForm.endDateObj.toDate();
+      const startDate = new Date(discountForm.startDate).toISOString();
+      const endDate = new Date(discountForm.endDate).toISOString();
       const currentDiscounts = product.discounts || [];
-      const newDiscounts = [...currentDiscounts, { discountPrice: price, startDate: startGregorian.toISOString(), endDate: endGregorian.toISOString() }];
+      const newDiscounts = [...currentDiscounts, { discountPrice: price, startDate, endDate }];
       const updated = await setProductDiscounts(token, productId, newDiscounts);
       setProducts((prev) =>
         prev.map((p) => (p._id === productId ? { ...p, ...updated } : p)),
       );
-      setDiscountForm({ discountPrice: "", startDateObj: null, endDateObj: null });
+      setDiscountForm({ discountPrice: "", startDate: "", endDate: "" });
     } catch (err: any) {
       alert(err.message ?? "خطا در ذخیره تخفیف");
     } finally {
@@ -181,9 +176,9 @@ export default function MyProductsPage() {
 
   const formatJalaliDateTime = (isoString: string) => {
     const d = new Date(isoString);
-    const jalali = new DateObject({ date: d, calendar: persian });
-    const time = d.toLocaleTimeString("fa-IR", { hour: "2-digit", minute: "2-digit" });
-    return `${jalali.format("YYYY/MM/DD")} ${time}`;
+    const datePart = d.toLocaleDateString("fa-IR", { year: "numeric", month: "2-digit", day: "2-digit" });
+    const timePart = d.toLocaleTimeString("fa-IR", { hour: "2-digit", minute: "2-digit" });
+    return `${datePart} ${timePart}`;
   };
 
   const formatPrice = (p: number) => new Intl.NumberFormat("fa-IR").format(p);
@@ -534,34 +529,20 @@ export default function MyProductsPage() {
                           <div className="grid grid-cols-2 gap-3">
                             <div>
                               <label className="block text-xs text-gray-custom mb-1">تاریخ و ساعت شروع</label>
-                              <DatePicker
-                                calendar={persian}
-                                locale={persian_fa}
-                                value={discountForm.startDateObj}
-                                onChange={(val: DateObject | null) =>
-                                  setDiscountForm((prev) => ({ ...prev, startDateObj: val }))
-                                }
-                                format="YYYY/MM/DD HH:mm"
-                                plugins={[<TimePicker position="bottom" key="start" />]}
-                                inputClass="w-full px-3 py-2 bg-dark border border-white/10 rounded-lg text-white text-sm focus:outline-none focus:border-accent/50 text-right"
-                                placeholder="انتخاب تاریخ و ساعت"
-                                style={{ width: '100%' }}
+                              <input
+                                type="datetime-local"
+                                value={discountForm.startDate}
+                                onChange={(e) => setDiscountForm((prev) => ({ ...prev, startDate: e.target.value }))}
+                                className="w-full px-3 py-2 bg-dark border border-white/10 rounded-lg text-white text-sm focus:outline-none focus:border-accent/50"
                               />
                             </div>
                             <div>
                               <label className="block text-xs text-gray-custom mb-1">تاریخ و ساعت پایان</label>
-                              <DatePicker
-                                calendar={persian}
-                                locale={persian_fa}
-                                value={discountForm.endDateObj}
-                                onChange={(val: DateObject | null) =>
-                                  setDiscountForm((prev) => ({ ...prev, endDateObj: val }))
-                                }
-                                format="YYYY/MM/DD HH:mm"
-                                plugins={[<TimePicker position="bottom" key="end" />]}
-                                inputClass="w-full px-3 py-2 bg-dark border border-white/10 rounded-lg text-white text-sm focus:outline-none focus:border-accent/50 text-right"
-                                placeholder="انتخاب تاریخ و ساعت"
-                                style={{ width: '100%' }}
+                              <input
+                                type="datetime-local"
+                                value={discountForm.endDate}
+                                onChange={(e) => setDiscountForm((prev) => ({ ...prev, endDate: e.target.value }))}
+                                className="w-full px-3 py-2 bg-dark border border-white/10 rounded-lg text-white text-sm focus:outline-none focus:border-accent/50"
                               />
                             </div>
                           </div>
