@@ -15,7 +15,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const { slug } = await params;
     const article = await getArticleBySlug(slug);
     return {
-      title: article.metaTitle || `${article.title} | اکشن گیم`,
+      title: article.metaTitle || `${article.title} | بازی اکشن`,
       description: article.metaDescription || article.excerpt,
       openGraph: {
         title: article.metaTitle || article.title,
@@ -24,7 +24,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       },
     };
   } catch {
-    return { title: "مقاله | اکشن گیم", description: "نقد و بررسی بازی‌های اکشن" };
+    return { title: "مقاله | بازی اکشن", description: "معرفی بهترین بازی‌ها، نقد و بررسی ، آموزش، راهنمایی و گفتگو درباره بازی‌های اکشن" };
   }
 }
 
@@ -52,14 +52,14 @@ export default async function GameArticlePage({ params }: Props) {
       <nav className="flex flex-wrap items-center gap-2 text-sm text-gray-custom mb-8">
         <Link href="/" className="hover:text-white transition-colors">خانه</Link>
         <span>/</span>
-        <Link href="/action-game" className="hover:text-white transition-colors">اکشن گیم</Link>
+        <Link href="/action-game" className="hover:text-white transition-colors">بازی اکشن</Link>
         <span>/</span>
         <span className="text-white truncate max-w-[200px]">{article.title}</span>
       </nav>
 
       <header className="mb-8">
         <div className="flex flex-wrap items-center gap-2 mb-4">
-          <span className="inline-block px-3 py-1 text-xs gradient-primary text-white rounded-md">اکشن گیم 🎮</span>
+          <span className="inline-block px-3 py-1 text-xs gradient-primary text-white rounded-md">بازی اکشن 🎮</span>
           {article.isFeatured && (
             <span className="inline-block px-3 py-1 text-xs bg-yellow-600/20 text-yellow-400 rounded-md">ویژه</span>
           )}

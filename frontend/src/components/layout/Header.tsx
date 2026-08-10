@@ -10,7 +10,7 @@ const navItems = [
   { label: "خانه", href: "/" },
   { label: "فروشگاه", href: "/store" },
   { label: "اکشن نما", href: "/action-cinema" },
-  { label: "اکشن گیم", href: "/action-game" },
+  { label: "بازی اکشن", href: "/action-game" },
   { label: "اکشن تریپ", href: "/action-trip" },
   { label: "زندگی اکشن", href: "/blog" },
   { label: "درباره ما", href: "/about" },

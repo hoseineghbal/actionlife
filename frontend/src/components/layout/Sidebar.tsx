@@ -9,7 +9,7 @@ export const usefulLinks = [
   { label: "فروشگاه", href: "/store" },
   { label: "زندگی اکشن", href: "/blog" },
   { label: "اکشن نما", href: "/action-cinema" },
-  { label: "اکشن گیم", href: "/action-game" },
+  { label: "بازی اکشن", href: "/action-game" },
   { label: "اکشن تریپ", href: "/action-trip" },
   { label: "اکشن فیت", href: "/action-fit" },
   { label: "اکشن کلاب", href: "/action-club" },

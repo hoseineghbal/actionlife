@@ -29,6 +29,7 @@ export async function getArticles(params?: {
   limit?: number;
   featured?: boolean;
   category?: string;
+  search?: string;
 }) {
   const searchParams = new URLSearchParams();
   if (params?.section) searchParams.set('section', params.section);
@@ -36,6 +37,7 @@ export async function getArticles(params?: {
   if (params?.limit) searchParams.set('limit', params.limit.toString());
   if (params?.featured !== undefined) searchParams.set('featured', params.featured.toString());
   if (params?.category) searchParams.set('category', params.category);
+  if (params?.search) searchParams.set('search', params.search);
   const query = searchParams.toString();
   return fetchAPI<{ articles: import('@/types').Article[]; total: number }>(
     `/articles${query ? `?${query}` : ''}`,
