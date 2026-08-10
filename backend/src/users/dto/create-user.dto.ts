@@ -9,7 +9,7 @@ import {
   MinLength,
 } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { UserRole, UserPermission } from '../schemas/user.schema';
+import { UserRole, UserPermission, UserLevel } from '../schemas/user.schema';
 
 export class CreateUserDto {
   @ApiProperty({ description: 'نام کامل' })
@@ -151,6 +151,31 @@ export class CreateUserDto {
   @IsOptional()
   @IsNumber()
   points?: number;
+
+  @ApiPropertyOptional({ description: 'تغییر دستی سطح کاربر توسط ادمین (override)', enum: UserLevel })
+  @IsOptional()
+  @IsEnum(UserLevel)
+  overrideLevel?: UserLevel;
+
+  @ApiPropertyOptional({ description: 'امتیاز معیار همکاری کاربر' })
+  @IsOptional()
+  @IsNumber()
+  collaborationScore?: number;
+
+  @ApiPropertyOptional({ description: 'امتیاز معیار فعالیت کاربر' })
+  @IsOptional()
+  @IsNumber()
+  activityScore?: number;
+
+  @ApiPropertyOptional({ description: 'امتیاز معیار پیشرفت در چالش‌ها' })
+  @IsOptional()
+  @IsNumber()
+  challengeProgressScore?: number;
+
+  @ApiPropertyOptional({ description: 'امتیاز معیار مسیر رشد' })
+  @IsOptional()
+  @IsNumber()
+  growthPathScore?: number;
 }
 
 export class UpdateUserDto {
@@ -304,4 +329,29 @@ export class UpdateUserDto {
   @IsOptional()
   @IsString()
   storeRequestStatus?: string;
+
+  @ApiPropertyOptional({ description: 'تغییر دستی سطح کاربر توسط ادمین (override)', enum: UserLevel })
+  @IsOptional()
+  @IsEnum(UserLevel)
+  overrideLevel?: UserLevel | null;
+
+  @ApiPropertyOptional({ description: 'امتیاز معیار همکاری کاربر' })
+  @IsOptional()
+  @IsNumber()
+  collaborationScore?: number;
+
+  @ApiPropertyOptional({ description: 'امتیاز معیار فعالیت کاربر' })
+  @IsOptional()
+  @IsNumber()
+  activityScore?: number;
+
+  @ApiPropertyOptional({ description: 'امتیاز معیار پیشرفت در چالش‌ها' })
+  @IsOptional()
+  @IsNumber()
+  challengeProgressScore?: number;
+
+  @ApiPropertyOptional({ description: 'امتیاز معیار مسیر رشد' })
+  @IsOptional()
+  @IsNumber()
+  growthPathScore?: number;
 }

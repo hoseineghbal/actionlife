@@ -41,6 +41,8 @@ export interface Article {
   metaTitle?: string;
   metaDescription?: string;
   isFeatured: boolean;
+  /** حداقل سطح کاربری موردنیاز برای دسترسی؛ null = عمومی و قابل دسترس برای همه */
+  minRequiredLevel?: UserLevel | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -72,6 +74,94 @@ export interface ContactForm {
   message: string;
 }
 
+export type UserLevel =
+  | 'tier_1_beginner'
+  | 'tier_2_active'
+  | 'tier_3_committed'
+  | 'tier_4_mentor'
+  | 'tier_5_veteran';
+
+export interface UserLevelMeta {
+  key: UserLevel;
+  label: string;
+  badgeLabel: string;
+  minScore: number;
+  color: string;
+  description: string;
+}
+
+export const USER_LEVEL_META: Record<UserLevel, UserLevelMeta> = {
+  tier_1_beginner: {
+    key: 'tier_1_beginner',
+    label: 'مبتدی',
+    badgeLabel: 'کمیاب',
+    minScore: 0,
+    color: '#94a3b8',
+    description: 'کاربر تازه‌وارد؛ در حال تکمیل پروفایل و آشنایی با پلتفرم',
+  },
+  tier_2_active: {
+    key: 'tier_2_active',
+    label: 'فعال',
+    badgeLabel: 'نقره‌ای',
+    minScore: 100,
+    color: '#0ea5e9',
+    description: 'کاربر فعال؛ پروفایل کامل و شروع فعالیت در اکشن کلاب',
+  },
+  tier_3_committed: {
+    key: 'tier_3_committed',
+    label: 'متعهد',
+    badgeLabel: 'طلایی',
+    minScore: 500,
+    color: '#f59e0b',
+    description: 'کاربر متعهد؛ شرکت در چالش‌ها و تکمیل گام‌های مسیر رشد',
+  },
+  tier_4_mentor: {
+    key: 'tier_4_mentor',
+    label: 'رهنما',
+    badgeLabel: 'الماس',
+    minScore: 2000,
+    color: '#8b5cf6',
+    description: 'کاربر رهنما؛ تولید محتوا، همکاری مستمر و راهنمایی سایر کاربران',
+  },
+  tier_5_veteran: {
+    key: 'tier_5_veteran',
+    label: 'پیشکسوت',
+    badgeLabel: 'پلاتینیوم',
+    minScore: 10000,
+    color: '#ef4444',
+    description: 'پیشکسوت اکشن لایف؛ دسترسی ویژه و حضور در هسته جامعه',
+  },
+};
+
+export const USER_LEVEL_ORDER: UserLevel[] = [
+  'tier_1_beginner',
+  'tier_2_active',
+  'tier_3_committed',
+  'tier_4_mentor',
+  'tier_5_veteran',
+];
+
+export type LevelGatedFeature =
+  | 'action_club_access'
+  | 'exclusive_articles'
+  | 'workshops_events'
+  | 'growth_path_premium'
+  | 'mentorship_sessions'
+  | 'core_community';
+
+export const LEVEL_REQUIREMENTS: Record<LevelGatedFeature, UserLevel> = {
+  action_club_access: 'tier_2_active',
+  exclusive_articles: 'tier_3_committed',
+  workshops_events: 'tier_3_committed',
+  growth_path_premium: 'tier_3_committed',
+  mentorship_sessions: 'tier_4_mentor',
+  core_community: 'tier_5_veteran',
+};
+
+export function userMeetsLevel(userLevel: UserLevel, requiredLevel: UserLevel): boolean {
+  return USER_LEVEL_ORDER.indexOf(userLevel) >= USER_LEVEL_ORDER.indexOf(requiredLevel);
+}
+
 export interface User {
   id: string;
   fullName: string;
@@ -100,6 +190,17 @@ export interface User {
   points?: number;
   hasStore?: boolean;
   storeRequestStatus?: string;
+
+  /** سیستم سطح کاربری — بر اساس امتیاز کل از ۵ معیار */
+  level?: UserLevel;
+  overrideLevel?: UserLevel | null;
+  levelScore?: number;
+  profileCompletenessScore?: number;
+  collaborationScore?: number;
+  activityScore?: number;
+  challengeProgressScore?: number;
+  growthPathScore?: number;
+  lastLevelRecalculationAt?: string;
 }
 
 export interface AuthResponse {

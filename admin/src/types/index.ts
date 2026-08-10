@@ -118,6 +118,135 @@ export const PERMISSION_GROUPS: {
   },
 ];
 
+export type UserLevel =
+  | 'tier_1_beginner'
+  | 'tier_2_active'
+  | 'tier_3_committed'
+  | 'tier_4_mentor'
+  | 'tier_5_veteran';
+
+export interface UserLevelMeta {
+  key: UserLevel;
+  label: string;
+  badgeLabel: string;
+  minScore: number;
+  color: string;
+  description: string;
+}
+
+export const USER_LEVEL_META: Record<UserLevel, UserLevelMeta> = {
+  tier_1_beginner: {
+    key: 'tier_1_beginner',
+    label: 'مبتدی',
+    badgeLabel: 'کمیاب',
+    minScore: 0,
+    color: '#94a3b8',
+    description: 'کاربر تازه‌وارد؛ در حال تکمیل پروفایل و آشنایی با پلتفرم',
+  },
+  tier_2_active: {
+    key: 'tier_2_active',
+    label: 'فعال',
+    badgeLabel: 'نقره‌ای',
+    minScore: 100,
+    color: '#0ea5e9',
+    description: 'کاربر فعال؛ پروفایل کامل و شروع فعالیت در اکشن کلاب',
+  },
+  tier_3_committed: {
+    key: 'tier_3_committed',
+    label: 'متعهد',
+    badgeLabel: 'طلایی',
+    minScore: 500,
+    color: '#f59e0b',
+    description: 'کاربر متعهد؛ شرکت در چالش‌ها و تکمیل گام‌های مسیر رشد',
+  },
+  tier_4_mentor: {
+    key: 'tier_4_mentor',
+    label: 'رهنما',
+    badgeLabel: 'الماس',
+    minScore: 2000,
+    color: '#8b5cf6',
+    description: 'کاربر رهنما؛ تولید محتوا، همکاری مستمر و راهنمایی سایر کاربران',
+  },
+  tier_5_veteran: {
+    key: 'tier_5_veteran',
+    label: 'پیشکسوت',
+    badgeLabel: 'پلاتینیوم',
+    minScore: 10000,
+    color: '#ef4444',
+    description: 'پیشکسوت اکشن لایف؛ دسترسی ویژه و حضور در هسته جامعه',
+  },
+};
+
+export const USER_LEVEL_ORDER: UserLevel[] = [
+  'tier_1_beginner',
+  'tier_2_active',
+  'tier_3_committed',
+  'tier_4_mentor',
+  'tier_5_veteran',
+];
+
+export const USER_LEVELS: { value: UserLevel; label: string }[] = USER_LEVEL_ORDER.map((lvl) => ({
+  value: lvl,
+  label: USER_LEVEL_META[lvl].label,
+}));
+
+/** دسترسی‌های محتوایی قابل تنظیم بر اساس سطح کاربری:
+ *  مثلاً یک مقاله/محصول فقط برای کاربران بالای سطح متعهد قابل مشاهده باشد
+ */
+export type LevelGatedFeature =
+  | 'action_club_access'
+  | 'exclusive_articles'
+  | 'workshops_events'
+  | 'growth_path_premium'
+  | 'mentorship_sessions'
+  | 'core_community';
+
+export const LEVEL_REQUIREMENTS: Record<LevelGatedFeature, UserLevel> = {
+  action_club_access: 'tier_2_active',
+  exclusive_articles: 'tier_3_committed',
+  workshops_events: 'tier_3_committed',
+  growth_path_premium: 'tier_3_committed',
+  mentorship_sessions: 'tier_4_mentor',
+  core_community: 'tier_5_veteran',
+};
+
+export const LEVEL_GATED_FEATURES: {
+  key: LevelGatedFeature;
+  label: string;
+  description: string;
+}[] = [
+  {
+    key: 'action_club_access',
+    label: 'ورود به اکشن کلاب',
+    description: 'ورود به جامعه کاربران و چالش‌های هفتگی',
+  },
+  {
+    key: 'exclusive_articles',
+    label: 'دسترسی به مقالات اختصاصی',
+    description: 'مشاهده محتوای ویژه که برای عموم منتشر نمی‌شود',
+  },
+  {
+    key: 'workshops_events',
+    label: 'شرکت در ورک‌شاپ‌ها و رویدادها',
+    description: 'ثبت‌نام رایگان یا تخفیف‌دار در دوره‌ها و رویدادها',
+  },
+  {
+    key: 'growth_path_premium',
+    label: 'گام‌های پیشرفته مسیر رشد',
+    description: 'دسترسی به سطح‌های بالای مسیر رشد و جوایز مخصوص',
+  },
+  {
+    key: 'mentorship_sessions',
+    label: 'جلسه منتورشیپ با رهنماها',
+    description: 'درخواست جلسه ۱ به ۱ با پیشکسوتان و راهنمایان',
+  },
+  {
+    key: 'core_community',
+    label: 'عضویت در هسته جامعه',
+    description: 'دسترسی به کانال‌ها و تصمیم‌گیری‌های هسته اکشن لایف',
+  },
+];
+
 export interface User {
   _id: string;
   fullName: string;
@@ -148,6 +277,18 @@ export interface User {
   hasStore: boolean;
   storeRequestStatus?: string;
   isActive: boolean;
+
+  /** سیستم سطح کاربری — فقط برای کاربران غیر ادمین */
+  level: UserLevel;
+  overrideLevel?: UserLevel | null;
+  levelScore: number;
+  profileCompletenessScore: number;
+  collaborationScore: number;
+  activityScore: number;
+  challengeProgressScore: number;
+  growthPathScore: number;
+  lastLevelRecalculationAt?: string;
+
   createdAt: string;
   updatedAt: string;
 }
@@ -300,6 +441,8 @@ export interface Article {
   metaTitle?: string;
   metaDescription?: string;
   isFeatured: boolean;
+  /** حداقل سطح کاربری موردنیاز برای دسترسی؛ null یعنی همگان قابل دسترس */
+  minRequiredLevel?: UserLevel | null;
   createdAt: string;
   updatedAt: string;
 }

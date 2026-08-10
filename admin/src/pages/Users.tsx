@@ -1,8 +1,15 @@
 import { useEffect, useState, useMemo } from 'react';
 import api from '../lib/api';
 import { useAuth } from '../lib/auth-context';
-import type { User, UserPermission } from '../types';
-import { PERMISSION_GROUPS } from '../types';
+import type { User, UserPermission, UserLevel as UserLevelT } from '../types';
+import {
+  PERMISSION_GROUPS,
+  USER_LEVEL_META,
+  USER_LEVEL_ORDER,
+  USER_LEVELS,
+  LEVEL_GATED_FEATURES,
+  LEVEL_REQUIREMENTS,
+} from '../types';
 
 const USER_ROLES = [
   { value: 'user', label: 'کاربر عادی' },
@@ -40,6 +47,11 @@ interface UserFormData {
   hasStore: boolean;
   points: number;
   permissions: UserPermission[];
+  overrideLevel: UserLevelT | '';
+  collaborationScore: number;
+  activityScore: number;
+  challengeProgressScore: number;
+  growthPathScore: number;
 }
 
 const initialFormData: UserFormData = {
@@ -69,6 +81,11 @@ const initialFormData: UserFormData = {
   hasStore: false,
   points: 0,
   permissions: [],
+  overrideLevel: '',
+  collaborationScore: 0,
+  activityScore: 0,
+  challengeProgressScore: 0,
+  growthPathScore: 0,
 };
 
 function Field({
@@ -100,6 +117,456 @@ const InfoRow = ({ label, value }: { label: string; value?: string | null | numb
     <span className="text-gray-700 text-sm">{value || '—'}</span>
   </div>
 );
+
+function UserLevelBadge({
+  level,
+  showLabel = true,
+  size = 'sm',
+}: {
+  level: UserLevelT;
+  showLabel?: boolean;
+  size?: 'sm' | 'md';
+}) {
+  const meta = USER_LEVEL_META[level];
+  if (!meta) return null;
+  const fontSize = size === 'sm' ? 'text-[10px]' : 'text-xs';
+  const padding = size === 'sm' ? 'px-2 py-0.5' : 'px-3 py-1';
+  return (
+    <span
+      className={`inline-flex items-center gap-1 rounded-full font-bold ${fontSize} ${padding}`}
+      style={{ backgroundColor: `${meta.color}15`, color: meta.color, border: `1px solid ${meta.color}40` }}
+    >
+      <span
+        className="rounded-full"
+        style={{
+          width: size === 'sm' ? 5 : 7,
+          height: size === 'sm' ? 5 : 7,
+          backgroundColor: meta.color,
+        }}
+      />
+      {showLabel && meta.label}
+    </span>
+  );
+}
+
+function userLevelFromScores(props: {
+  profileCompletenessScore?: number;
+  activityScore?: number;
+  collaborationScore?: number;
+  challengeProgressScore?: number;
+  growthPathScore?: number;
+  overrideLevel?: UserLevelT | null;
+}): { level: UserLevelT; total: number } {
+  const profile = props.profileCompletenessScore || 0;
+  const activity = props.activityScore || 0;
+  const collaboration = props.collaborationScore || 0;
+  const challenge = props.challengeProgressScore || 0;
+  const growth = props.growthPathScore || 0;
+  const total = profile + activity + collaboration + challenge + growth;
+  if (props.overrideLevel) {
+    return { level: props.overrideLevel, total };
+  }
+  const sorted = USER_LEVEL_ORDER.slice().sort(
+    (a, b) => USER_LEVEL_META[b].minScore - USER_LEVEL_META[a].minScore,
+  );
+  return {
+    level: sorted.find((lvl) => total >= USER_LEVEL_META[lvl].minScore) || 'tier_1_beginner',
+    total,
+  };
+}
+
+/* -------------------- بخش فرم سطح کاربری (Level System) -------------------- */
+
+type ScoreKey =
+  | 'collaborationScore'
+  | 'activityScore'
+  | 'challengeProgressScore'
+  | 'growthPathScore';
+
+function ScoreField({
+  label,
+  value,
+  scoreKey,
+  max,
+  hint,
+  color,
+  hasAuto,
+  autoValue,
+  onChange,
+}: {
+  label: string;
+  value: number;
+  scoreKey: ScoreKey;
+  max: number;
+  hint: string;
+  color: string;
+  hasAuto?: boolean;
+  autoValue?: number;
+  onChange: <K extends keyof UserFormData>(key: K, value: UserFormData[K]) => void;
+}) {
+  return (
+    <div className="border border-gray-200 rounded-xl p-4 bg-white">
+      <div className="flex items-center justify-between mb-2">
+        <p className="text-sm font-bold text-gray-800">{label}</p>
+        <div className="flex items-center gap-2">
+          <div className="relative w-16">
+            <input
+              type="number"
+              min={0}
+              max={max}
+              value={value}
+              onChange={(e) => onChange(scoreKey, Number(e.target.value))}
+              dir="ltr"
+              className={`${inputClass} !py-1.5 !px-2 !text-xs text-center font-bold`}
+              style={{ color }}
+            />
+          </div>
+          <span className="text-xs text-gray-400">/ {max.toLocaleString('fa-IR')}</span>
+        </div>
+      </div>
+      <div className="w-full bg-gray-200 rounded-full h-1.5 mb-2 overflow-hidden">
+        <div
+          className="h-full rounded-full transition-all"
+          style={{
+            width: `${Math.min(100, (value / max) * 100)}%`,
+            backgroundColor: color,
+          }}
+        />
+      </div>
+      {hasAuto && autoValue !== undefined && (
+        <div className="flex items-center justify-between">
+          <span className="text-[10px] text-gray-400">{hint}</span>
+          <span className="text-[10px] text-gray-500 flex items-center gap-1">
+            <span className="inline-block w-1.5 h-1.5 rounded-full bg-blue-400" />
+            خودکار: {autoValue}
+          </span>
+        </div>
+      )}
+      {!hasAuto && <p className="text-[10px] text-gray-400">{hint}</p>}
+    </div>
+  );
+}
+
+function UserLevelFormSection({
+  formData,
+  onChange,
+}: {
+  formData: UserFormData;
+  onChange: <K extends keyof UserFormData>(key: K, value: UserFormData[K]) => void;
+}) {
+  const profileEstimate = useMemo(() => {
+    let score = 0;
+    if (formData.fullName && formData.fullName.trim().length > 2) score += 10;
+    if (formData.mobile || formData.email) score += 10;
+    if (formData.username && formData.username.trim().length > 2) score += 10;
+    if (formData.bio && formData.bio.trim().length > 20) score += 10;
+    if (formData.birthDate || formData.gender) score += 10;
+    if (formData.education || formData.fieldOfStudy || formData.expertise) score += 10;
+    if (formData.city || formData.country) score += 10;
+    if (formData.website || formData.instagram || formData.linkedin || formData.twitter)
+      score += 10;
+    const interestCount = formData.interests
+      ? formData.interests.split(',').filter((s) => s.trim()).length
+      : 0;
+    if (interestCount >= 2) score += 10;
+    return Math.min(100, score);
+  }, [
+    formData.fullName,
+    formData.mobile,
+    formData.email,
+    formData.username,
+    formData.bio,
+    formData.birthDate,
+    formData.gender,
+    formData.education,
+    formData.fieldOfStudy,
+    formData.expertise,
+    formData.city,
+    formData.country,
+    formData.website,
+    formData.instagram,
+    formData.linkedin,
+    formData.twitter,
+    formData.interests,
+  ]);
+
+  const calc = useMemo(
+    () =>
+      userLevelFromScores({
+        profileCompletenessScore: profileEstimate,
+        activityScore: formData.activityScore,
+        collaborationScore: formData.collaborationScore,
+        challengeProgressScore: formData.challengeProgressScore,
+        growthPathScore: formData.growthPathScore,
+        overrideLevel: formData.overrideLevel || null,
+      }),
+    [
+      profileEstimate,
+      formData.activityScore,
+      formData.collaborationScore,
+      formData.challengeProgressScore,
+      formData.growthPathScore,
+      formData.overrideLevel,
+    ],
+  );
+
+  const currentLevelIdx = USER_LEVEL_ORDER.indexOf(calc.level);
+  const nextLevel = USER_LEVEL_ORDER[currentLevelIdx + 1];
+  const nextMeta = nextLevel ? USER_LEVEL_META[nextLevel] : null;
+  const progressToNext = nextMeta
+    ? Math.min(
+        100,
+        Math.max(
+          0,
+          ((calc.total - USER_LEVEL_META[calc.level].minScore) /
+            (nextMeta.minScore - USER_LEVEL_META[calc.level].minScore)) *
+            100,
+        ),
+      )
+    : 100;
+
+  const unlockedFeatures = LEVEL_GATED_FEATURES.filter((f) => {
+    const req = LEVEL_REQUIREMENTS[f.key];
+    return USER_LEVEL_ORDER.indexOf(calc.level) >= USER_LEVEL_ORDER.indexOf(req);
+  });
+
+  return (
+    <section>
+      <h3 className="text-sm font-bold text-gray-800 mb-4 flex items-center gap-2">
+        <svg className="w-4 h-4 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+        </svg>
+        سطح کاربری (Level System)
+      </h3>
+
+      <div
+        className="rounded-2xl p-5 mb-5 bg-gradient-to-l from-gray-50 to-white border border-gray-200"
+        style={{
+          borderRight: `4px solid ${USER_LEVEL_META[calc.level].color}`,
+        }}
+      >
+        <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
+          <div className="flex items-center gap-4">
+            <UserLevelBadge level={calc.level} size="md" showLabel={false} />
+            <div>
+              <div className="flex items-center gap-2 mb-1 flex-wrap">
+                <h4 className="font-bold text-gray-800">
+                  {USER_LEVEL_META[calc.level].label}
+                </h4>
+                <span
+                  className="text-[11px] font-bold px-2 py-0.5 rounded-full"
+                  style={{
+                    backgroundColor: `${USER_LEVEL_META[calc.level].color}15`,
+                    color: USER_LEVEL_META[calc.level].color,
+                  }}
+                >
+                  {USER_LEVEL_META[calc.level].badgeLabel}
+                </span>
+                {formData.overrideLevel && (
+                  <span className="text-[10px] text-amber-600 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-full">
+                    تنظیم دستی ادمین
+                  </span>
+                )}
+              </div>
+              <p className="text-xs text-gray-500">
+                {USER_LEVEL_META[calc.level].description}
+              </p>
+            </div>
+          </div>
+
+          <div className="text-left min-w-[180px]">
+            <div className="flex items-baseline justify-end gap-1 mb-1">
+              <span className="text-2xl font-extrabold text-gray-800" dir="ltr">
+                {calc.total.toLocaleString('fa-IR')}
+              </span>
+              <span className="text-xs text-gray-400">امتیاز کل</span>
+            </div>
+            {nextMeta ? (
+              <div>
+                <div className="w-full bg-gray-200 rounded-full h-1.5 overflow-hidden mb-1">
+                  <div
+                    className="h-full rounded-full transition-all"
+                    style={{
+                      width: `${progressToNext}%`,
+                      background: `linear-gradient(to left, ${USER_LEVEL_META[calc.level].color}, ${nextMeta.color})`,
+                    }}
+                  />
+                </div>
+                <p className="text-[10px] text-gray-500 text-left">
+                  تا سطح «{nextMeta.label}»:
+                  <span className="font-bold mr-1" dir="ltr">
+                    {(nextMeta.minScore - calc.total).toLocaleString('fa-IR')}
+                  </span>
+                  امتیاز مانده
+                </p>
+              </div>
+            ) : (
+              <p className="text-[11px] text-green-600 font-bold">
+                ✦ بالاترین سطح ممکن (پیشکسوت)
+              </p>
+            )}
+          </div>
+        </div>
+
+        <div className="pt-3 border-t border-gray-200">
+          <label className="block text-xs font-bold text-gray-600 mb-2">
+            سطوح کاربری پیشرفته
+          </label>
+          <div className="flex items-center gap-1.5 overflow-x-auto pb-1">
+            {USER_LEVEL_ORDER.map((lvl) => {
+              const meta = USER_LEVEL_META[lvl];
+              const active = lvl === calc.level;
+              const passed = USER_LEVEL_ORDER.indexOf(lvl) < currentLevelIdx;
+              return (
+                <div
+                  key={lvl}
+                  className={`flex-1 min-w-[90px] rounded-lg p-2 text-center transition-all border ${
+                    active
+                      ? 'ring-2 shadow-md scale-[1.02]'
+                      : passed
+                        ? 'bg-green-50 border-green-200'
+                        : 'bg-gray-50 border-gray-100 opacity-70'
+                  }`}
+                  style={
+                    active
+                      ? {
+                          borderColor: meta.color,
+                          backgroundColor: `${meta.color}10`,
+                          boxShadow: `0 4px 12px ${meta.color}22`,
+                          ringColor: meta.color,
+                        } as any
+                      : undefined
+                  }
+                >
+                  <div
+                    className="w-3 h-3 rounded-full mx-auto mb-1"
+                    style={{
+                      backgroundColor: passed || active ? meta.color : '#cbd5e1',
+                    }}
+                  />
+                  <p className="text-[11px] font-bold" style={{ color: active || passed ? meta.color : '#94a3b8' }}>
+                    {meta.label}
+                  </p>
+                  <p className="text-[9px] text-gray-400" dir="ltr">
+                    {meta.minScore}+
+                  </p>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+        <ScoreField
+          label="۱) تکمیل اطلاعات پروفایل"
+          value={profileEstimate}
+          scoreKey="activityScore"
+          max={100}
+          color="#0ea5e9"
+          hint="تولید خودکار بر اساس فیلدهای پروفایل (غیر قابل تغییر)"
+          hasAuto
+          autoValue={profileEstimate}
+          onChange={onChange}
+        />
+        <ScoreField
+          label="۲) میزان فعالیت"
+          value={formData.activityScore}
+          scoreKey="activityScore"
+          max={5000}
+          color="#22c55e"
+          hint="ورود روزانه، بازدید، تراکنش، خرید، تعاملات"
+          onChange={onChange}
+        />
+        <ScoreField
+          label="۳) میزان همکاری"
+          value={formData.collaborationScore}
+          scoreKey="collaborationScore"
+          max={3000}
+          color="#f97316"
+          hint="ساخت محتوا، فروش فروشگاه، کمک به کاربران دیگر"
+          onChange={onChange}
+        />
+        <ScoreField
+          label="۴) پیشرفت در چالش‌ها"
+          value={formData.challengeProgressScore}
+          scoreKey="challengeProgressScore"
+          max={3000}
+          color="#ec4899"
+          hint="شرکت در چالش‌ها، اتمام موفق و کسب رتبه برتر"
+          onChange={onChange}
+        />
+        <ScoreField
+          label="۵) مسیر رشد"
+          value={formData.growthPathScore}
+          scoreKey="growthPathScore"
+          max={5000}
+          color="#8b5cf6"
+          hint="گذراندن گام‌ها، دوره‌ها و کسب مدارک"
+          onChange={onChange}
+        />
+        <div className="border border-gray-200 rounded-xl p-4 bg-white">
+          <p className="text-sm font-bold text-gray-800 mb-3">تغییر دستی سطح</p>
+          <select
+            className={inputClass}
+            value={formData.overrideLevel}
+            onChange={(e) => onChange('overrideLevel', (e.target.value || '') as any)}
+          >
+            <option value="">⚖️ محاسبه خودکار (پیش‌فرض)</option>
+            {USER_LEVELS.map((lvl) => (
+              <option key={lvl.value} value={lvl.value}>
+                {lvl.label} — {USER_LEVEL_META[lvl.value].badgeLabel}
+              </option>
+            ))}
+          </select>
+          <p className="text-[10px] text-gray-400 mt-2 leading-5">
+            در صورت انتخاب، سطح کاربر نادیده گرفته می‌شود و در جایزه‌ها و رویدادهای خاص
+            (مثل جشنواره یا قدردانی ویژه) استفاده شود.
+          </p>
+        </div>
+      </div>
+
+      <div>
+        <label className="block text-xs font-bold text-gray-600 mb-3">
+          امکانات فعال برای این سطح کاربری:
+        </label>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+          {LEVEL_GATED_FEATURES.map((feature) => {
+            const req = LEVEL_REQUIREMENTS[feature.key];
+            const unlocked = unlockedFeatures.some((f) => f.key === feature.key);
+            const reqMeta = USER_LEVEL_META[req];
+            return (
+              <div
+                key={feature.key}
+                className={`flex items-center gap-3 px-3 py-2 rounded-lg border transition-all ${
+                  unlocked
+                    ? 'bg-green-50 border-green-200'
+                    : 'bg-gray-50 border-gray-200 opacity-60'
+                }`}
+              >
+                <span
+                  className={`w-6 h-6 shrink-0 rounded-full flex items-center justify-center text-xs font-bold ${
+                    unlocked ? 'bg-green-500 text-white' : 'bg-gray-300 text-white'
+                  }`}
+                >
+                  {unlocked ? '✓' : '🔒'}
+                </span>
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs font-bold text-gray-700 truncate">
+                    {feature.label}
+                  </p>
+                  <p className="text-[10px] text-gray-500 truncate">
+                    نیازمند سطح «{reqMeta.label}» — {feature.description}
+                  </p>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </section>
+  );
+}
 
 function PermissionPicker({
   value,
@@ -244,6 +711,11 @@ function UserFormModal({
         hasStore: user.hasStore,
         points: user.points,
         permissions: (user.permissions as UserPermission[]) || [],
+        overrideLevel: user.overrideLevel || '',
+        collaborationScore: user.collaborationScore || 0,
+        activityScore: user.activityScore || 0,
+        challengeProgressScore: user.challengeProgressScore || 0,
+        growthPathScore: user.growthPathScore || 0,
       };
     }
     return initialFormData;
@@ -296,7 +768,14 @@ function UserFormModal({
         isActive: formData.isActive,
         hasStore: formData.hasStore,
         points: formData.points,
-        permissions: formData.permissions,
+        permissions: formData.role === 'admin' ? formData.permissions : undefined,
+        overrideLevel: formData.role !== 'admin'
+          ? (formData.overrideLevel || null)
+          : undefined,
+        collaborationScore: formData.role !== 'admin' ? formData.collaborationScore : undefined,
+        activityScore: formData.role !== 'admin' ? formData.activityScore : undefined,
+        challengeProgressScore: formData.role !== 'admin' ? formData.challengeProgressScore : undefined,
+        growthPathScore: formData.role !== 'admin' ? formData.growthPathScore : undefined,
       };
 
       if (mode === 'create') {
@@ -479,6 +958,13 @@ function UserFormModal({
                   role={formData.role}
                 />
               </section>
+            )}
+
+            {formData.role !== 'admin' && (
+              <UserLevelFormSection
+                formData={formData}
+                onChange={updateField}
+              />
             )}
 
             <section>
@@ -749,9 +1235,21 @@ function UserDetailModal({
                 >
                   {USER_ROLES.find((r) => r.value === user.role)?.label || user.role}
                 </span>
-                <span className="text-xs text-gray-500">
-                  {userPerms.length} از {allPermsCount} دسترسی
-                </span>
+                {user.role !== 'admin' && (
+                  <>
+                    <UserLevelBadge level={user.level as UserLevelT} />
+                    {user.overrideLevel && (
+                      <span className="text-[10px] text-amber-600 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-full">
+                        سطح دستی ادمین
+                      </span>
+                    )}
+                  </>
+                )}
+                {user.role === 'admin' && (
+                  <span className="text-xs text-gray-500">
+                    {userPerms.length} از {allPermsCount} دسترسی
+                  </span>
+                )}
               </div>
             </div>
           </div>
@@ -781,6 +1279,112 @@ function UserDetailModal({
               <InfoRow label="تاریخ عضویت" value={new Date(user.createdAt).toLocaleDateString('fa-IR')} />
             </div>
           </div>
+
+          {user.role !== 'admin' && (
+            <div>
+              <h4 className="text-sm font-bold text-gray-800 mb-3 flex items-center gap-2">
+                <svg className="w-4 h-4 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                </svg>
+                سطح کاربری
+                <span className="font-normal text-xs text-gray-400 mr-2" dir="ltr">
+                  (امتیاز کل: {(user.levelScore || 0).toLocaleString('fa-IR')})
+                </span>
+              </h4>
+              <div
+                className="rounded-xl p-4 bg-gradient-to-l from-gray-50 to-white border border-gray-200 mb-3"
+                style={{
+                  borderRight: `4px solid ${USER_LEVEL_META[user.level as UserLevelT]?.color || '#94a3b8'}`,
+                }}
+              >
+                <div className="flex items-center justify-between mb-2 flex-wrap gap-2">
+                  <div className="flex items-center gap-3">
+                    <UserLevelBadge level={user.level as UserLevelT} size="md" />
+                    <div>
+                      <p className="text-sm font-bold text-gray-800">
+                        {USER_LEVEL_META[user.level as UserLevelT]?.label}
+                        <span
+                          className="mr-2 text-[10px] font-bold px-2 py-0.5 rounded-full"
+                          style={{
+                            backgroundColor: `${USER_LEVEL_META[user.level as UserLevelT]?.color}15`,
+                            color: USER_LEVEL_META[user.level as UserLevelT]?.color,
+                          }}
+                        >
+                          {USER_LEVEL_META[user.level as UserLevelT]?.badgeLabel}
+                        </span>
+                      </p>
+                      <p className="text-xs text-gray-500">
+                        {USER_LEVEL_META[user.level as UserLevelT]?.description}
+                      </p>
+                    </div>
+                  </div>
+                  {user.overrideLevel && (
+                    <span className="text-[10px] text-amber-600 bg-amber-50 border border-amber-200 px-2 py-1 rounded-full">
+                      ⚠️ تنظیم دستی ادمین
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-3">
+                {[
+                  { label: 'کامل بودن اطلاعات', value: user.profileCompletenessScore, max: 100, color: '#0ea5e9' },
+                  { label: 'میزان فعالیت', value: user.activityScore, max: 5000, color: '#22c55e' },
+                  { label: 'همکاری در پلتفرم', value: user.collaborationScore, max: 3000, color: '#f97316' },
+                  { label: 'پیشرفت چالش‌ها', value: user.challengeProgressScore, max: 3000, color: '#ec4899' },
+                  { label: 'مسیر رشد', value: user.growthPathScore, max: 5000, color: '#8b5cf6' },
+                ].map((item) => (
+                  <div key={item.label} className="bg-gray-50 rounded-lg p-2.5">
+                    <div className="flex items-center justify-between mb-1.5">
+                      <p className="text-[11px] font-bold text-gray-700">{item.label}</p>
+                      <span className="text-[11px] font-bold" dir="ltr" style={{ color: item.color }}>
+                        {(item.value || 0).toLocaleString('fa-IR')}
+                        <span className="text-gray-400 font-normal">
+                          /{item.max.toLocaleString('fa-IR')}
+                        </span>
+                      </span>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-1 overflow-hidden">
+                      <div
+                        className="h-full rounded-full"
+                        style={{
+                          width: `${Math.min(100, ((item.value || 0) / item.max) * 100)}%`,
+                          backgroundColor: item.color,
+                        }}
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div>
+                <p className="text-xs font-bold text-gray-600 mb-2">امکانات فعال برای کاربر:</p>
+                <div className="flex flex-wrap gap-1.5">
+                  {LEVEL_GATED_FEATURES.map((feature) => {
+                    const req = LEVEL_REQUIREMENTS[feature.key];
+                    const unlocked =
+                      USER_LEVEL_ORDER.indexOf(user.level as UserLevelT) >=
+                      USER_LEVEL_ORDER.indexOf(req);
+                    return (
+                      <div
+                        key={feature.key}
+                        className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] border ${
+                          unlocked
+                            ? 'bg-green-50 text-green-700 border-green-200'
+                            : 'bg-gray-50 text-gray-400 border-gray-100'
+                        }`}
+                      >
+                        <span className="w-3.5 h-3.5 rounded-full flex items-center justify-center text-[9px] font-bold shrink-0 bg-white/60 border">
+                          {unlocked ? '✓' : '🔒'}
+                        </span>
+                        <span>{feature.label}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          )}
 
           {(user.role === 'admin' || userPerms.length > 0) && (
             <div>
@@ -1023,6 +1627,7 @@ export default function Users() {
                   <th className="text-right px-5 py-3 font-medium">ایمیل</th>
                   <th className="text-right px-5 py-3 font-medium">موبایل</th>
                   <th className="text-right px-5 py-3 font-medium">نقش</th>
+                  <th className="text-right px-5 py-3 font-medium">سطح کاربری</th>
                   <th className="text-right px-5 py-3 font-medium">سطح دسترسی</th>
                   <th className="text-right px-5 py-3 font-medium">امتیاز</th>
                   <th className="text-right px-5 py-3 font-medium">وضعیت</th>
@@ -1058,6 +1663,26 @@ export default function Users() {
                         <span className={`px-2 py-1 rounded-full text-xs font-medium ${roleColors[user.role] || roleColors.user}`}>
                           {USER_ROLES.find((r) => r.value === user.role)?.label || user.role}
                         </span>
+                      </td>
+                      <td className="px-5 py-4">
+                        {user.role !== 'admin' ? (
+                          <div className="flex items-center gap-3">
+                            <UserLevelBadge level={user.level as UserLevelT} />
+                            <div className="min-w-[90px]">
+                              <div className="flex items-baseline gap-1 text-gray-600 text-xs" dir="ltr">
+                                <span className="font-bold">{(user.levelScore || 0).toLocaleString('fa-IR')}</span>
+                              </div>
+                              {user.overrideLevel && (
+                                <span className="text-[10px] text-amber-600 flex items-center gap-1">
+                                  <span className="w-1.5 h-1.5 rounded-full bg-amber-500 inline-block" />
+                                  دستی
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        ) : (
+                          <span className="text-[11px] text-gray-400">—</span>
+                        )}
                       </td>
                       <td className="px-5 py-4">
                         {user.role === 'admin' ? (

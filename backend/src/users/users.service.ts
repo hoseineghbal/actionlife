@@ -2,7 +2,7 @@ import { Injectable, ConflictException, NotFoundException, BadRequestException }
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import * as bcrypt from 'bcrypt';
-import { User, UserDocument } from './schemas/user.schema';
+import { User, UserDocument, recalculateUserLevel } from './schemas/user.schema';
 import { CreateUserDto, UpdateUserDto } from './dto/create-user.dto';
 
 @Injectable()
@@ -27,10 +27,15 @@ export class UsersService {
       }
     }
     const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
-    const user = new this.userModel({
+    const payload: Partial<User> = {
       ...createUserDto,
       countryCode: createUserDto.countryCode || '+98',
       password: hashedPassword,
+    };
+    const levelCalc = recalculateUserLevel(payload);
+    const user = new this.userModel({
+      ...payload,
+      ...levelCalc,
     });
     const saved = await user.save();
     const result = saved.toObject();
@@ -47,10 +52,9 @@ export class UsersService {
   }
 
   private parseMobile(raw: string): { countryCode: string; number: string } | null {
-    // Match formats like +989121111111, 00989121111111, 989121111111
     const match = raw.trim().match(/^(?:\+|00)?(98\d{9})$/);
     if (match) {
-      return { countryCode: '+98', number: match[1] }; // match[1] = 989121111111
+      return { countryCode: '+98', number: match[1] };
     }
     return null;
   }
@@ -68,11 +72,9 @@ export class UsersService {
   }
 
   async findByIdentifier(identifier: string): Promise<UserDocument | null> {
-    // First try by username
     const byUsername = await this.userModel.findOne({ username: identifier }).select('-password');
     if (byUsername) return byUsername;
 
-    // Try by MongoDB ObjectId
     if (identifier.match(/^[0-9a-fA-F]{24}$/)) {
       return this.userModel.findById(identifier).select('-password');
     }
@@ -126,7 +128,15 @@ export class UsersService {
       updateUserDto.password = await bcrypt.hash(updateUserDto.password, 10);
     }
 
-    return this.userModel.findByIdAndUpdate(id, updateUserDto, { returnDocument: 'after' }).select('-password');
+    const merged: Partial<User> = {
+      ...(user.toObject() as Record<string, any>),
+      ...(updateUserDto as Record<string, any>),
+    } as Partial<User>;
+
+    const levelCalc = recalculateUserLevel(merged);
+    await this.userModel.findByIdAndUpdate(id, { ...updateUserDto, ...levelCalc });
+
+    return this.userModel.findById(id).select('-password');
   }
 
   async requestStore(userId: string) {
@@ -155,5 +165,27 @@ export class UsersService {
 
     await user.save();
     return user;
+  }
+
+  /**
+   *   Endpoint برای اعمال محاسبه خودکار سطح روی تمام کاربران (برای مهاجرت دیتابیس قدیمی)
+   */
+  async recalculateAllLevels(): Promise<{ updated: number }> {
+    const users = await this.userModel.find().lean();
+    let updated = 0;
+    for (const u of users) {
+      const calc = recalculateUserLevel(u as Partial<User>);
+      await this.userModel.updateOne(
+        { _id: u._id },
+        {
+          profileCompletenessScore: calc.profileCompletenessScore,
+          levelScore: calc.levelScore,
+          level: calc.level,
+          lastLevelRecalculationAt: calc.lastLevelRecalculationAt,
+        },
+      );
+      updated++;
+    }
+    return { updated };
   }
 }

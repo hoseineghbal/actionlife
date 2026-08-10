@@ -10,6 +10,7 @@ import {
 import { Type } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { ArticleStatus } from '../schemas/article.schema';
+import { UserLevel } from '../../users/schemas/user.schema';
 
 export class GalleryImageDto {
   @ApiProperty()
@@ -166,6 +167,14 @@ export class CreateArticleDto {
   @IsOptional()
   @IsBoolean()
   isFeatured?: boolean;
+
+  @ApiPropertyOptional({
+    description: 'حداقل سطح کاربری موردنیاز برای دسترسی به این مقاله (null = عمومی)',
+    enum: UserLevel,
+  })
+  @IsOptional()
+  @IsEnum(UserLevel)
+  minRequiredLevel?: UserLevel | null;
 }
 
 export class UpdateArticleDto extends CreateArticleDto {}

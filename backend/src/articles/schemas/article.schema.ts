@@ -1,5 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Types } from 'mongoose';
+import { UserLevel } from '../../users/schemas/user.schema';
 
 export type ArticleDocument = HydratedDocument<Article>;
 
@@ -125,6 +126,10 @@ export class Article {
 
   @Prop({ default: false })
   isFeatured: boolean;
+
+  /** حداقل سطح کاربری موردنیاز برای دسترسی به این محتوا (null = همه می‌توانند ببینند) */
+  @Prop({ type: String, enum: UserLevel, default: null })
+  minRequiredLevel: UserLevel | null;
 }
 
 export const ArticleSchema = SchemaFactory.createForClass(Article);
