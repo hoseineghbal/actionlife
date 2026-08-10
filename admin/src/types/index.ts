@@ -5,7 +5,9 @@ export interface User {
   countryCode?: string;
   email?: string;
   role: string;
+  username?: string;
   avatar?: string;
+  headerImage?: string;
   bio?: string;
   birthDate?: string;
   gender?: string;
@@ -19,6 +21,8 @@ export interface User {
   instagram?: string;
   linkedin?: string;
   twitter?: string;
+  cardNumber?: string;
+  shebaNumber?: string;
   points: number;
   hasStore: boolean;
   storeRequestStatus?: string;

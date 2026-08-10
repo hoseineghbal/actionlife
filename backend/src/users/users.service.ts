@@ -14,13 +14,28 @@ export class UsersService {
     if (existing) {
       throw new ConflictException('این شماره موبایل قبلاً ثبت شده است');
     }
+    if (createUserDto.email) {
+      const existingEmail = await this.userModel.findOne({ email: createUserDto.email });
+      if (existingEmail) {
+        throw new ConflictException('این ایمیل قبلاً ثبت شده است');
+      }
+    }
+    if (createUserDto.username) {
+      const existingUsername = await this.userModel.findOne({ username: createUserDto.username });
+      if (existingUsername) {
+        throw new ConflictException('این نام کاربری قبلاً ثبت شده است');
+      }
+    }
     const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
     const user = new this.userModel({
       ...createUserDto,
       countryCode: createUserDto.countryCode || '+98',
       password: hashedPassword,
     });
-    return user.save();
+    const saved = await user.save();
+    const result = saved.toObject();
+    delete (result as any).password;
+    return result as UserDocument;
   }
 
   async findByMobile(mobile: string): Promise<UserDocument | null> {
@@ -70,6 +85,47 @@ export class UsersService {
   }
 
   async update(id: string, updateUserDto: UpdateUserDto): Promise<UserDocument | null> {
+    const user = await this.userModel.findById(id);
+    if (!user) {
+      throw new NotFoundException('کاربر یافت نشد');
+    }
+
+    if (updateUserDto.mobile) {
+      const countryCode = updateUserDto.countryCode || user.countryCode || '+98';
+      const existing = await this.userModel.findOne({
+        mobile: updateUserDto.mobile,
+        countryCode,
+        _id: { $ne: id },
+      });
+      if (existing) {
+        throw new ConflictException('این شماره موبایل قبلاً ثبت شده است');
+      }
+    }
+
+    if (updateUserDto.email) {
+      const existing = await this.userModel.findOne({
+        email: updateUserDto.email,
+        _id: { $ne: id },
+      });
+      if (existing) {
+        throw new ConflictException('این ایمیل قبلاً ثبت شده است');
+      }
+    }
+
+    if (updateUserDto.username) {
+      const existing = await this.userModel.findOne({
+        username: updateUserDto.username,
+        _id: { $ne: id },
+      });
+      if (existing) {
+        throw new ConflictException('این نام کاربری قبلاً ثبت شده است');
+      }
+    }
+
+    if (updateUserDto.password) {
+      updateUserDto.password = await bcrypt.hash(updateUserDto.password, 10);
+    }
+
     return this.userModel.findByIdAndUpdate(id, updateUserDto, { returnDocument: 'after' }).select('-password');
   }
 
