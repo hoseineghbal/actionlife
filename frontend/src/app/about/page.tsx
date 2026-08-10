@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "درباره ما",
+  title: "درباره زندگی اکشن",
   description:
     "با تیم اکشن لایف آشنا شوید - مأموریت، اهداف و چشم‌انداز ما برای ساختن بزرگ‌ترین پلتفرم سبک زندگی اکشن",
 };
@@ -60,7 +60,7 @@ export default function AboutPage() {
         <div className="absolute inset-0 bg-gradient-to-b from-secondary/20 to-dark z-0" />
         <div className="relative z-10 max-w-4xl mx-auto px-4 py-20 text-center">
           <h1 className="text-4xl md:text-5xl font-black text-white mb-6">
-            درباره <span className="text-accent">Action Life</span>
+            درباره <span className="text-accent">زندگی اکشن</span>
           </h1>
           <p className="text-lg text-gray-custom leading-8">
             اکشن لایف پلتفرمی است برای کسانی که زندگی فعال و پرماجرا را انتخاب می‌کنند.

@@ -2,19 +2,20 @@ import type { Metadata } from "next";
 import BlogClient from "./BlogClient";
 
 export const metadata: Metadata = {
-  title: "زندگی اکشن",
+  title: "وبلاگ زندگی اکشن",
   description:
-    "آخرین مقالات و آموزش‌های سبک زندگی اکشن - طبیعت‌گردی، بقا، ورزش، گیم و سینما",
+    "مقالات، آموزش‌ها، اخبار اعضای قبیله زندگی اکشن و انجمن های تخصصی",
 };
 
 export default async function BlogPage({
   searchParams,
 }: {
-  searchParams: Promise<{ category?: string; page?: string }>;
+  searchParams: Promise<{ category?: string; page?: string; search?: string }>;
 }) {
   const params = await searchParams;
   const category = params.category;
   const page = Math.max(1, parseInt(params.page || "1") || 1);
+  const search = params.search;
 
-  return <BlogClient category={category} page={page} />;
+  return <BlogClient category={category} page={page} search={search} />;
 }

@@ -12,8 +12,8 @@ const navItems = [
   { label: "اکشن نما", href: "/action-cinema" },
   { label: "بازی اکشن", href: "/action-game" },
   { label: "سفر اکشن", href: "/action-trip" },
-  { label: "زندگی اکشن", href: "/blog" },
-  { label: "درباره ما", href: "/about" },
+  { label: "وبلاگ زندگی اکشن", href: "/blog" },
+  { label: "درباره زندگی اکشن", href: "/about" },
   { label: "تماس با ما", href: "/contact" },
 ];
 
