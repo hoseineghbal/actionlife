@@ -5,6 +5,7 @@ All notable changes to this project will be documented in this file.
 ## [0.8.0] - 2026-08-10
 
 ### Features
+- ****: implement user tier system and content access gating
 - ****: add permission-based access control system
 - **users**: add full user management functionality
 - **categories**: improve category hierarchy and order
