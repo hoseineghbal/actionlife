@@ -6,6 +6,8 @@ import { useAuth } from "@/lib/auth-context";
 import { getProfile, updateProfile, uploadFile, requestStore } from "@/lib/api";
 import type { User } from "@/types";
 
+const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001/api";
+
 const educationOptions = [
   "دیپلم",
   "کاردانی",
@@ -36,7 +38,7 @@ const interestOptions = [
   "برنامه‌نویسی",
 ];
 
-type ActiveTab = "basic" | "education" | "location" | "social" | "banking";
+type ActiveTab = "basic" | "education" | "location" | "social" | "banking" | "support";
 
 export default function ProfilePage() {
   const { user } = useAuth();
@@ -52,6 +54,13 @@ export default function ProfilePage() {
   const [usernameConfirmInput, setUsernameConfirmInput] = useState('');
   const [uploadingHeader, setUploadingHeader] = useState(false);
   const headerInputRef = useRef<HTMLInputElement>(null);
+
+  // Ticket form
+  const [ticketSubject, setTicketSubject] = useState("");
+  const [ticketMessage, setTicketMessage] = useState("");
+  const [ticketPriority, setTicketPriority] = useState("medium");
+  const [submittingTicket, setSubmittingTicket] = useState(false);
+  const [ticketMsg, setTicketMsg] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
   const [form, setForm] = useState({
     fullName: "",
@@ -208,6 +217,38 @@ export default function ProfilePage() {
     }
   };
 
+  const handleTicketSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!ticketSubject.trim() || !ticketMessage.trim()) return;
+    setSubmittingTicket(true);
+    setTicketMsg(null);
+    const token = localStorage.getItem("access_token");
+    if (!token) return;
+    try {
+      const res = await fetch(`${API_BASE}/tickets`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ subject: ticketSubject, message: ticketMessage, priority: ticketPriority }),
+      });
+      if (res.ok) {
+        setTicketMsg({ type: "success", text: "تیکت با موفقیت ارسال شد. برای مشاهده پاسخ‌ها به صفحه تیکت‌ها مراجعه کنید." });
+        setTicketSubject("");
+        setTicketMessage("");
+        setTicketPriority("medium");
+      } else {
+        const data = await res.json().catch(() => ({}));
+        setTicketMsg({ type: "error", text: data.message || "خطا در ارسال تیکت" });
+      }
+    } catch {
+      setTicketMsg({ type: "error", text: "خطا در ارتباط با سرور" });
+    } finally {
+      setSubmittingTicket(false);
+    }
+  };
+
   if (!user) return null;
 
   const tabs: { key: ActiveTab; label: string; icon: React.ReactNode }[] = [
@@ -254,6 +295,15 @@ export default function ProfilePage() {
       icon: (
         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+        </svg>
+      ),
+    },
+    {
+      key: "support",
+      label: "پشتیبانی",
+      icon: (
+        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
         </svg>
       ),
     },
@@ -685,6 +735,83 @@ export default function ProfilePage() {
                     placeholder="IR..."
                     dir="ltr"
                   />
+                </div>
+              </div>
+            )}
+
+            {/* پشتیبانی */}
+            {activeTab === "support" && (
+              <div className="bg-dark-light border border-white/10 rounded-xl p-6 space-y-5">
+                <h2 className="text-lg font-bold text-white mb-4">ارسال تیکت پشتیبانی</h2>
+                <p className="text-sm text-gray-custom">
+                  سوال یا مشکلی دارید؟ تیم پشتیبانی در اسرع وقت پاسخگوی شما خواهد بود.
+                </p>
+
+                {ticketMsg && (
+                  <div
+                    className={`px-4 py-3 rounded-lg text-sm ${
+                      ticketMsg.type === "success"
+                        ? "bg-green-500/10 text-green-400 border border-green-500/20"
+                        : "bg-red-500/10 text-red-400 border border-red-500/20"
+                    }`}
+                  >
+                    {ticketMsg.text}
+                  </div>
+                )}
+
+                <form onSubmit={handleTicketSubmit} className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm text-gray-custom mb-1.5">عنوان</label>
+                      <input
+                        type="text"
+                        value={ticketSubject}
+                        onChange={(e) => setTicketSubject(e.target.value)}
+                        className="w-full px-4 py-3 bg-dark border border-white/10 rounded-lg text-white focus:accent/50 outline-none transition"
+                        placeholder="موضوع تیکت..."
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm text-gray-custom mb-1.5">اولویت</label>
+                      <select
+                        value={ticketPriority}
+                        onChange={(e) => setTicketPriority(e.target.value)}
+                        className="w-full px-4 py-3 bg-dark border border-white/10 rounded-lg text-white focus:accent/50 outline-none transition"
+                      >
+                        <option value="low">پایین</option>
+                        <option value="medium">متوسط</option>
+                        <option value="high">بالا</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-sm text-gray-custom mb-1.5">پیام</label>
+                    <textarea
+                      value={ticketMessage}
+                      onChange={(e) => setTicketMessage(e.target.value)}
+                      rows={5}
+                      className="w-full px-4 py-3 bg-dark border border-white/10 rounded-lg text-white focus:accent/50 outline-none transition resize-none"
+                      placeholder="مشکل یا سوال خود را شرح دهید..."
+                      required
+                    />
+                  </div>
+                  <button
+                    type="submit"
+                    disabled={submittingTicket}
+                    className="px-6 py-3 gradient-primary text-white rounded-lg font-medium hover:opacity-90 transition-opacity disabled:opacity-50"
+                  >
+                    {submittingTicket ? "در حال ارسال..." : "ارسال تیکت"}
+                  </button>
+                </form>
+
+                <div className="pt-4 border-t border-white/10">
+                  <a
+                    href="/tickets"
+                    className="text-sm text-accent hover:underline transition-colors"
+                  >
+                    مشاهده تیکت‌های قبلی ←
+                  </a>
                 </div>
               </div>
             )}

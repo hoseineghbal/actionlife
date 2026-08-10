@@ -7,7 +7,7 @@ import { usePathname } from "next/navigation";
 export const usefulLinks = [
   { label: "خانه", href: "/" },
   { label: "فروشگاه", href: "/store" },
-  { label: "وبلاگ", href: "/blog" },
+  { label: "زندگی اکشن", href: "/blog" },
   { label: "اکشن نما", href: "/action-cinema" },
   { label: "اکشن گیم", href: "/action-game" },
   { label: "اکشن تریپ", href: "/action-trip" },

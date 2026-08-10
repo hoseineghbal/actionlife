@@ -11,7 +11,7 @@ type Props = {
 };
 
 const SECTION_LABELS: Record<string, { label: string; color: string }> = {
-  blog: { label: "وبلاگ", color: "gradient-primary" },
+  blog: { label: "زندگی اکشن", color: "gradient-primary" },
   "action-cinema": { label: "سینمای اکشن", color: "gradient-primary" },
   "action-game": { label: "بازی اکشن", color: "gradient-primary" },
   "action-trip": { label: "سفر اکشن", color: "gradient-primary" },
@@ -99,9 +99,9 @@ export default async function BlogPostPage({ params }: Props) {
               )}
             </div>
             {article.author?._id ? (
-              <Link href={`/users/${article.author.username || article.author._id}`} className="hover:text-accent transition-colors">{article.author.fullName}</Link>
+              <Link href={`/users/${article.author.username || article.author._id}`} className="hover:text-accent transition-colors">{article.author.username || article.author.fullName}</Link>
             ) : (
-              <span>{article.author?.fullName || "اکشن لایف"}</span>
+              <span>{article.author?.username || article.author?.fullName || "اکشن لایف"}</span>
             )}
           </div>
           <span>•</span>
@@ -205,7 +205,7 @@ export default async function BlogPostPage({ params }: Props) {
             dateModified: article.updatedAt,
             author: {
               "@type": "Person",
-              name: article.author?.fullName || "اکشن لایف",
+              name: article.author?.username || article.author?.fullName || "اکشن لایف",
             },
             publisher: {
               "@type": "Organization",

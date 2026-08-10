@@ -92,10 +92,10 @@ export default function ArticleCard({
           {author && (
             author._id ? (
               <Link href={`/users/${author.username || author._id}`} className="hover:text-accent transition-colors">
-                {author.fullName}
+                {author.username || author.fullName}
               </Link>
             ) : (
-              <span>{author.fullName}</span>
+              <span>{author.username || author.fullName}</span>
             )
           )}
           {createdAt && (

@@ -12,7 +12,7 @@ const navItems = [
   { label: "اکشن نما", href: "/action-cinema" },
   { label: "اکشن گیم", href: "/action-game" },
   { label: "اکشن تریپ", href: "/action-trip" },
-  { label: "وبلاگ", href: "/blog" },
+  { label: "زندگی اکشن", href: "/blog" },
   { label: "درباره ما", href: "/about" },
   { label: "تماس با ما", href: "/contact" },
 ];

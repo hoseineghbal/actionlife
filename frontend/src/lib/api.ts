@@ -242,6 +242,7 @@ export async function getStoreProducts(params?: {
   seller?: string;
   condition?: string;
   conditionList?: string;
+  sort?: string;
 }) {
   const searchParams = new URLSearchParams();
   if (params?.page) searchParams.set('page', params.page.toString());
@@ -253,6 +254,7 @@ export async function getStoreProducts(params?: {
   if (params?.seller) searchParams.set('seller', params.seller);
   if (params?.condition) searchParams.set('condition', params.condition);
   if (params?.conditionList) searchParams.set('conditionList', params.conditionList);
+  if (params?.sort) searchParams.set('sort', params.sort);
   const q = searchParams.toString();
   return fetchAPI<{ products: import('@/types').StoreProduct[]; total: number }>(
     `/store/products${q ? `?${q}` : ''}`,

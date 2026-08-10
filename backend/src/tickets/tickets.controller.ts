@@ -21,7 +21,7 @@ export class TicketsController {
     return this.ticketsService.create(
       req.user.userId,
       req.user.fullName || req.user.email,
-      req.user.email,
+      req.user.email || req.user.mobile || `${req.user.userId}@actionlife.local`,
       dto,
     );
   }

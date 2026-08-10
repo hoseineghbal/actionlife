@@ -53,7 +53,7 @@ const sections = [
     color: "from-purple-500/20 to-purple-600/10",
     items: [
       {
-        title: "وبلاگ",
+        title: "زندگی اکشن",
         content: "مجموعه مقالات تخصصی در زمینه طبیعت‌گردی، بقا، ورزش، گیم و سینما. می‌توانید مقالات را بر اساس دسته‌بندی فیلتر کنید و مقاله خود را نیز ارسال کنید.",
       },
       {
@@ -158,7 +158,7 @@ const sections = [
 const quickLinks = [
   { label: "ثبت‌نام", href: "/auth/register" },
   { label: "فروشگاه", href: "/store" },
-  { label: "وبلاگ", href: "/blog" },
+  { label: "زندگی اکشن", href: "/blog" },
   { label: "تماس با ما", href: "/contact" },
   { label: "پرسش‌های متداول", href: "/faq" },
   { label: "قوانین و مقررات", href: "/terms" },
