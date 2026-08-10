@@ -98,6 +98,19 @@ body {
   color: var(--foreground);
   font-family: 'Vazirmatn', system-ui, sans-serif;
   direction: rtl;
+  /* جلوگیری از انتخاب و کپی محتوا */
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+/* اجازه انتخاب متن در فیلدهای ورودی */
+input, textarea, [contenteditable="true"], .selectable {
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  -ms-user-select: text;
+  user-select: text;
 }
 
 a {

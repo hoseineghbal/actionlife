@@ -65,8 +65,11 @@ export default function Header() {
       <div className="max-w-7xl mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           {/* لوگو */}
-          <Link href="/" className="flex items-center gap-2 shrink-0">
-            <img src="/logo.png" alt="Action Life" className="h-10 w-auto" />
+          <Link href="/" className="flex items-center gap-3 shrink-0">
+            <img src="/logo.png" alt="Action Life" className="h-12 w-auto" />
+            <span className="text-white font-extrabold text-lg tracking-wide whitespace-nowrap hidden sm:inline">
+              Action Life
+            </span>
           </Link>
 
           {/* منوی دسکتاپ */}

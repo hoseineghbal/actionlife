@@ -21,7 +21,12 @@ export default async function HomePage() {
         <section className="relative h-dvh flex flex-col overflow-hidden">
           {/* لوگو */}
           <div className="px-4 md:px-8 pt-5">
-            <img src="/logo.png" alt="Action Life" className="h-12 w-auto drop-shadow-lg" />
+            <div className="flex items-center gap-3">
+              <img src="/logo.png" alt="Action Life" className="h-16 md:h-20 w-auto drop-shadow-lg" />
+              <span className="text-white font-extrabold text-xl md:text-2xl drop-shadow-lg tracking-wide">
+                Action Life
+              </span>
+            </div>
           </div>
 
           {/* CTA و خبرنامه */}
