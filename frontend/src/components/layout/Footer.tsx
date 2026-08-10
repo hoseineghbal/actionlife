@@ -2,7 +2,6 @@
 
 import { useState, FormEvent } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
 import { subscribeNewsletter } from "@/lib/api";
 
@@ -11,6 +10,8 @@ const footerLinks = [
   { label: "تماس با ما", href: "/contact" },
   { label: "همکاری با ما", href: "/cooperation" },
   { label: "قوانین", href: "/terms" },
+  { label: "پرسش‌های متداول", href: "/faq" },
+  { label: "راهنمای سایت", href: "/guide" },
 ];
 
 const socialLinks = [
@@ -22,7 +23,6 @@ const socialLinks = [
 ];
 
 export default function Footer() {
-  const pathname = usePathname();
   const { user } = useAuth();
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
@@ -43,9 +43,6 @@ export default function Footer() {
       setLoading(false);
     }
   };
-
-  // صفحه اصلی فوتر ندارد
-  if (pathname === "/") return null;
 
   return (
     <footer className="bg-dark-light border-t border-white/10">

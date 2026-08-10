@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
+import SidebarWrapper from "@/components/layout/Sidebar";
 import PageViewTracker from "@/components/shared/PageViewTracker";
 import { AuthProvider } from "@/lib/auth-context";
 
@@ -52,7 +53,9 @@ export default function RootLayout({
           <SemiSpaceHandler />
           <PageViewTracker />
           <Header />
-          <main className="flex-1">{children}</main>
+          <SidebarWrapper>
+            <main className="flex-1">{children}</main>
+          </SidebarWrapper>
           <Footer />
         </AuthProvider>
       </body>
