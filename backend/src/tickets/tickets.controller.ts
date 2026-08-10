@@ -3,7 +3,7 @@ import {
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { TicketsService } from './tickets.service';
-import { CreateTicketDto, AddMessageDto, UpdateTicketStatusDto, AdminCreateTicketDto } from './dto/ticket.dto';
+import { CreateTicketDto, AddMessageDto, UpdateTicketStatusDto, AdminCreateTicketDto, AssignTicketDto } from './dto/ticket.dto';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
@@ -40,6 +40,22 @@ export class TicketsController {
     return this.ticketsService.findByUser(req.user.userId);
   }
 
+  @Get('admin/list')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
+  @ApiBearerAuth()
+  findAllAdmins() {
+    return this.ticketsService.findAllAdmins();
+  }
+
+  @Get('admin/mine')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
+  @ApiBearerAuth()
+  findMyAssignedTickets(@Request() req: any) {
+    return this.ticketsService.findByAssignedAdmin(req.user.userId);
+  }
+
   @Get(':id')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
@@ -63,6 +79,22 @@ export class TicketsController {
   @ApiBearerAuth()
   updateStatus(@Param('id') id: string, @Body() dto: UpdateTicketStatusDto) {
     return this.ticketsService.updateStatus(id, dto.status);
+  }
+
+  @Put(':id/assign')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
+  @ApiBearerAuth()
+  assignAdmin(@Param('id') id: string, @Body() dto: AssignTicketDto) {
+    return this.ticketsService.assignAdmin(id, dto.adminId);
+  }
+
+  @Put(':id/unassign')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
+  @ApiBearerAuth()
+  unassignAdmin(@Param('id') id: string) {
+    return this.ticketsService.unassignAdmin(id);
   }
 
   @Post('admin/create')

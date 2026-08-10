@@ -44,6 +44,15 @@ export class Ticket {
 
   @Prop({ type: [TicketMessageSchema], default: [] })
   messages: TicketMessage[];
+
+  @Prop({ type: Types.ObjectId, ref: 'User', default: null })
+  assignedAdminId: Types.ObjectId | null;
+
+  @Prop({ type: String, default: null })
+  assignedAdminName: string | null;
+
+  @Prop({ type: Date, default: null })
+  assignedAt: Date | null;
 }
 
 export const TicketSchema = SchemaFactory.createForClass(Ticket);

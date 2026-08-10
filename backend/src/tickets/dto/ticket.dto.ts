@@ -54,3 +54,11 @@ export class UpdateTicketStatusDto {
   @IsEnum(['open', 'pending', 'closed'])
   status: string;
 }
+
+export class AssignTicketDto {
+  @ApiProperty()
+  @IsString()
+  adminId: string;
+}
+
+export class UnassignTicketDto {}

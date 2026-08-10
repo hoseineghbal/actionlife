@@ -314,6 +314,16 @@ export interface TicketMessage {
   createdAt: string;
 }
 
+export interface AdminSummary {
+  _id: string;
+  fullName: string;
+  username?: string;
+  mobile: string;
+  email?: string;
+  avatar?: string;
+  permissions?: UserPermission[];
+}
+
 export interface Ticket {
   _id: string;
   userId: string;
@@ -323,6 +333,9 @@ export interface Ticket {
   status: 'open' | 'pending' | 'closed';
   priority: 'low' | 'medium' | 'high';
   messages: TicketMessage[];
+  assignedAdminId?: string | null;
+  assignedAdminName?: string | null;
+  assignedAt?: string | null;
   createdAt: string;
   updatedAt: string;
 }

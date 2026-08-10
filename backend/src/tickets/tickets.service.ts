@@ -3,7 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Ticket, TicketDocument } from './schemas/ticket.schema';
 import { CreateTicketDto, AddMessageDto, AdminCreateTicketDto } from './dto/ticket.dto';
-import { User, UserDocument } from '../users/schemas/user.schema';
+import { User, UserDocument, UserRole } from '../users/schemas/user.schema';
 
 @Injectable()
 export class TicketsService {
@@ -105,5 +105,54 @@ export class TicketsService {
       ],
     });
     return ticket.save();
+  }
+
+  async assignAdmin(ticketId: string, adminId: string): Promise<TicketDocument> {
+    const admin = await this.userModel.findById(adminId);
+    if (!admin) throw new NotFoundException('ادمین مورد نظر یافت نشد');
+    if (admin.role !== UserRole.ADMIN) {
+      throw new BadRequestException('کاربر انتخاب شده ادمین نیست');
+    }
+
+    const ticket = await this.ticketModel.findById(ticketId);
+    if (!ticket) throw new NotFoundException('تیکت یافت نشد');
+
+    ticket.assignedAdminId = admin._id as any;
+    ticket.assignedAdminName = admin.fullName || admin.username || admin.mobile;
+    ticket.assignedAt = new Date();
+
+    return ticket.save();
+  }
+
+  async unassignAdmin(ticketId: string): Promise<TicketDocument> {
+    const ticket = await this.ticketModel.findById(ticketId);
+    if (!ticket) throw new NotFoundException('تیکت یافت نشد');
+
+    ticket.assignedAdminId = null;
+    ticket.assignedAdminName = null;
+    ticket.assignedAt = null;
+
+    return ticket.save();
+  }
+
+  async findAllAdmins(): Promise<any[]> {
+    const admins = await this.userModel
+      .find({ role: UserRole.ADMIN, isActive: true })
+      .select('_id fullName username mobile email avatar permissions');
+    return admins.map((a) => ({
+      _id: a._id,
+      fullName: a.fullName,
+      username: a.username,
+      mobile: a.mobile,
+      email: a.email,
+      avatar: a.avatar,
+      permissions: a.permissions,
+    }));
+  }
+
+  async findByAssignedAdmin(adminId: string): Promise<TicketDocument[]> {
+    return this.ticketModel
+      .find({ assignedAdminId: adminId })
+      .sort({ updatedAt: -1 });
   }
 }

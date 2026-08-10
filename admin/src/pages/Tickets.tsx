@@ -1,21 +1,34 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../lib/api';
-import type { Ticket } from '../types';
+import type { Ticket, AdminSummary } from '../types';
 
 export default function Tickets() {
   const [tickets, setTickets] = useState<Ticket[]>([]);
+  const [admins, setAdmins] = useState<AdminSummary[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<'all' | 'open' | 'pending' | 'closed'>('all');
+  const [adminFilter, setAdminFilter] = useState<string>('all');
 
   useEffect(() => {
-    api.get<Ticket[]>('/tickets')
-      .then((res) => setTickets(res.data))
+    Promise.all([
+      api.get<Ticket[]>('/tickets'),
+      api.get<AdminSummary[]>('/tickets/admin/list'),
+    ])
+      .then(([ticketsRes, adminsRes]) => {
+        setTickets(ticketsRes.data);
+        setAdmins(adminsRes.data);
+      })
       .catch(console.error)
       .finally(() => setLoading(false));
   }, []);
 
-  const filtered = filter === 'all' ? tickets : tickets.filter((t) => t.status === filter);
+  let filtered = filter === 'all' ? tickets : tickets.filter((t) => t.status === filter);
+  filtered = adminFilter === 'all'
+    ? filtered
+    : adminFilter === 'unassigned'
+      ? filtered.filter((t) => !t.assignedAdminId)
+      : filtered.filter((t) => t.assignedAdminId === adminFilter);
 
   const statusColors: Record<string, string> = {
     open: 'bg-green-100 text-green-700',
@@ -49,20 +62,38 @@ export default function Tickets() {
       </div>
 
       {/* Filters */}
-      <div className="flex flex-wrap gap-2 mb-6">
-        {(['all', 'open', 'pending', 'closed'] as const).map((f) => (
-          <button
-            key={f}
-            onClick={() => setFilter(f)}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition cursor-pointer ${
-              filter === f
-                ? 'bg-accent text-white'
-                : 'bg-white text-gray-600 hover:bg-gray-50 border border-gray-200'
-            }`}
+      <div className="space-y-3 mb-6">
+        <div className="flex flex-wrap gap-2">
+          {(['all', 'open', 'pending', 'closed'] as const).map((f) => (
+            <button
+              key={f}
+              onClick={() => setFilter(f)}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition cursor-pointer ${
+                filter === f
+                  ? 'bg-accent text-white'
+                  : 'bg-white text-gray-600 hover:bg-gray-50 border border-gray-200'
+              }`}
+            >
+              {f === 'all' ? 'همه وضعیت‌ها' : statusLabels[f]}
+            </button>
+          ))}
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="text-sm text-gray-600 ml-2">ارجاع به:</span>
+          <select
+            value={adminFilter}
+            onChange={(e) => setAdminFilter(e.target.value)}
+            className="px-3 py-2 rounded-lg border border-gray-300 text-sm bg-white outline-none focus:ring-2 focus:ring-accent focus:border-transparent"
           >
-            {f === 'all' ? 'همه' : statusLabels[f]}
-          </button>
-        ))}
+            <option value="all">همه ادمین‌ها</option>
+            <option value="unassigned">ارجاع نشده</option>
+            {admins.map((a) => (
+              <option key={a._id} value={a._id}>
+                {a.fullName}
+              </option>
+            ))}
+          </select>
+        </div>
       </div>
 
       {loading ? (
@@ -88,11 +119,27 @@ export default function Tickets() {
                   </span>
                 </div>
               </div>
-              <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-sm text-gray-500">
+              <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-gray-500">
                 <span>{ticket.userName}</span>
                 <span>{ticket.userEmail}</span>
                 <span>{new Date(ticket.createdAt).toLocaleDateString('fa-IR')}</span>
                 <span>{ticket.messages.length} پیام</span>
+                {ticket.assignedAdminName && (
+                  <span className="flex items-center gap-1 px-2 py-0.5 rounded bg-purple-50 text-purple-700">
+                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                    </svg>
+                    ارجاع به: {ticket.assignedAdminName}
+                  </span>
+                )}
+                {!ticket.assignedAdminName && (
+                  <span className="flex items-center gap-1 px-2 py-0.5 rounded bg-gray-50 text-gray-500">
+                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    ارجاع نشده
+                  </span>
+                )}
               </div>
             </Link>
           ))}
