@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { Category, CategoryDocument } from './schemas/category.schema';
 import { CreateCategoryDto } from './dto/create-category.dto';
 
@@ -10,13 +10,34 @@ export class CategoriesService {
     @InjectModel(Category.name) private categoryModel: Model<CategoryDocument>,
   ) {}
 
+  private async getNextOrderForParent(parentId: string | Types.ObjectId | undefined | null): Promise<number> {
+    const match = parentId
+      ? { parent: new Types.ObjectId(parentId as any) }
+      : { $or: [{ parent: { $exists: false } }, { parent: null }] };
+    const maxResult = await this.categoryModel
+      .find(match)
+      .sort({ order: -1 })
+      .limit(1)
+      .select('order')
+      .lean();
+    const maxOrder = maxResult.length > 0 && typeof maxResult[0].order === 'number' ? maxResult[0].order : -1;
+    return maxOrder + 1;
+  }
+
   async create(createCategoryDto: CreateCategoryDto): Promise<CategoryDocument> {
-    const category = new this.categoryModel(createCategoryDto);
+    const order =
+      typeof createCategoryDto.order === 'number' && !Number.isNaN(createCategoryDto.order)
+        ? createCategoryDto.order
+        : await this.getNextOrderForParent(createCategoryDto.parent);
+    const category = new this.categoryModel({ ...createCategoryDto, order });
     return category.save();
   }
 
   async findAll(): Promise<CategoryDocument[]> {
-    return this.categoryModel.find({ isActive: true }).populate('parent', 'name slug').sort({ order: 1 });
+    return this.categoryModel
+      .find({ isActive: true })
+      .populate('parent', 'name slug')
+      .sort({ order: 1, createdAt: 1 });
   }
 
   async findBySlug(slug: string): Promise<CategoryDocument> {
@@ -28,11 +49,32 @@ export class CategoriesService {
   }
 
   async update(id: string, updateDto: Partial<CreateCategoryDto>): Promise<CategoryDocument> {
-    const category = await this.categoryModel.findByIdAndUpdate(id, updateDto, { new: true });
-    if (!category) {
+    const current = await this.categoryModel.findById(id);
+    if (!current) {
       throw new NotFoundException('دسته‌بندی یافت نشد');
     }
-    return category;
+
+    const parentChanged =
+      (updateDto.parent || null) !==
+      ((current.parent as any)?.toString
+        ? (current.parent as any).toString()
+        : (current.parent as any) || null);
+
+    let order = updateDto.order;
+    if (parentChanged && (typeof order !== 'number' || Number.isNaN(order))) {
+      order = await this.getNextOrderForParent(updateDto.parent ?? current.parent ?? null);
+    }
+
+    const payload: any = { ...updateDto };
+    if (typeof order === 'number' && !Number.isNaN(order)) {
+      payload.order = order;
+    }
+
+    const updated = await this.categoryModel.findByIdAndUpdate(id, payload, { new: true });
+    if (!updated) {
+      throw new NotFoundException('دسته‌بندی یافت نشد');
+    }
+    return updated;
   }
 
   async delete(id: string): Promise<void> {

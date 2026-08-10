@@ -1,15 +1,53 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useMemo } from 'react';
 import api from '../lib/api';
 import type { Category } from '../types';
 
+interface FlatCategory extends Category {
+  parentName?: string;
+  level: number;
+}
+
+function buildTreeAndFlatten(categories: Category[]): FlatCategory[] {
+  const catMap = new Map<string, Category>();
+  const parentId = (c: Category): string | null => {
+    if (!c.parent) return null;
+    return typeof c.parent === 'string' ? c.parent : c.parent._id;
+  };
+  categories.forEach((c) => catMap.set(c._id, c));
+
+  const childrenMap = new Map<string | null, Category[]>();
+  categories.forEach((c) => {
+    const pid = parentId(c);
+    const arr = childrenMap.get(pid) || [];
+    arr.push(c);
+    childrenMap.set(pid, arr);
+  });
+
+  const sortList = (list: Category[]) =>
+    list.sort((a, b) => (a.order || 0) - (b.order || 0) || a.name.localeCompare(b.name, 'fa'));
+
+  const result: FlatCategory[] = [];
+  const walk = (parent: string | null, level: number) => {
+    const list = childrenMap.get(parent) || [];
+    sortList(list).forEach((node) => {
+      const pid = parentId(node);
+      const parentName = pid ? catMap.get(pid)?.name : undefined;
+      result.push({ ...node, parentName, level });
+      walk(node._id, level + 1);
+    });
+  };
+  walk(null, 0);
+  return result;
+}
+
 export default function Categories() {
-  const [categories, setCategories] = useState<(Category & { parentName?: string })[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  // Modal state
   const [modalOpen, setModalOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
+  const [preselectedParent, setPreselectedParent] = useState<string | null>(null);
   const [formName, setFormName] = useState('');
   const [formSlug, setFormSlug] = useState('');
   const [formDescription, setFormDescription] = useState('');
@@ -17,16 +55,15 @@ export default function Categories() {
   const [formOrder, setFormOrder] = useState(0);
   const [saving, setSaving] = useState(false);
 
+  const flatCategories: FlatCategory[] = useMemo(
+    () => buildTreeAndFlatten(categories),
+    [categories]
+  );
+
   const loadCategories = useCallback(async () => {
     try {
       const res = await api.get<Category[]>('/categories');
-      const cats = res.data;
-      const catMap = new Map(cats.map((c) => [c._id, c]));
-      const withParents = cats.map((c) => ({
-        ...c,
-        parentName: c.parent ? catMap.get(typeof c.parent === 'string' ? c.parent : (c.parent as { _id: string })._id)?.name : undefined,
-      }));
-      setCategories(withParents);
+      setCategories(res.data);
     } catch {
       setError('خطا در دریافت دسته‌بندی‌ها');
     } finally {
@@ -38,13 +75,27 @@ export default function Categories() {
     loadCategories();
   }, [loadCategories]);
 
-  const openNew = () => {
+  const computeDefaultOrder = (parentId: string | null): number => {
+    const siblings = categories.filter((c) => {
+      const pid = !c.parent
+        ? null
+        : typeof c.parent === 'string'
+        ? c.parent
+        : c.parent._id;
+      return pid === parentId;
+    });
+    const maxOrder = siblings.reduce((m, s) => Math.max(m, s.order || 0), -1);
+    return maxOrder + 1;
+  };
+
+  const openNew = (parentId?: string) => {
     setEditingCategory(null);
     setFormName('');
     setFormSlug('');
     setFormDescription('');
-    setFormParent('');
-    setFormOrder(0);
+    setFormParent(parentId || '');
+    setPreselectedParent(parentId || null);
+    setFormOrder(computeDefaultOrder(parentId || null));
     setModalOpen(true);
   };
 
@@ -54,7 +105,8 @@ export default function Categories() {
     setFormSlug(cat.slug);
     setFormDescription(cat.description || '');
     setFormParent(typeof cat.parent === 'string' ? cat.parent : (cat.parent as { _id: string })?._id || '');
-    setFormOrder(cat.order || 0);
+    setPreselectedParent(null);
+    setFormOrder(cat.order ?? 0);
     setModalOpen(true);
   };
 
@@ -108,6 +160,10 @@ export default function Categories() {
     }
   };
 
+  const selectableParents = categories.filter(
+    (c) => !editingCategory || c._id !== editingCategory._id
+  );
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -121,7 +177,7 @@ export default function Categories() {
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold text-gray-800">مدیریت دسته‌بندی‌ها</h1>
         <button
-          onClick={openNew}
+          onClick={() => openNew()}
           className="bg-accent text-white px-4 py-2 rounded-lg hover:bg-accent transition-colors"
         >
           + دسته‌بندی جدید
@@ -133,7 +189,7 @@ export default function Categories() {
       {categories.length === 0 ? (
         <div className="bg-white rounded-xl shadow-sm p-12 text-center">
           <p className="text-gray-500 text-lg">هیچ دسته‌بندی‌ای یافت نشد</p>
-          <button onClick={openNew} className="text-accent hover:underline mt-2 inline-block">
+          <button onClick={() => openNew()} className="text-accent hover:underline mt-2 inline-block">
             اولین دسته‌بندی را ایجاد کنید
           </button>
         </div>
@@ -152,9 +208,26 @@ export default function Categories() {
                 </tr>
               </thead>
               <tbody>
-                {categories.map((cat) => (
+                {flatCategories.map((cat) => (
                   <tr key={cat._id} className="border-b hover:bg-gray-50">
-                    <td className="px-4 py-3 font-medium text-gray-800">{cat.name}</td>
+                    <td className="px-4 py-3 font-medium text-gray-800"
+                        style={{ paddingRight: `${16 + cat.level * 28}px` }}>
+                      <div className="flex items-center gap-3">
+                        {cat.level > 0 && (
+                          <span className="text-gray-300 select-none" aria-hidden>
+                            {'└─'}
+                          </span>
+                        )}
+                        <span>{cat.name}</span>
+                        <button
+                          onClick={() => openNew(cat._id)}
+                          title="افزودن زیرمجموعه"
+                          className="w-6 h-6 inline-flex items-center justify-center rounded-full bg-emerald-500 text-white text-xs hover:bg-emerald-600 transition-colors"
+                        >
+                          +
+                        </button>
+                      </div>
+                    </td>
                     <td className="px-4 py-3 text-sm text-gray-500">{cat.slug}</td>
                     <td className="px-4 py-3 text-sm text-gray-500">{cat.parentName || '—'}</td>
                     <td className="px-4 py-3 text-sm text-gray-500">{cat.order}</td>
@@ -177,12 +250,15 @@ export default function Categories() {
         </div>
       )}
 
-      {/* Modal */}
       {modalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
           <div className="bg-white rounded-xl shadow-xl w-full max-w-lg mx-4 p-6">
             <h2 className="text-lg font-bold text-gray-800 mb-4">
-              {editingCategory ? 'ویرایش دسته‌بندی' : 'دسته‌بندی جدید'}
+              {editingCategory
+                ? 'ویرایش دسته‌بندی'
+                : preselectedParent
+                ? 'زیرمجموعه جدید'
+                : 'دسته‌بندی جدید'}
             </h2>
             <form onSubmit={handleSave} className="space-y-4">
               <div>
@@ -209,15 +285,18 @@ export default function Categories() {
                 <label className="block text-sm font-medium text-gray-700 mb-1">دسته‌بندی والد</label>
                 <select
                   value={formParent}
-                  onChange={(e) => setFormParent(e.target.value)}
+                  onChange={(e) => {
+                    setFormParent(e.target.value);
+                    if (!editingCategory) {
+                      setFormOrder(computeDefaultOrder(e.target.value || null));
+                    }
+                  }}
                   className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-accent focus:border-accent"
                 >
                   <option value="">بدون والد (دسته اصلی)</option>
-                  {categories
-                    .filter((c) => !editingCategory || c._id !== editingCategory._id)
-                    .map((cat) => (
-                      <option key={cat._id} value={cat._id}>{cat.name}</option>
-                    ))}
+                  {selectableParents.map((cat) => (
+                    <option key={cat._id} value={cat._id}>{cat.name}</option>
+                  ))}
                 </select>
               </div>
               <div>
