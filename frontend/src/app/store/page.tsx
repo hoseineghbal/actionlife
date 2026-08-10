@@ -105,7 +105,7 @@ export default function StorePage() {
             فروشگاه <span className="text-accent">اکشن</span>
           </h1>
           <p className="text-lg text-gray-custom max-w-2xl">
-            محصولات دیجیتال با کیفیت از بهترین تولیدکنندگان محتوا. با توکن خرید کنید.
+            عرضه و معرفی محصولات دیجیتال، ابزار و تجهیزات زندگی اکشن با بهترین کیفیت.
           </p>
         </div>
       </section>
@@ -343,6 +343,7 @@ function CategoryNode({
   selectedCategory,
   onToggle,
   onSelect,
+  isLast,
 }: {
   node: Category;
   level: number;
@@ -350,6 +351,7 @@ function CategoryNode({
   selectedCategory: string;
   onToggle: (id: string) => void;
   onSelect: (id: string) => void;
+  isLast?: boolean;
 }) {
   const hasChildren = node.children && node.children.length > 0;
   const isExpanded = expandedCats.has(node._id);
@@ -358,13 +360,35 @@ function CategoryNode({
   return (
     <div>
       <div
-        className={`flex items-center gap-1 px-3 py-2 rounded-lg text-sm cursor-pointer transition-colors ${
+        className={`flex items-center gap-1 px-3 py-2 rounded-lg text-sm cursor-pointer transition-colors relative ${
           isSelected
             ? "bg-accent text-white"
             : "text-gray-custom hover:text-white hover:bg-white/5"
         }`}
-        style={{ paddingRight: `${12 + level * 12}px` }}
+        style={{ marginRight: `${level * 20}px` }}
       >
+        {/* Tree connecting lines */}
+        {level > 0 && (
+          <>
+            <span
+              className="absolute border-r-2 border-white/10"
+              style={{
+                right: `${-level * 20 + 8}px`,
+                top: 0,
+                bottom: isLast ? "50%" : 0,
+                height: isLast ? "50%" : "100%",
+              }}
+            />
+            <span
+              className="absolute border-b-2 border-white/10 rounded-bl-md"
+              style={{
+                right: `${-level * 20 + 8}px`,
+                top: "50%",
+                width: "16px",
+              }}
+            />
+          </>
+        )}
         {hasChildren ? (
           <button
             onClick={(e) => { e.stopPropagation(); onToggle(node._id); }}
@@ -391,7 +415,7 @@ function CategoryNode({
       </div>
       {hasChildren && isExpanded && (
         <div className="mt-0.5">
-          {node.children!.map((child) => (
+          {node.children!.map((child, idx) => (
             <CategoryNode
               key={child._id}
               node={child}
@@ -400,6 +424,7 @@ function CategoryNode({
               selectedCategory={selectedCategory}
               onToggle={onToggle}
               onSelect={onSelect}
+              isLast={idx === node.children!.length - 1}
             />
           ))}
         </div>
@@ -480,6 +505,19 @@ function ProductCard({
               {typeMeta.label}
             </span>
           )}
+        </div>
+
+        {/* Price overlay on image */}
+        <div className="absolute bottom-3 right-3 flex items-center gap-2 px-3 py-1.5 bg-dark/80 backdrop-blur-sm rounded-xl border border-white/10">
+          {onSale ? (
+            <>
+              <span className="text-white font-bold text-sm">{formatPrice(effPrice)}</span>
+              <span className="text-gray-custom text-xs line-through">{formatPrice(product.price)}</span>
+            </>
+          ) : (
+            <span className="text-white font-bold text-sm">{formatPrice(product.price)}</span>
+          )}
+          <span className="text-accent text-xs font-medium">توکن</span>
         </div>
 
         {/* File count badge - for digital products */}
