@@ -4,8 +4,10 @@ import { UsersService } from './users.service';
 import { CreateUserDto, UpdateUserDto } from './dto/create-user.dto';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
+import { PermissionsGuard } from '../common/guards/permissions.guard';
 import { Roles } from '../common/decorators/roles.decorator';
-import { UserRole } from './schemas/user.schema';
+import { Permissions } from '../common/decorators/permissions.decorator';
+import { UserRole, UserPermission } from './schemas/user.schema';
 
 @ApiTags('users')
 @Controller('users')
@@ -13,15 +15,17 @@ export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @Post()
-  @UseGuards(JwtAuthGuard, RolesGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard, PermissionsGuard)
   @Roles(UserRole.ADMIN)
+  @Permissions(UserPermission.USERS_CREATE)
   @ApiBearerAuth()
   create(@Body() createUserDto: CreateUserDto) {
     return this.usersService.create(createUserDto);
   }
 
   @Get()
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, PermissionsGuard)
+  @Permissions(UserPermission.USERS_VIEW)
   @ApiBearerAuth()
   findAll() {
     return this.usersService.findAll();
@@ -52,8 +56,9 @@ export class UsersController {
   }
 
   @Put(':id')
-  @UseGuards(JwtAuthGuard, RolesGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard, PermissionsGuard)
   @Roles(UserRole.ADMIN)
+  @Permissions(UserPermission.USERS_EDIT)
   @ApiBearerAuth()
   update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
     return this.usersService.update(id, updateUserDto);
@@ -67,7 +72,9 @@ export class UsersController {
   }
 
   @Put(':id/store-request')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard, PermissionsGuard)
+  @Roles(UserRole.ADMIN)
+  @Permissions(UserPermission.USERS_EDIT)
   @ApiBearerAuth()
   handleStoreRequest(
     @Param('id') id: string,

@@ -1,6 +1,15 @@
-import { IsArray, IsBoolean, IsEmail, IsEnum, IsNumber, IsOptional, IsString, MinLength } from 'class-validator';
+import {
+  IsArray,
+  IsBoolean,
+  IsEmail,
+  IsEnum,
+  IsNumber,
+  IsOptional,
+  IsString,
+  MinLength,
+} from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { UserRole } from '../schemas/user.schema';
+import { UserRole, UserPermission } from '../schemas/user.schema';
 
 export class CreateUserDto {
   @ApiProperty({ description: 'نام کامل' })
@@ -30,6 +39,12 @@ export class CreateUserDto {
   @IsOptional()
   @IsEnum(UserRole)
   role?: UserRole;
+
+  @ApiPropertyOptional({ type: [String], enum: UserPermission })
+  @IsOptional()
+  @IsArray()
+  @IsEnum(UserPermission, { each: true })
+  permissions?: UserPermission[];
 
   @ApiPropertyOptional()
   @IsOptional()
@@ -126,6 +141,16 @@ export class CreateUserDto {
   @IsOptional()
   @IsBoolean()
   isActive?: boolean;
+
+  @ApiPropertyOptional({ description: 'دسترسی فروشگاه' })
+  @IsOptional()
+  @IsBoolean()
+  hasStore?: boolean;
+
+  @ApiPropertyOptional({ description: 'امتیاز کاربر' })
+  @IsOptional()
+  @IsNumber()
+  points?: number;
 }
 
 export class UpdateUserDto {
@@ -164,6 +189,12 @@ export class UpdateUserDto {
   @IsOptional()
   @IsEnum(UserRole)
   role?: UserRole;
+
+  @ApiPropertyOptional({ type: [String], enum: UserPermission })
+  @IsOptional()
+  @IsArray()
+  @IsEnum(UserPermission, { each: true })
+  permissions?: UserPermission[];
 
   @ApiPropertyOptional()
   @IsOptional()
@@ -266,7 +297,10 @@ export class UpdateUserDto {
   @IsNumber()
   points?: number;
 
-  @ApiPropertyOptional({ description: 'وضعیت درخواست فروشگاه', enum: ['none', 'pending', 'approved', 'rejected'] })
+  @ApiPropertyOptional({
+    description: 'وضعیت درخواست فروشگاه',
+    enum: ['none', 'pending', 'approved', 'rejected'],
+  })
   @IsOptional()
   @IsString()
   storeRequestStatus?: string;

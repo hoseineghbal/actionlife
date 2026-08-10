@@ -1,3 +1,123 @@
+export type UserPermission =
+  | 'dashboard:view'
+  | 'articles:view'
+  | 'articles:create'
+  | 'articles:edit'
+  | 'articles:delete'
+  | 'categories:view'
+  | 'categories:create'
+  | 'categories:edit'
+  | 'categories:delete'
+  | 'sections:view'
+  | 'sections:create'
+  | 'sections:edit'
+  | 'sections:delete'
+  | 'users:view'
+  | 'users:create'
+  | 'users:edit'
+  | 'users:delete'
+  | 'tickets:view'
+  | 'tickets:reply'
+  | 'contacts:view'
+  | 'token_settings:view'
+  | 'token_settings:edit'
+  | 'sell_requests:view'
+  | 'sell_requests:approve'
+  | 'transactions:view'
+  | 'gift_cards:view'
+  | 'gift_cards:create'
+  | 'store_products:view'
+  | 'store_products:edit';
+
+export const PERMISSION_GROUPS: {
+  label: string;
+  items: { value: UserPermission; label: string }[];
+}[] = [
+  {
+    label: 'داشبورد',
+    items: [{ value: 'dashboard:view', label: 'مشاهده داشبورد' }],
+  },
+  {
+    label: 'مدیریت مقالات',
+    items: [
+      { value: 'articles:view', label: 'مشاهده مقالات' },
+      { value: 'articles:create', label: 'ایجاد مقاله' },
+      { value: 'articles:edit', label: 'ویرایش مقالات' },
+      { value: 'articles:delete', label: 'حذف مقالات' },
+    ],
+  },
+  {
+    label: 'مدیریت دسته‌بندی‌ها',
+    items: [
+      { value: 'categories:view', label: 'مشاهده دسته‌بندی‌ها' },
+      { value: 'categories:create', label: 'ایجاد دسته‌بندی' },
+      { value: 'categories:edit', label: 'ویرایش دسته‌بندی‌ها' },
+      { value: 'categories:delete', label: 'حذف دسته‌بندی‌ها' },
+    ],
+  },
+  {
+    label: 'بخش‌های مقالات',
+    items: [
+      { value: 'sections:view', label: 'مشاهده بخش‌ها' },
+      { value: 'sections:create', label: 'ایجاد بخش' },
+      { value: 'sections:edit', label: 'ویرایش بخش‌ها' },
+      { value: 'sections:delete', label: 'حذف بخش‌ها' },
+    ],
+  },
+  {
+    label: 'مدیریت کاربران',
+    items: [
+      { value: 'users:view', label: 'مشاهده کاربران' },
+      { value: 'users:create', label: 'ایجاد کاربر' },
+      { value: 'users:edit', label: 'ویرایش کاربران' },
+      { value: 'users:delete', label: 'حذف کاربران' },
+    ],
+  },
+  {
+    label: 'تیکت‌ها',
+    items: [
+      { value: 'tickets:view', label: 'مشاهده تیکت‌ها' },
+      { value: 'tickets:reply', label: 'پاسخ به تیکت‌ها' },
+    ],
+  },
+  {
+    label: 'تماس با ما',
+    items: [{ value: 'contacts:view', label: 'مشاهده پیام‌های تماس' }],
+  },
+  {
+    label: 'تنظیمات توکن',
+    items: [
+      { value: 'token_settings:view', label: 'مشاهده تنظیمات توکن' },
+      { value: 'token_settings:edit', label: 'ویرایش تنظیمات توکن' },
+    ],
+  },
+  {
+    label: 'درخواست‌های فروش',
+    items: [
+      { value: 'sell_requests:view', label: 'مشاهده درخواست‌ها' },
+      { value: 'sell_requests:approve', label: 'تایید/رد درخواست‌ها' },
+    ],
+  },
+  {
+    label: 'تراکنش‌ها',
+    items: [{ value: 'transactions:view', label: 'مشاهده تراکنش‌ها' }],
+  },
+  {
+    label: 'کارت‌های هدیه',
+    items: [
+      { value: 'gift_cards:view', label: 'مشاهده کارت‌ها' },
+      { value: 'gift_cards:create', label: 'ایجاد کارت هدیه' },
+    ],
+  },
+  {
+    label: 'محصولات فروشگاه',
+    items: [
+      { value: 'store_products:view', label: 'مشاهده محصولات' },
+      { value: 'store_products:edit', label: 'ویرایش محصولات' },
+    ],
+  },
+];
+
 export interface User {
   _id: string;
   fullName: string;
@@ -6,6 +126,7 @@ export interface User {
   email?: string;
   role: string;
   username?: string;
+  permissions?: UserPermission[];
   avatar?: string;
   headerImage?: string;
   bio?: string;
@@ -117,6 +238,8 @@ export interface AuthResponse {
     mobile: string;
     countryCode?: string;
     role: string;
+    hasStore?: boolean;
+    permissions?: UserPermission[];
   };
 }
 

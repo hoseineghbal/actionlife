@@ -1,26 +1,38 @@
 import { useState } from 'react';
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../lib/auth-context';
+import type { UserPermission } from '../../types';
 
-const navItems = [
-  { to: '/', label: 'داشبورد', icon: '📊' },
-  { to: '/articles', label: 'مقالات', icon: '📝' },
-  { to: '/categories', label: 'دسته‌بندی‌ها', icon: '📂' },
-  { to: '/sections', label: 'بخش‌های مقالات', icon: '📑' },
-  { to: '/users', label: 'کاربران', icon: '👥' },
-  { to: '/tickets', label: 'تیکت‌ها', icon: '🎫' },
-  { to: '/contacts', label: 'تماس با ما', icon: '📩' },
-  { to: '/token-settings', label: 'تنظیمات توکن', icon: '⚙️' },
-  { to: '/sell-requests', label: 'درخواست فروش', icon: '💰' },
-  { to: '/transactions', label: 'تراکنش‌ها', icon: '🔄' },
-  { to: '/gift-cards', label: 'کارت‌های هدیه', icon: '🎁' },
-  { to: '/store-products', label: 'محصولات فروشگاه', icon: '🛍️' },
+interface NavItem {
+  to: string;
+  label: string;
+  icon: string;
+  requiredPermission?: UserPermission;
+}
+
+const allNavItems: NavItem[] = [
+  { to: '/', label: 'داشبورد', icon: '📊', requiredPermission: 'dashboard:view' },
+  { to: '/articles', label: 'مقالات', icon: '📝', requiredPermission: 'articles:view' },
+  { to: '/categories', label: 'دسته‌بندی‌ها', icon: '📂', requiredPermission: 'categories:view' },
+  { to: '/sections', label: 'بخش‌های مقالات', icon: '📑', requiredPermission: 'sections:view' },
+  { to: '/users', label: 'کاربران', icon: '👥', requiredPermission: 'users:view' },
+  { to: '/tickets', label: 'تیکت‌ها', icon: '🎫', requiredPermission: 'tickets:view' },
+  { to: '/contacts', label: 'تماس با ما', icon: '📩', requiredPermission: 'contacts:view' },
+  { to: '/token-settings', label: 'تنظیمات توکن', icon: '⚙️', requiredPermission: 'token_settings:view' },
+  { to: '/sell-requests', label: 'درخواست فروش', icon: '💰', requiredPermission: 'sell_requests:view' },
+  { to: '/transactions', label: 'تراکنش‌ها', icon: '🔄', requiredPermission: 'transactions:view' },
+  { to: '/gift-cards', label: 'کارت‌های هدیه', icon: '🎁', requiredPermission: 'gift_cards:view' },
+  { to: '/store-products', label: 'محصولات فروشگاه', icon: '🛍️', requiredPermission: 'store_products:view' },
 ];
 
 export default function AdminLayout() {
-  const { user, logout } = useAuth();
+  const { user, logout, hasPermission } = useAuth();
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  const navItems = allNavItems.filter((item) =>
+    item.requiredPermission ? hasPermission(item.requiredPermission) : true
+  );
 
   const handleLogout = () => {
     logout();
@@ -53,6 +65,11 @@ export default function AdminLayout() {
             <span>{item.label}</span>
           </NavLink>
         ))}
+        {navItems.length === 0 && (
+          <div className="px-5 py-10 text-center text-muted text-sm">
+            دسترسی به هیچ بخشی در اختیار شما نیست
+          </div>
+        )}
       </nav>
 
       <div className="p-4 border-t border-primary/30">
@@ -60,9 +77,11 @@ export default function AdminLayout() {
           <div className="w-9 h-9 bg-accent rounded-full flex items-center justify-center text-sm font-bold">
             {user?.fullName?.charAt(0)}
           </div>
-          <div>
-            <p className="text-sm font-medium">{user?.fullName}</p>
-            <p className="text-xs text-muted" dir="ltr">{user?.countryCode} {user?.mobile}</p>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium truncate">{user?.fullName}</p>
+            <p className="text-xs text-muted" dir="ltr">
+              {user?.countryCode} {user?.mobile}
+            </p>
           </div>
         </div>
         <button

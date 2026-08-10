@@ -1,6 +1,8 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import api from '../lib/api';
-import type { User } from '../types';
+import { useAuth } from '../lib/auth-context';
+import type { User, UserPermission } from '../types';
+import { PERMISSION_GROUPS } from '../types';
 
 const USER_ROLES = [
   { value: 'user', label: 'کاربر عادی' },
@@ -37,6 +39,7 @@ interface UserFormData {
   isActive: boolean;
   hasStore: boolean;
   points: number;
+  permissions: UserPermission[];
 }
 
 const initialFormData: UserFormData = {
@@ -65,6 +68,7 @@ const initialFormData: UserFormData = {
   isActive: true,
   hasStore: false,
   points: 0,
+  permissions: [],
 };
 
 function Field({
@@ -89,6 +93,116 @@ function Field({
 
 const inputClass =
   'w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent outline-none text-sm transition-all';
+
+const InfoRow = ({ label, value }: { label: string; value?: string | null | number }) => (
+  <div className="flex items-start gap-2 py-2.5 border-b border-gray-100 last:border-0">
+    <span className="text-gray-400 text-sm min-w-[120px] shrink-0">{label}:</span>
+    <span className="text-gray-700 text-sm">{value || '—'}</span>
+  </div>
+);
+
+function PermissionPicker({
+  value,
+  onChange,
+  role,
+}: {
+  value: UserPermission[];
+  onChange: (v: UserPermission[]) => void;
+  role: string;
+}) {
+  const allPerms = useMemo(
+    () => PERMISSION_GROUPS.flatMap((g) => g.items.map((i) => i.value)),
+    []
+  );
+  const allSelected = allPerms.every((p) => value.includes(p));
+
+  const toggleAll = () => {
+    onChange(allSelected ? [] : allPerms);
+  };
+
+  const toggleGroup = (groupPerms: UserPermission[]) => {
+    const groupAllSelected = groupPerms.every((p) => value.includes(p));
+    if (groupAllSelected) {
+      onChange(value.filter((p) => !groupPerms.includes(p)));
+    } else {
+      onChange(Array.from(new Set([...value, ...groupPerms])));
+    }
+  };
+
+  const toggleOne = (perm: UserPermission) => {
+    if (value.includes(perm)) {
+      onChange(value.filter((p) => p !== perm));
+    } else {
+      onChange([...value, perm]);
+    }
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center gap-2 pb-3 border-b border-gray-100">
+        <label className="flex items-center gap-2 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={allSelected}
+            onChange={toggleAll}
+            className="w-4 h-4 text-accent rounded focus:ring-accent"
+          />
+          <span className="text-sm font-bold text-gray-800">انتخاب همه دسترسی‌ها</span>
+        </label>
+        {role === 'admin' && value.length === 0 && (
+          <span className="text-xs text-amber-600 bg-amber-50 px-2 py-1 rounded">
+            پیشنهاد: برای ادمین اصلی، همه دسترسی‌ها فعال باشد
+          </span>
+        )}
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {PERMISSION_GROUPS.map((group) => {
+          const groupPerms = group.items.map((i) => i.value);
+          const groupSelected = groupPerms.every((p) => value.includes(p));
+          const partial = groupPerms.some((p) => value.includes(p)) && !groupSelected;
+          return (
+            <div
+              key={group.label}
+              className="border border-gray-200 rounded-xl p-4 bg-gray-50/50"
+            >
+              <div className="flex items-center gap-2 mb-3 pb-2 border-b border-gray-200">
+                <label className="flex items-center gap-2 cursor-pointer flex-1">
+                  <input
+                    type="checkbox"
+                    checked={groupSelected}
+                    ref={(el) => {
+                      if (el) el.indeterminate = partial;
+                    }}
+                    onChange={() => toggleGroup(groupPerms)}
+                    className="w-4 h-4 text-accent rounded focus:ring-accent"
+                  />
+                  <span className="text-sm font-bold text-gray-800">{group.label}</span>
+                </label>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                {group.items.map((item) => (
+                  <label
+                    key={item.value}
+                    className="flex items-center gap-2 cursor-pointer py-1.5 px-2 rounded hover:bg-white transition-colors"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={value.includes(item.value)}
+                      onChange={() => toggleOne(item.value)}
+                      className="w-3.5 h-3.5 text-accent rounded focus:ring-accent shrink-0"
+                    />
+                    <span className="text-xs text-gray-700">{item.label}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
 
 function UserFormModal({
   mode,
@@ -129,6 +243,7 @@ function UserFormModal({
         isActive: user.isActive,
         hasStore: user.hasStore,
         points: user.points,
+        permissions: (user.permissions as UserPermission[]) || [],
       };
     }
     return initialFormData;
@@ -138,6 +253,14 @@ function UserFormModal({
 
   const updateField = <K extends keyof UserFormData>(key: K, value: UserFormData[K]) => {
     setFormData((prev) => ({ ...prev, [key]: value }));
+  };
+
+  const handleRoleChange = (newRole: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      role: newRole,
+      permissions: newRole === 'admin' ? prev.permissions : [],
+    }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -173,6 +296,7 @@ function UserFormModal({
         isActive: formData.isActive,
         hasStore: formData.hasStore,
         points: formData.points,
+        permissions: formData.permissions,
       };
 
       if (mode === 'create') {
@@ -289,7 +413,7 @@ function UserFormModal({
                   <select
                     className={inputClass}
                     value={formData.role}
-                    onChange={(e) => updateField('role', e.target.value)}
+                    onChange={(e) => handleRoleChange(e.target.value)}
                   >
                     {USER_ROLES.map((r) => (
                       <option key={r.value} value={r.value}>
@@ -318,7 +442,7 @@ function UserFormModal({
                     min={0}
                   />
                 </Field>
-                <div className="md:col-span-2 lg:col-span-3 flex items-center gap-6 pt-2">
+                <div className="md:col-span-2 lg:col-span-3 flex items-center gap-6 pt-2 flex-wrap">
                   <label className="flex items-center gap-2 cursor-pointer">
                     <input
                       type="checkbox"
@@ -340,6 +464,22 @@ function UserFormModal({
                 </div>
               </div>
             </section>
+
+            {formData.role === 'admin' && (
+              <section>
+                <h3 className="text-sm font-bold text-gray-800 mb-4 flex items-center gap-2">
+                  <svg className="w-4 h-4 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                  </svg>
+                  سطوح دسترسی (Permissions)
+                </h3>
+                <PermissionPicker
+                  value={formData.permissions}
+                  onChange={(v) => updateField('permissions', v)}
+                  role={formData.role}
+                />
+              </section>
+            )}
 
             <section>
               <h3 className="text-sm font-bold text-gray-800 mb-4 flex items-center gap-2">
@@ -553,14 +693,12 @@ function UserDetailModal({
   onClose: () => void;
   onEdit: () => void;
 }) {
+  const { hasPermission } = useAuth();
+  const canEdit = hasPermission('users:edit');
   const genderLabels: Record<string, string> = { male: 'مرد', female: 'زن' };
 
-  const InfoRow = ({ label, value }: { label: string; value?: string | null | number }) => (
-    <div className="flex items-start gap-2 py-2.5 border-b border-gray-100 last:border-0">
-      <span className="text-gray-400 text-sm min-w-[120px] shrink-0">{label}:</span>
-      <span className="text-gray-700 text-sm">{value || '—'}</span>
-    </div>
-  );
+  const userPerms = (user.permissions || []) as UserPermission[];
+  const allPermsCount = PERMISSION_GROUPS.reduce((sum, g) => sum + g.items.length, 0);
 
   return (
     <>
@@ -569,15 +707,17 @@ function UserDetailModal({
         <div className="sticky top-0 bg-white border-b px-6 py-4 flex items-center justify-between z-10">
           <div className="flex items-center gap-2">
             <h2 className="text-lg font-bold text-gray-800">جزئیات کاربر</h2>
-            <button
-              onClick={onEdit}
-              className="px-3 py-1.5 text-xs font-medium text-white bg-accent rounded-lg hover:bg-accent/90 transition-colors flex items-center gap-1"
-            >
-              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-              </svg>
-              ویرایش
-            </button>
+            {canEdit && (
+              <button
+                onClick={onEdit}
+                className="px-3 py-1.5 text-xs font-medium text-white bg-accent rounded-lg hover:bg-accent/90 transition-colors flex items-center gap-1"
+              >
+                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                </svg>
+                ویرایش
+              </button>
+            )}
           </div>
           <button
             onClick={onClose}
@@ -597,6 +737,22 @@ function UserDetailModal({
             <div>
               <h3 className="text-lg font-bold text-gray-800">{user.fullName}</h3>
               <p className="text-sm text-gray-500" dir="ltr">{user.email}</p>
+              <div className="mt-1 flex items-center gap-1.5 flex-wrap">
+                <span
+                  className={`px-2 py-0.5 rounded-full text-xs font-medium ${
+                    user.role === 'admin'
+                      ? 'bg-red-100 text-red-700'
+                      : user.role === 'vip'
+                        ? 'bg-yellow-100 text-yellow-700'
+                        : 'bg-gray-100 text-gray-700'
+                  }`}
+                >
+                  {USER_ROLES.find((r) => r.value === user.role)?.label || user.role}
+                </span>
+                <span className="text-xs text-gray-500">
+                  {userPerms.length} از {allPermsCount} دسترسی
+                </span>
+              </div>
             </div>
           </div>
           {user.bio && (
@@ -625,6 +781,46 @@ function UserDetailModal({
               <InfoRow label="تاریخ عضویت" value={new Date(user.createdAt).toLocaleDateString('fa-IR')} />
             </div>
           </div>
+
+          {(user.role === 'admin' || userPerms.length > 0) && (
+            <div>
+              <h4 className="text-sm font-bold text-gray-800 mb-2 flex items-center gap-2">
+                <svg className="w-4 h-4 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                </svg>
+                دسترسی‌ها
+                <span className="text-xs text-gray-400 font-normal">
+                  ({userPerms.length}/{allPermsCount})
+                </span>
+              </h4>
+              <div className="bg-gray-50 rounded-lg p-4 space-y-3">
+                {PERMISSION_GROUPS.map((group) => {
+                  const groupPerms = group.items.filter((i) => userPerms.includes(i.value));
+                  if (groupPerms.length === 0) return null;
+                  return (
+                    <div key={group.label}>
+                      <p className="text-xs font-bold text-gray-500 mb-1.5">{group.label}</p>
+                      <div className="flex flex-wrap gap-1.5">
+                        {groupPerms.map((p) => (
+                          <span
+                            key={p.value}
+                            className="px-2.5 py-1 bg-accent/10 text-accent text-xs rounded-full"
+                          >
+                            {p.label}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })}
+                {userPerms.length === 0 && (
+                  <p className="text-xs text-gray-400 text-center py-2">
+                    دسترسی خاصی برای این کاربر تنظیم نشده است
+                  </p>
+                )}
+              </div>
+            </div>
+          )}
 
           <div>
             <h4 className="text-sm font-bold text-gray-800 mb-2 flex items-center gap-2">
@@ -705,6 +901,11 @@ function UserDetailModal({
 }
 
 export default function Users() {
+  const { hasPermission } = useAuth();
+  const canView = hasPermission('users:view');
+  const canCreate = hasPermission('users:create');
+  const canEdit = hasPermission('users:edit');
+
   const [users, setUsers] = useState<User[]>([]);
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true);
@@ -713,6 +914,10 @@ export default function Users() {
   const [editTarget, setEditTarget] = useState<User | null>(null);
 
   const loadUsers = () => {
+    if (!canView) {
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     api.get<User[]>('/users')
       .then((res) => setUsers(res.data))
@@ -722,7 +927,7 @@ export default function Users() {
 
   useEffect(() => {
     loadUsers();
-  }, []);
+  }, [canView]);
 
   const filtered = users.filter(
     (u) =>
@@ -756,21 +961,41 @@ export default function Users() {
     setEditTarget(null);
   };
 
+  if (!canView) {
+    return (
+      <div className="flex flex-col items-center justify-center h-96 text-center gap-4">
+        <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center">
+          <svg className="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m0 0v2m0-2h2m-2 0H10m10-7a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        </div>
+        <div>
+          <h3 className="text-lg font-bold text-gray-800 mb-1">دسترسی محدود</h3>
+          <p className="text-gray-500 text-sm">
+            برای مشاهده لیست کاربران مجوز لازم را ندارید.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold text-gray-800">کاربران</h1>
         <div className="flex items-center gap-3">
           <span className="text-sm text-gray-500">{filtered.length} کاربر</span>
-          <button
-            onClick={() => setFormMode('create')}
-            className="px-4 py-2.5 bg-accent text-white rounded-lg hover:bg-accent/90 transition-colors text-sm font-medium flex items-center gap-2 shadow-sm"
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-            </svg>
-            ایجاد کاربر جدید
-          </button>
+          {canCreate && (
+            <button
+              onClick={() => setFormMode('create')}
+              className="px-4 py-2.5 bg-accent text-white rounded-lg hover:bg-accent/90 transition-colors text-sm font-medium flex items-center gap-2 shadow-sm"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              </svg>
+              ایجاد کاربر جدید
+            </button>
+          )}
         </div>
       </div>
 
@@ -798,137 +1023,170 @@ export default function Users() {
                   <th className="text-right px-5 py-3 font-medium">ایمیل</th>
                   <th className="text-right px-5 py-3 font-medium">موبایل</th>
                   <th className="text-right px-5 py-3 font-medium">نقش</th>
+                  <th className="text-right px-5 py-3 font-medium">سطح دسترسی</th>
                   <th className="text-right px-5 py-3 font-medium">امتیاز</th>
                   <th className="text-right px-5 py-3 font-medium">وضعیت</th>
                   <th className="text-right px-5 py-3 font-medium">فروشگاه</th>
                   <th className="text-right px-5 py-3 font-medium">درخواست فروشگاه</th>
                   <th className="text-right px-5 py-3 font-medium">تاریخ عضویت</th>
-                  <th className="text-right px-5 py-3 font-medium">عملیات</th>
+                  {canEdit && (
+                    <th className="text-right px-5 py-3 font-medium">عملیات</th>
+                  )}
                 </tr>
               </thead>
               <tbody>
-                {filtered.map((user) => (
-                  <tr
-                    key={user._id}
-                    onClick={() => setSelectedUser(user)}
-                    className="border-b last:border-0 hover:bg-gray-50 cursor-pointer"
-                  >
-                    <td className="px-5 py-4">
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 bg-accent/20 text-accent rounded-full flex items-center justify-center text-sm font-bold">
-                          {user.fullName.charAt(0)}
+                {filtered.map((user) => {
+                  const permCount = (user.permissions || []).length;
+                  const totalPerms = PERMISSION_GROUPS.reduce((s, g) => s + g.items.length, 0);
+                  return (
+                    <tr
+                      key={user._id}
+                      onClick={() => setSelectedUser(user)}
+                      className="border-b last:border-0 hover:bg-gray-50 cursor-pointer"
+                    >
+                      <td className="px-5 py-4">
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 bg-accent/20 text-accent rounded-full flex items-center justify-center text-sm font-bold">
+                            {user.fullName.charAt(0)}
+                          </div>
+                          <span className="font-medium text-gray-800">{user.fullName}</span>
                         </div>
-                        <span className="font-medium text-gray-800">{user.fullName}</span>
-                      </div>
-                    </td>
-                    <td className="px-5 py-4 text-gray-600" dir="ltr">{user.email}</td>
-                    <td className="px-5 py-4 text-gray-600" dir="ltr">{user.mobile || '-'}</td>
-                    <td className="px-5 py-4">
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${roleColors[user.role] || roleColors.user}`}>
-                        {USER_ROLES.find((r) => r.value === user.role)?.label || user.role}
-                      </span>
-                    </td>
-                    <td className="px-5 py-4 text-gray-600">{user.points}</td>
-                    <td className="px-5 py-4">
-                      <span className={`w-2 h-2 rounded-full inline-block ${user.isActive ? 'bg-green-500' : 'bg-red-500'}`} />
-                      <span className="mr-2 text-gray-600">{user.isActive ? 'فعال' : 'غیرفعال'}</span>
-                    </td>
-                    <td className="px-5 py-4" onClick={(e) => e.stopPropagation()}>
-                      <button
-                        onClick={async () => {
-                          try {
-                            await api.put(`/users/${user._id}`, { hasStore: !user.hasStore });
-                            setUsers((prev) =>
-                              prev.map((u) =>
-                                u._id === user._id ? { ...u, hasStore: !u.hasStore } : u,
-                              ),
-                            );
-                          } catch (err: any) {
-                            alert(err.response?.data?.message || 'خطا در تغییر دسترسی');
-                          }
-                        }}
-                        className={`px-3 py-1 rounded-lg text-xs font-medium transition-colors ${
-                          user.hasStore
-                            ? 'bg-green-100 text-green-700 hover:bg-green-200'
-                            : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
-                        }`}
-                      >
-                        {user.hasStore ? 'فعال' : 'غیرفعال'}
-                      </button>
-                    </td>
-                    <td className="px-5 py-4" onClick={(e) => e.stopPropagation()}>
-                      {user.storeRequestStatus === 'pending' ? (
-                        <div className="flex items-center gap-1">
-                          <span className="text-yellow-600 text-xs">در انتظار</span>
+                      </td>
+                      <td className="px-5 py-4 text-gray-600" dir="ltr">{user.email}</td>
+                      <td className="px-5 py-4 text-gray-600" dir="ltr">{user.mobile || '-'}</td>
+                      <td className="px-5 py-4">
+                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${roleColors[user.role] || roleColors.user}`}>
+                          {USER_ROLES.find((r) => r.value === user.role)?.label || user.role}
+                        </span>
+                      </td>
+                      <td className="px-5 py-4">
+                        {user.role === 'admin' ? (
+                          <>
+                            <div className="w-24 bg-gray-200 rounded-full h-1.5 overflow-hidden">
+                              <div
+                                className={`h-full rounded-full ${
+                                  permCount === totalPerms ? 'bg-green-500' : permCount > 0 ? 'bg-accent' : 'bg-gray-300'
+                                }`}
+                                style={{ width: `${totalPerms ? (permCount / totalPerms) * 100 : 0}%` }}
+                              />
+                            </div>
+                            <span className="text-[10px] text-gray-500 mt-0.5 inline-block">
+                              {permCount}/{totalPerms}
+                            </span>
+                          </>
+                        ) : (
+                          <span className="text-[11px] text-gray-400">—</span>
+                        )}
+                      </td>
+                      <td className="px-5 py-4 text-gray-600">{user.points}</td>
+                      <td className="px-5 py-4">
+                        <span className={`w-2 h-2 rounded-full inline-block ${user.isActive ? 'bg-green-500' : 'bg-red-500'}`} />
+                        <span className="mr-2 text-gray-600">{user.isActive ? 'فعال' : 'غیرفعال'}</span>
+                      </td>
+                      <td className="px-5 py-4" onClick={(e) => e.stopPropagation()}>
+                        <button
+                          disabled={!canEdit}
+                          onClick={async () => {
+                            try {
+                              await api.put(`/users/${user._id}`, { hasStore: !user.hasStore });
+                              setUsers((prev) =>
+                                prev.map((u) =>
+                                  u._id === user._id ? { ...u, hasStore: !u.hasStore } : u,
+                                ),
+                              );
+                            } catch (err: any) {
+                              alert(err.response?.data?.message || 'خطا در تغییر دسترسی');
+                            }
+                          }}
+                          className={`px-3 py-1 rounded-lg text-xs font-medium transition-colors ${
+                            user.hasStore
+                              ? 'bg-green-100 text-green-700 hover:bg-green-200'
+                              : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+                          } ${!canEdit ? 'opacity-50 cursor-not-allowed' : ''}`}
+                        >
+                          {user.hasStore ? 'فعال' : 'غیرفعال'}
+                        </button>
+                      </td>
+                      <td className="px-5 py-4" onClick={(e) => e.stopPropagation()}>
+                        {user.storeRequestStatus === 'pending' ? (
+                          <div className="flex items-center gap-1">
+                            <span className="text-yellow-600 text-xs">در انتظار</span>
+                            {canEdit && (
+                              <>
+                                <button
+                                  onClick={async () => {
+                                    try {
+                                      await api.put(`/users/${user._id}/store-request`, { action: 'approve' });
+                                      setUsers((prev) =>
+                                        prev.map((u) =>
+                                          u._id === user._id
+                                            ? { ...u, hasStore: true, storeRequestStatus: 'approved' }
+                                            : u,
+                                        ),
+                                      );
+                                    } catch (err: any) {
+                                      alert(err.response?.data?.message || 'خطا');
+                                    }
+                                  }}
+                                  className="px-2 py-0.5 bg-green-100 text-green-700 rounded text-xs hover:bg-green-200"
+                                >
+                                  تایید
+                                </button>
+                                <button
+                                  onClick={async () => {
+                                    try {
+                                      await api.put(`/users/${user._id}/store-request`, { action: 'reject' });
+                                      setUsers((prev) =>
+                                        prev.map((u) =>
+                                          u._id === user._id
+                                            ? { ...u, storeRequestStatus: 'rejected' }
+                                            : u,
+                                        ),
+                                      );
+                                    } catch (err: any) {
+                                      alert(err.response?.data?.message || 'خطا');
+                                    }
+                                  }}
+                                  className="px-2 py-0.5 bg-red-100 text-red-700 rounded text-xs hover:bg-red-200"
+                                >
+                                  رد
+                                </button>
+                              </>
+                            )}
+                          </div>
+                        ) : user.storeRequestStatus === 'approved' ? (
+                          <span className="text-green-600 text-xs">تایید شده</span>
+                        ) : user.storeRequestStatus === 'rejected' ? (
+                          <span className="text-red-500 text-xs">رد شده</span>
+                        ) : (
+                          <span className="text-gray-400 text-xs">—</span>
+                        )}
+                      </td>
+                      <td className="px-5 py-4 text-gray-500 text-xs">
+                        {new Date(user.createdAt).toLocaleDateString('fa-IR')}
+                      </td>
+                      {canEdit && (
+                        <td className="px-5 py-4" onClick={(e) => e.stopPropagation()}>
                           <button
-                            onClick={async () => {
-                              try {
-                                await api.put(`/users/${user._id}/store-request`, { action: 'approve' });
-                                setUsers((prev) =>
-                                  prev.map((u) =>
-                                    u._id === user._id
-                                      ? { ...u, hasStore: true, storeRequestStatus: 'approved' }
-                                      : u,
-                                  ),
-                                );
-                              } catch (err: any) {
-                                alert(err.response?.data?.message || 'خطا');
-                              }
+                            onClick={() => {
+                              setEditTarget(user);
+                              setFormMode('edit');
                             }}
-                            className="px-2 py-0.5 bg-green-100 text-green-700 rounded text-xs hover:bg-green-200"
+                            className="p-2 text-accent hover:bg-accent/10 rounded-lg transition-colors"
+                            title="ویرایش کاربر"
                           >
-                            تایید
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                            </svg>
                           </button>
-                          <button
-                            onClick={async () => {
-                              try {
-                                await api.put(`/users/${user._id}/store-request`, { action: 'reject' });
-                                setUsers((prev) =>
-                                  prev.map((u) =>
-                                    u._id === user._id
-                                      ? { ...u, storeRequestStatus: 'rejected' }
-                                      : u,
-                                  ),
-                                );
-                              } catch (err: any) {
-                                alert(err.response?.data?.message || 'خطا');
-                              }
-                            }}
-                            className="px-2 py-0.5 bg-red-100 text-red-700 rounded text-xs hover:bg-red-200"
-                          >
-                            رد
-                          </button>
-                        </div>
-                      ) : user.storeRequestStatus === 'approved' ? (
-                        <span className="text-green-600 text-xs">تایید شده</span>
-                      ) : user.storeRequestStatus === 'rejected' ? (
-                        <span className="text-red-500 text-xs">رد شده</span>
-                      ) : (
-                        <span className="text-gray-400 text-xs">—</span>
+                        </td>
                       )}
-                    </td>
-                    <td className="px-5 py-4 text-gray-500 text-xs">
-                      {new Date(user.createdAt).toLocaleDateString('fa-IR')}
-                    </td>
-                    <td className="px-5 py-4" onClick={(e) => e.stopPropagation()}>
-                      <button
-                        onClick={() => {
-                          setEditTarget(user);
-                          setFormMode('edit');
-                        }}
-                        className="p-2 text-accent hover:bg-accent/10 rounded-lg transition-colors"
-                        title="ویرایش کاربر"
-                      >
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                        </svg>
-                      </button>
-                    </td>
-                  </tr>
-                ))}
+                    </tr>
+                  );
+                })}
                 {filtered.length === 0 && (
                   <tr>
-                    <td colSpan={10} className="text-center py-10 text-gray-400">
+                    <td colSpan={canEdit ? 11 : 10} className="text-center py-10 text-gray-400">
                       کاربری یافت نشد
                     </td>
                   </tr>

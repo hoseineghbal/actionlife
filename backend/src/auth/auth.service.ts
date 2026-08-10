@@ -5,6 +5,7 @@ import { UsersService } from '../users/users.service';
 import { OtpService } from '../otp/otp.service';
 import { WalletService } from '../wallet/wallet.service';
 import { RegisterDto, LoginDto, VerifyOtpDto, SendOtpDto } from './dto/auth.dto';
+import { UserRole, UserPermission, ALL_PERMISSIONS } from '../users/schemas/user.schema';
 
 @Injectable()
 export class AuthService {
@@ -14,6 +15,13 @@ export class AuthService {
     private otpService: OtpService,
     private walletService: WalletService,
   ) {}
+
+  private resolvePermissions(role: string, userPermissions: UserPermission[] | undefined): UserPermission[] {
+    if (role === UserRole.ADMIN && (!userPermissions || userPermissions.length === 0)) {
+      return [...ALL_PERMISSIONS];
+    }
+    return userPermissions || [];
+  }
 
   async register(registerDto: RegisterDto) {
     const user = await this.usersService.create({
@@ -66,8 +74,17 @@ export class AuthService {
       await this.walletService.giveSignupBonus(user._id.toString()).catch(() => {});
     }
 
+    const permissions = this.resolvePermissions(user.role, user.permissions);
+
     // Generate JWT
-    const payload = { sub: user._id, mobile: user.mobile, countryCode: user.countryCode, role: user.role, fullName: user.fullName };
+    const payload = {
+      sub: user._id,
+      mobile: user.mobile,
+      countryCode: user.countryCode,
+      role: user.role,
+      fullName: user.fullName,
+      permissions,
+    };
     return {
       access_token: this.jwtService.sign(payload),
       user: {
@@ -77,6 +94,7 @@ export class AuthService {
         countryCode: user.countryCode,
         role: user.role,
         hasStore: user.hasStore,
+        permissions,
       },
     };
   }
@@ -103,7 +121,16 @@ export class AuthService {
       };
     }
 
-    const payload = { sub: user._id, mobile: user.mobile, countryCode: user.countryCode, role: user.role, fullName: user.fullName };
+    const permissions = this.resolvePermissions(user.role, user.permissions);
+
+    const payload = {
+      sub: user._id,
+      mobile: user.mobile,
+      countryCode: user.countryCode,
+      role: user.role,
+      fullName: user.fullName,
+      permissions,
+    };
     return {
       access_token: this.jwtService.sign(payload),
       user: {
@@ -113,6 +140,7 @@ export class AuthService {
         countryCode: user.countryCode,
         role: user.role,
         hasStore: user.hasStore,
+        permissions,
       },
     };
   }
