@@ -5,6 +5,7 @@ All notable changes to this project will be documented in this file.
 ## [0.8.0] - 2026-08-10
 
 ### Features
+- ****: add faq page and comprehensive site guide
 - **layout**: add sidebar and update footer links
 - ****: add copy protection, semi-space and update logos
 - **store**: add product variants, inventory, and improved storefront
