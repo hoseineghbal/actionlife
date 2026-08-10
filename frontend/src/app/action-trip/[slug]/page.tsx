@@ -15,7 +15,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const { slug } = await params;
     const article = await getArticleBySlug(slug);
     return {
-      title: article.metaTitle || `${article.title} | اکشن تریپ`,
+      title: article.metaTitle || `${article.title} | سفر اکشن`,
       description: article.metaDescription || article.excerpt,
       openGraph: {
         title: article.metaTitle || article.title,
@@ -24,7 +24,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       },
     };
   } catch {
-    return { title: "مقاله | اکشن تریپ", description: "راهنمای سفر و طبیعت‌گردی" };
+    return { title: "مقاله | سفر اکشن", description: "سفرنامه، راهنمای سفر، مقاصد گردشگری، آموزش بوشکرفت و طبیعت‌گردی" };
   }
 }
 
@@ -52,14 +52,14 @@ export default async function TripArticlePage({ params }: Props) {
       <nav className="flex flex-wrap items-center gap-2 text-sm text-gray-custom mb-8">
         <Link href="/" className="hover:text-white transition-colors">خانه</Link>
         <span>/</span>
-        <Link href="/action-trip" className="hover:text-white transition-colors">اکشن تریپ</Link>
+        <Link href="/action-trip" className="hover:text-white transition-colors">سفر اکشن</Link>
         <span>/</span>
         <span className="text-white truncate max-w-[200px]">{article.title}</span>
       </nav>
 
       <header className="mb-8">
         <div className="flex flex-wrap items-center gap-2 mb-4">
-          <span className="inline-block px-3 py-1 text-xs gradient-primary text-white rounded-md">اکشن تریپ 🏕️</span>
+          <span className="inline-block px-3 py-1 text-xs gradient-primary text-white rounded-md">سفر اکشن 🏕️</span>
           {article.isFeatured && (
             <span className="inline-block px-3 py-1 text-xs bg-yellow-600/20 text-yellow-400 rounded-md">ویژه</span>
           )}

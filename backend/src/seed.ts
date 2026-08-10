@@ -216,9 +216,9 @@ export async function runSeed(app: any) {
     },
     // --- Action Trip ---
     {
-      name: 'مقاصد سفر',
-      slug: 'destinations',
-      description: 'معرفی بهترین مقاصد سفرهای ماجراجویانه',
+      name: 'سفرنامه',
+      slug: 'travel-stories',
+      description: 'سفرنامه‌ها و تجربیات واقعی مسافران ماجراجو',
       order: 1,
     },
     {
@@ -228,16 +228,22 @@ export async function runSeed(app: any) {
       order: 2,
     },
     {
-      name: 'تجهیزات سفر',
-      slug: 'travel-gear',
-      description: 'معرفی تجهیزات ضروری سفر',
+      name: 'مقاصد گردشگری',
+      slug: 'destinations',
+      description: 'معرفی بهترین مقاصد سفرهای ماجراجویانه',
       order: 3,
     },
     {
-      name: 'تجربیات سفر',
-      slug: 'travel-stories',
-      description: 'تجربیات واقعی مسافران ماجراجو',
+      name: 'آموزش بوشکرفت',
+      slug: 'bushcraft-training',
+      description: 'آموزش تکنیک‌های بوشکرفت، بقا در طبیعت و مهارت‌های کمپینگ',
       order: 4,
+    },
+    {
+      name: 'تجهیزات سفر',
+      slug: 'travel-gear',
+      description: 'معرفی تجهیزات ضروری سفر و طبیعت‌گردی',
+      order: 5,
     },
     // --- Action Fit ---
     {
