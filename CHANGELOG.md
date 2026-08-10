@@ -5,6 +5,7 @@ All notable changes to this project will be documented in this file.
 ## [0.8.0] - 2026-08-10
 
 ### Features
+- ****: add copy protection, semi-space and update logos
 - **store**: add product variants, inventory, and improved storefront
 - **tickets**: add ticket assignment and admin ticket endpoints
 - ****: implement user tier system and content access gating
