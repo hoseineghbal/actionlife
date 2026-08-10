@@ -5,6 +5,7 @@ All notable changes to this project will be documented in this file.
 ## [0.8.0] - 2026-08-10
 
 ### Features
+- **action-game**: add search/filtering, overhaul page, update copy
 - **store**: update store page UI and copy
 - ****: add support tickets, refactor blog and update UI
 - ****: add faq page and comprehensive site guide
